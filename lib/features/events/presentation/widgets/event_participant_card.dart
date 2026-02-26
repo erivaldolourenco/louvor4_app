@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 class EventParticipantCard extends StatelessWidget{
   final String name;
-  final String role;
+  final String skill;
   final String? profileImage;
 
-  const EventParticipantCard({super.key, required this.name, required this.role, this.profileImage});
+  const EventParticipantCard({super.key, required this.name, required this.skill, this.profileImage});
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,7 @@ class EventParticipantCard extends StatelessWidget{
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(role.length > 10 ? "Integrante" : role, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                Text(skill, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
               ],
             ),
           ),

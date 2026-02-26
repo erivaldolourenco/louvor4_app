@@ -161,7 +161,7 @@ class _EventDetailViewState extends State<_EventDetailView> {
                       final p = state.participants[i];
                       return EventParticipantCard(
                         name: p.fullName,
-                        role: p.skillId,
+                        skill: state.skillsMap[p.skillId] ?? '',
                         profileImage: p.profileImage);
                     },
                   ),

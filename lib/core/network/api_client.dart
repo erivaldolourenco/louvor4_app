@@ -18,10 +18,6 @@ class ApiClient {
       onRequest: (options, handler) async {
         final token = await TokenStorage().getToken();
 
-        if (kDebugMode) {
-          print('TOKEN LIDO: ${token?.substring(0, 10)}...');
-        }
-
         if (token != null && token.isNotEmpty) {
           options.headers['Authorization'] = 'Bearer $token';
         }

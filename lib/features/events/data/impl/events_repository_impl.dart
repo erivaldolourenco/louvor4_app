@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:louvor4_app/features/events/domain/entities/skill_entity.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../domain/entities/event_detail_entity.dart';
@@ -37,5 +38,12 @@ class EventsRepositoryImpl implements EventsRepository {
     final response = await _dio.get('/events/$eventId/songs');
     final list = response.data as List;
     return list.map((e) => EventSong.fromJson(Map<String, dynamic>.from(e as Map))).toList();
+  }
+
+  @override
+  Future<List<SkillEntity>> getProjectSkills(String projectId) async {
+    final response = await _dio.get('/music-project/$projectId/skills');
+    final list = response.data as List;
+    return list.map((e) => SkillEntity.fromJson(Map<String, dynamic>.from(e as Map))).toList();
   }
 }

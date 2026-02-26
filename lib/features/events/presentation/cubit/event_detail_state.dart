@@ -12,6 +12,7 @@ class EventDetailState extends Equatable {
   final List<EventParticipant> participants;
   final List<EventSong> songs;
   final String? errorMessage;
+  final Map<String, String> skillsMap;
 
   const EventDetailState({
     this.status = EventDetailStatus.initial,
@@ -19,6 +20,7 @@ class EventDetailState extends Equatable {
     this.participants = const [],
     this.songs = const [],
     this.errorMessage,
+    this.skillsMap = const {},
   });
 
   EventDetailState copyWith({
@@ -27,6 +29,7 @@ class EventDetailState extends Equatable {
     List<EventParticipant>? participants,
     List<EventSong>? songs,
     String? errorMessage,
+    Map<String, String>? skillsMap,
   }) {
     return EventDetailState(
       status: status ?? this.status,
@@ -34,6 +37,7 @@ class EventDetailState extends Equatable {
       participants: participants ?? this.participants,
       songs: songs ?? this.songs,
       errorMessage: errorMessage ?? this.errorMessage,
+      skillsMap: skillsMap ?? this.skillsMap,
     );
   }
 

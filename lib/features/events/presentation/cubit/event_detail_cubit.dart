@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../data/events_repository.dart';
+import '../../domain/entities/event_participant_entity.dart';
+import '../../domain/entities/event_song_entity.dart';
 import 'event_detail_state.dart';
 
 class EventDetailCubit extends Cubit<EventDetailState> {
@@ -12,16 +14,31 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     emit(state.copyWith(status: EventDetailStatus.loading));
 
     try {
-      // Em um app real, usaríamos um Future.wait para carregar em paralelo
       final event = await _repository.getEventDetail(eventId);
-      final participants = await _repository.getEventParticipants(eventId);
-      final songs = await _repository.getEventSongs(eventId);
 
+      final results = await Future.wait([
+        _repository.getEventParticipants(eventId),
+        _repository.getEventSongs(eventId),
+        _repository.getProjectSkills(event.projectId),
+      ]);
+
+      final participants = results[0] as List<EventParticipant>; // Ajuste conforme seu tipo
+      final songs = results[1] as List<EventSong>;
+      final skillsList = results[2] as List; // Supondo que retorne List<SkillModel>
+
+      final Map<String, String> skillsMap = {
+        for (var skill in skillsList) skill.id: skill.name
+      };
+
+      if (kDebugMode) {
+        print(skillsMap);
+      }
       emit(state.copyWith(
         status: EventDetailStatus.success,
         event: event,
         participants: participants,
         songs: songs,
+        skillsMap: skillsMap, // Você precisará adicionar esse campo no seu EventDetailState
       ));
     } catch (e) {
       emit(state.copyWith(
