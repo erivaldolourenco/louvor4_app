@@ -235,25 +235,25 @@ class _EventsListView extends StatelessWidget {
                                         ),
                                       ),
                                       // Linha vertical divisória
-                                      Container(width: 1, height: 50, color: Colors.grey.shade200),
-                                      const SizedBox(width: 12),
+                                      // Container(width: 1, height: 50, color: Colors.grey.shade200),
+                                      // const SizedBox(width: 12),
                                       // Coluna de música
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          const Icon(Icons.library_music_outlined, color: primaryBlue, size: 22),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            '${event.repertoireCount}',
-                                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1D2939)),
-                                          ),
-                                          const Text(
-                                            'MÚSICAS',
-                                            style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.grey),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(width: 4),
+                                      // Column(
+                                      //   mainAxisAlignment: MainAxisAlignment.center,
+                                      //   children: [
+                                      //     const Icon(Icons.library_music_outlined, color: primaryBlue, size: 22),
+                                      //     const SizedBox(height: 4),
+                                      //     Text(
+                                      //       '${event.repertoireCount}',
+                                      //       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1D2939)),
+                                      //     ),
+                                      //     const Text(
+                                      //       'MÚSICAS',
+                                      //       style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.grey),
+                                      //     ),
+                                      //   ],
+                                      // ),
+                                      // const SizedBox(width: 4),
                                     ],
                                   ),
                                 ),
