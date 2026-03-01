@@ -33,7 +33,6 @@ class _LoginViewState extends State<_LoginView> {
   final _userCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _obscure = true;
-  bool _keepConnected = false;
 
   @override
   void dispose() {
@@ -116,27 +115,15 @@ class _LoginViewState extends State<_LoginView> {
                       onChanged: (v) => context.read<LoginCubit>().passwordChanged(v),
                       onSubmitted: (_) => context.read<LoginCubit>().submit(),
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Checkbox(
-                              visualDensity: VisualDensity.compact,
-                              value: _keepConnected,
-                              onChanged: (v) => setState(() => _keepConnected = v ?? false),
-                            ),
-                            const Text('Manter-me conectado'),
-                          ],
-                        ),
-                        TextButton(
-                          onPressed: () {},
-                          child: const Text('Esqueceu a senha?'),
-                        )
-                      ],
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () {},
+                        child: const Text('Esqueceu a senha?'),
+                      ),
                     ),
-                    const SizedBox(height: 22),
+                    const SizedBox(height: 16),
                     BlocBuilder<LoginCubit, LoginState>(
                       buildWhen: (p, c) => p.status != c.status,
                       builder: (context, state) {
@@ -148,7 +135,7 @@ class _LoginViewState extends State<_LoginView> {
                           child: FilledButton(
                             style: FilledButton.styleFrom(
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
                             onPressed: loading ? null : () => context.read<LoginCubit>().submit(),

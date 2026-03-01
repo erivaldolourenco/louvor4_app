@@ -8,6 +8,7 @@ class EventEntity {
   final String? projectImageUrl;
   final int participantsCount;
   final int repertoireCount;
+  final List<String> participantsProfileImages; // Atualizado para bater com o novo campo
 
   const EventEntity({
     required this.id,
@@ -19,6 +20,7 @@ class EventEntity {
     this.projectImageUrl,
     required this.participantsCount,
     required this.repertoireCount,
+    this.participantsProfileImages = const [],
   });
 
   factory EventEntity.fromJson(Map<String, dynamic> json) {
@@ -32,6 +34,7 @@ class EventEntity {
       projectImageUrl: json['projectImageUrl']?.toString(),
       participantsCount: (json['participantsCount'] ?? 0) as int,
       repertoireCount: (json['repertoireCount'] ?? 0) as int,
+      participantsProfileImages: (json['participantsProfileImages'] as List?)?.map((e) => e.toString()).toList() ?? [],
     );
   }
 }

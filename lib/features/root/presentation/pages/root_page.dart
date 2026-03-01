@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:louvor4_app/features/user_profile/apresentation/pages/profile_page.dart';
 
 import '../../../events/presentation/pages/events_list_page.dart';
 
@@ -34,7 +35,7 @@ class _RootPageState extends State<RootPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final activeColor = theme.colorScheme.primary;
-    final inactiveColor = Colors.grey.shade600;
+    final inactiveColor = Color(0xFF4D4D4D);
 
     return Scaffold(
       bottomNavigationBar: Container(
@@ -83,7 +84,7 @@ class _RootPageState extends State<RootPage> {
           EventsListPage(), // por enquanto, Início = eventos
           _PlaceholderPage(title: 'Projetos'),
           _PlaceholderPage(title: 'Músicas'),
-          _PlaceholderPage(title: 'Perfil'),
+          ProfilePage(),
         ],
       ),
     );

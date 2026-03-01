@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:louvor4_app/features/events/presentation/widgets/event_music_card.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../data/impl/events_repository_impl.dart';
 import '../cubit/event_detail_cubit.dart';
 import '../cubit/event_detail_state.dart';
@@ -96,7 +98,6 @@ class _EventDetailViewState extends State<_EventDetailView> {
                       child: Container(
                         padding: const EdgeInsets.only(top: 30, left: 20, right: 20),
                         decoration: const BoxDecoration(
-                          color: Color(0xFFF8F9FA),
                           borderRadius: BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
                         ),
                         child: Column(
@@ -120,9 +121,20 @@ class _EventDetailViewState extends State<_EventDetailView> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _buildInfoItem(Icons.calendar_month_outlined, event.date.toString().substring(0, 10)),
-                      _buildInfoItem(Icons.access_time_filled, event.time.substring(0, 5)),
-                      _buildInfoItem(Icons.location_on, event.location ?? "Nao cosnta endereco"),
+                      _buildInfoItem(
+                        Icons.calendar_month_outlined,
+                        formatDate(event.date), // Usa a função formatDate
+                      ),
+
+                      _buildInfoItem(
+                        Icons.access_time_filled,
+                        formatTime(event.time), // Usa a função formatTime
+                      ),
+
+                      _buildInfoItem(
+                        Icons.location_on,
+                        event.location ?? "Não consta endereço",
+                      ),
                     ],
                   ),
                 ),
@@ -174,7 +186,8 @@ class _EventDetailViewState extends State<_EventDetailView> {
                       return EventMusicCard(
                           title: s.title,
                           artist: s.artist ?? "Desconhecido",
-                          musicKey: s.key ??"");
+                          musicKey: s.key ??"",
+                          youtubeUrl: s.youTubeUrl);
                     },
                   ),
                 ),
@@ -243,4 +256,12 @@ class _EventDetailViewState extends State<_EventDetailView> {
     );
   }
 
+  Future<void> _openMaps(String address) async {
+    final query = Uri.encodeComponent(address);
+    final googleMapsUrl = Uri.parse("https://www.google.com/maps/search/?api=1&query=$query");
+
+    if (await canLaunchUrl(googleMapsUrl)) {
+      await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+    }
+  }
 }

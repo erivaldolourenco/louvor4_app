@@ -10,6 +10,7 @@ class EventDetailEntity {
   final String? projectImageUrl;
   final int participantsCount;
   final int repertoireCount;
+  final List<String> participantsProfileImages; // Adicionado para os avatares
 
   const EventDetailEntity({
     required this.id,
@@ -23,6 +24,7 @@ class EventDetailEntity {
     this.projectImageUrl,
     required this.participantsCount,
     required this.repertoireCount,
+    this.participantsProfileImages = const [],
   });
 
   factory EventDetailEntity.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class EventDetailEntity {
       projectImageUrl: json['projectImageUrl']?.toString(),
       participantsCount: (json['participantsCount'] ?? 0) as int,
       repertoireCount: (json['repertoireCount'] ?? 0) as int,
+      participantsProfileImages: (json['participantsProfileImages'] as List?)?.map((e) => e.toString()).toList() ?? [],
     );
   }
 }

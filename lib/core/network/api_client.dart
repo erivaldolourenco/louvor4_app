@@ -8,7 +8,7 @@ class ApiClient {
 
   static final Dio dio = Dio(
     BaseOptions(
-      baseUrl: 'https://api.louvor4.com.br',
+      baseUrl: 'http://192.168.0.101:8080',
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       headers: {'Content-Type': 'application/json'},
