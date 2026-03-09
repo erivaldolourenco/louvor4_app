@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1020415586629",
+    "project_id": "louvor4-6edd0",
+    "storage_bucket": "louvor4-6edd0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1020415586629:android:b771037d49a7bb97ce8e2c",
+        "android_client_info": {
+          "package_name": "br.com.louvor4.louvor4_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZTixDlHDmmrXQVJja3J9MRQa1TbHEUWs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

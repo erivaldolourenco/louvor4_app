@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/notifications/push_notification_service.dart';
 import '../../../root/presentation/pages/root_page.dart';
 import '../../data/repositories/impl/auth_repository_impl.dart';
 import '../cubit/login_cubit.dart';
@@ -66,6 +69,9 @@ class _LoginViewState extends State<_LoginView> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Bem-vindo $name ✅')),
                     );
+
+                    unawaited(PushNotificationService.instance.initialize());
+                    unawaited(PushNotificationService.instance.syncTokenNow());
 
                     Navigator.of(context).pushReplacement(
                       MaterialPageRoute(

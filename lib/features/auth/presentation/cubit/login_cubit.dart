@@ -22,6 +22,7 @@ class LoginCubit extends Cubit<LoginState> {
     emit(state.copyWith(status: LoginStatus.loading, errorMessage: null));
 
     try {
+      print("Tentando login");
       final auth = await _authRepository.login(
         state.username.trim(),
         state.password,
@@ -29,6 +30,7 @@ class LoginCubit extends Cubit<LoginState> {
 
       emit(state.copyWith(status: LoginStatus.success, auth: auth));
     } catch (e) {
+      print(e);
       emit(state.copyWith(
         status: LoginStatus.failure,
         errorMessage: e.toString().replaceAll('Exception: ', ''),

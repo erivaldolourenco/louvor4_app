@@ -13,10 +13,12 @@ class EventsCubit extends Cubit<EventsState> {
       final events = await _repo.getEvents();
       emit(state.copyWith(status: EventsStatus.success, events: events));
     } catch (e) {
-      emit(state.copyWith(
-        status: EventsStatus.failure,
-        errorMessage: 'Não foi possível carregar os eventos.',
-      ));
+      emit(
+        state.copyWith(
+          status: EventsStatus.failure,
+          errorMessage: 'Não foi possível carregar os eventos.',
+        ),
+      );
     }
   }
 }

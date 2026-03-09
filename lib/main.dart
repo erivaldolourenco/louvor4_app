@@ -1,25 +1,58 @@
+import 'dart:async';
+
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'core/notifications/push_notification_service.dart';
 import 'core/storage/token_storage.dart';
+import 'core/ui/app_feedback.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/root/presentation/pages/root_page.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  
-  // Inicializa a formatação de data para o português do Brasil
-  await initializeDateFormatting('pt_BR', null);
-  
-  // Verifica se o token existe no Secure Storage
-  final token = await TokenStorage().getToken();
-  final bool isLoggedIn = token != null && token.isNotEmpty;
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+}
 
-  runApp(Louvor4App(isLoggedIn: isLoggedIn));
+void main() async {
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    // Inicializa a formatação de data
+    await initializeDateFormatting('pt_BR', null);
+
+    try {
+      await Firebase.initializeApp();
+    } catch (e) {
+      debugPrint('Firebase não inicializado: $e');
+    }
+
+    // Tenta buscar o token com um tempo limite de 2 segundos para não travar o app
+    final token = await TokenStorage().getAccessToken().timeout(
+      const Duration(seconds: 2),
+      onTimeout: () => null,
+    );
+
+    final bool isLoggedIn = token != null && token.isNotEmpty;
+
+    if (isLoggedIn) {
+      unawaited(PushNotificationService.instance.initialize());
+    }
+
+    runApp(Louvor4App(isLoggedIn: isLoggedIn));
+  } catch (e) {
+    // Se der qualquer erro na inicialização, abre na tela de login por segurança
+    debugPrint('Erro na inicialização: $e');
+    runApp(const Louvor4App(isLoggedIn: false));
+  }
 }
 
 class Louvor4App extends StatelessWidget {
   final bool isLoggedIn;
-  
+
   const Louvor4App({super.key, required this.isLoggedIn});
 
   @override
@@ -30,6 +63,7 @@ class Louvor4App extends StatelessWidget {
     return MaterialApp(
       title: 'Louvor4',
       debugShowCheckedModeBanner: false,
+      navigatorKey: AppFeedback.navigatorKey,
       theme: ThemeData(
         useMaterial3: true,
         fontFamily: 'Outfit',
@@ -71,7 +105,6 @@ class Louvor4App extends StatelessWidget {
           color: primaryBlue,
         ),
       ),
-      // Se estiver logado, vai direto para a RootPage
       home: isLoggedIn ? const RootPage() : const LoginPage(),
     );
   }

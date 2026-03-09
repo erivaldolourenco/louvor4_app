@@ -3,9 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../data/impl/events_repository_impl.dart';
+import '../../domain/entities/event_entity.dart';
 import '../cubit/events_cubit.dart';
 import '../cubit/events_state.dart';
-import 'event_detail_page.dart';
+import '../widgets/event_list_card.dart';
 
 class EventsListPage extends StatelessWidget {
   const EventsListPage({super.key});
@@ -25,9 +26,211 @@ class EventsListPage extends StatelessWidget {
 class _EventsListView extends StatelessWidget {
   const _EventsListView();
 
-  String getRelativeTime(DateTime date) {
+  Map<DateTime, List<EventEntity>> _groupEventsByDate(
+    List<EventEntity> events,
+  ) {
+    final sortedEvents = [...events]..sort((a, b) => a.date.compareTo(b.date));
+    final grouped = <DateTime, List<EventEntity>>{};
+
+    for (final event in sortedEvents) {
+      final dayKey = DateUtils.dateOnly(event.date);
+      grouped.putIfAbsent(dayKey, () => []).add(event);
+    }
+
+    return grouped;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7F9),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
+        toolbarHeight: 88,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Meus Eventos',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Acompanhe suas escalas e apresentações',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: const Color(0xFF64748B)),
+            ),
+          ],
+        ),
+      ),
+      body: BlocBuilder<EventsCubit, EventsState>(
+        builder: (context, state) {
+          if (state.status == EventsStatus.loading) {
+            return const _EventsLoadingState();
+          }
+          if (state.status == EventsStatus.failure) {
+            return _EventsErrorState(
+              message: state.errorMessage ?? 'Erro ao carregar eventos',
+              onRetry: () => context.read<EventsCubit>().load(),
+            );
+          }
+          if (state.events.isEmpty) {
+            return const _EventsEmptyState();
+          }
+
+          final groupedEvents = _groupEventsByDate(state.events);
+          final sections = groupedEvents.entries.toList()
+            ..sort((a, b) => a.key.compareTo(b.key));
+
+          return RefreshIndicator(
+            onRefresh: () => context.read<EventsCubit>().load(),
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              children: [
+                for (final section in sections) ...[
+                  EventDateHeader(date: section.key),
+                  const SizedBox(height: 10),
+                  ...List.generate(section.value.length, (index) {
+                    final event = section.value[index];
+                    return EventTimelineItemWrapper(
+                      child: EventListCard(
+                        event: event,
+                        isFirstInGroup: index == 0,
+                        isLastInGroup: index == section.value.length - 1,
+                        showTimelineRail: false,
+                        bottomSpacing: 0,
+                      ),
+                    );
+                  }),
+                  const SizedBox(height: 18),
+                ],
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _EventsLoadingState extends StatelessWidget {
+  const _EventsLoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      children: List.generate(
+        4,
+        (_) => Container(
+          height: 120,
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EventsErrorState extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _EventsErrorState({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.cloud_off_rounded,
+              size: 48,
+              color: Color(0xFF64748B),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF475569)),
+            ),
+            const SizedBox(height: 14),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Tentar novamente'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EventsEmptyState extends StatelessWidget {
+  const _EventsEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.event_busy_rounded,
+              size: 48,
+              color: Color(0xFF94A3B8),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Nenhum evento encontrado',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Quando houver novas escalas, elas aparecerão aqui.',
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF64748B)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class EventDateHeader extends StatelessWidget {
+  final DateTime date;
+
+  const EventDateHeader({super.key, required this.date});
+
+  String _getRelativeTime(DateTime targetDate) {
     final now = DateTime.now();
-    final difference = date.difference(DateTime(now.year, now.month, now.day)).inDays;
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(targetDate.year, targetDate.month, targetDate.day);
+    final difference = target.difference(today).inDays;
 
     if (difference == 0) return 'Hoje';
     if (difference == 1) return 'Amanhã';
@@ -36,239 +239,110 @@ class _EventsListView extends StatelessWidget {
     return '${difference.abs()} dias atrás';
   }
 
-  String getWeekDay(DateTime date) {
-    final day = DateFormat('EEEE', 'pt_BR').format(date);
-    return day.substring(0, 1).toUpperCase() + day.substring(1).toLowerCase();
+  String _getMonthName(int month) {
+    const months = [
+      'JAN',
+      'FEV',
+      'MAR',
+      'ABR',
+      'MAI',
+      'JUN',
+      'JUL',
+      'AGO',
+      'SET',
+      'OUT',
+      'NOV',
+      'DEZ',
+    ];
+    return months[month - 1];
   }
 
-  String getMonthName(int month) {
-    const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
-    return months[month - 1];
+  String _getWeekDay(DateTime targetDate) {
+    final day = DateFormat('EEEE', 'pt_BR').format(targetDate);
+    return day.substring(0, 1).toUpperCase() + day.substring(1).toLowerCase();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    const primaryBlue = Color(0xFF0166FF);
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F9),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-        toolbarHeight: 70,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Meus Eventos', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 4),
-            Text(
-              'Acompanhe as escalas e apresentações',
-              style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 28,
+          child: Text(
+            date.day.toString(),
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              fontSize: 22,
+              height: 1,
+              color: const Color(0xFF475569),
             ),
-          ],
+          ),
         ),
-        // actions: [
-        //   Padding(
-        //     padding: const EdgeInsets.only(right: 8),
-        //     child: CircleAvatar(
-        //       radius: 16,
-        //       backgroundColor: primaryBlue.withOpacity(0.1),
-        //       child: Text(
-        //         state.events.length.toString(),
-        //         style: TextStyle(color: primaryBlue, fontWeight: FontWeight.bold, fontSize: 14),
-        //       ),
-        //     ),
-        //   ),
-        // ],
-      ),
-      body: BlocBuilder<EventsCubit, EventsState>(
-        builder: (context, state) {
-          if (state.status == EventsStatus.loading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state.status == EventsStatus.failure) {
-            return Center(child: Text(state.errorMessage ?? 'Erro ao carregar eventos'));
-          }
-
-          if (state.events.isEmpty) {
-            return const Center(child: Text('Nenhum evento encontrado.'));
-          }
-
-          return RefreshIndicator(
-            onRefresh: () => context.read<EventsCubit>().load(),
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-              itemCount: state.events.length,
-              itemBuilder: (context, i) {
-                final event = state.events[i];
-                final timeStr = event.time.length >= 5 ? event.time.substring(0, 5) : event.time;
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 2.0),
-                  child: Column(
-                    children: [
-                      // Header da data
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.baseline,
-                        textBaseline: TextBaseline.alphabetic,
-                        children: [
-                          SizedBox(
-                            width: 38,
-                            child: Text(
-                              event.date.day.toString(),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 26, color: Color(0xFF1D2939)),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${getMonthName(event.date.month)} • ${getWeekDay(event.date)}',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.grey.shade700),
-                          ),
-                          const Spacer(),
-                          Text(
-                            getRelativeTime(event.date),
-                            style: TextStyle(fontSize: 13, color: Colors.grey.shade500, fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      // Card com a linha da timeline
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Linha da Timeline
-                          SizedBox(
-                            width: 38,
-                            child: Column(
-                              children: [
-                                Container(width: 1.5, height: 80, color: Colors.grey.shade300),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Card
-                          Expanded(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.grey.shade200),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.03),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(16),
-                                onTap: () {
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (_) => EventDetailPage(eventId: event.id),
-                                  ));
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: Row(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: (event.projectImageUrl != null && event.projectImageUrl!.isNotEmpty)
-                                            ? Image.network(event.projectImageUrl!, width: 70, height: 70, fit: BoxFit.cover)
-                                            : Container(
-                                                width: 70,
-                                                height: 70,
-                                                color: primaryBlue.withOpacity(0.1),
-                                                child: const Icon(Icons.music_note, color: primaryBlue, size: 30),
-                                              ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      // Info central
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              event.projectTitle,
-                                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1D2939)),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              '$timeStr | ${event.location ?? 'Não informado'}',
-                                              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            const SizedBox(height: 8),
-                                            // Avatares
-                                            if (event.participantsProfileImages.isNotEmpty)
-                                              SizedBox(
-                                                height: 22,
-                                                child: Stack(
-                                                  children: List.generate(
-                                                    event.participantsProfileImages.length > 5 ? 5 : event.participantsProfileImages.length,
-                                                    (index) => Positioned(
-                                                      left: index * 14.0,
-                                                      child: Container(
-                                                        decoration: BoxDecoration(
-                                                          shape: BoxShape.circle,
-                                                          border: Border.all(color: Colors.white, width: 1.5),
-                                                        ),
-                                                        child: CircleAvatar(
-                                                          radius: 10,
-                                                          backgroundImage: NetworkImage(event.participantsProfileImages[index]),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                          ],
-                                        ),
-                                      ),
-                                      // Linha vertical divisória
-                                      // Container(width: 1, height: 50, color: Colors.grey.shade200),
-                                      // const SizedBox(width: 12),
-                                      // Coluna de música
-                                      // Column(
-                                      //   mainAxisAlignment: MainAxisAlignment.center,
-                                      //   children: [
-                                      //     const Icon(Icons.library_music_outlined, color: primaryBlue, size: 22),
-                                      //     const SizedBox(height: 4),
-                                      //     Text(
-                                      //       '${event.repertoireCount}',
-                                      //       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1D2939)),
-                                      //     ),
-                                      //     const Text(
-                                      //       'MÚSICAS',
-                                      //       style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.grey),
-                                      //     ),
-                                      //   ],
-                                      // ),
-                                      // const SizedBox(width: 4),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              },
+        const SizedBox(width: 2),
+        Expanded(
+          child: Text(
+            '${_getMonthName(date.month)} • ${_getWeekDay(date)}',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF475569),
             ),
-          );
-        },
+          ),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          _getRelativeTime(date),
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF64748B),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class EventTimelineItemWrapper extends StatelessWidget {
+  final Widget child;
+
+  const EventTimelineItemWrapper({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const EventTimelineColumn(),
+          const SizedBox(width: 8),
+          Expanded(child: child),
+        ],
+      ),
+    );
+  }
+}
+
+class EventTimelineColumn extends StatelessWidget {
+  const EventTimelineColumn({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 28,
+      child: Column(
+        children: const [
+          Expanded(
+            child: SizedBox(
+              width: 2,
+              child: DecoratedBox(
+                decoration: BoxDecoration(color: Color(0xFFDCE3EC)),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

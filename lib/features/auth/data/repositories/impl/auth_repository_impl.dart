@@ -4,6 +4,7 @@ import 'package:louvor4_app/features/auth/domain/entities/authenticated_user_ent
 
 import '../../../../../core/network/api_client.dart';
 import '../../../../../core/storage/token_storage.dart';
+import '../../dtos/login_response_dto.dart';
 import '../../../domain/entities/user_entity.dart';
 import '../auth_repository.dart';
 
@@ -13,25 +14,36 @@ class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({Dio? dio}) : _dio = dio ?? ApiClient.dio;
 
   @override
-  Future<AuthenticatedUserEntity> login(String username, String password) async {
+  Future<AuthenticatedUserEntity> login(
+    String username,
+    String password,
+  ) async {
     try {
+      print(_dio.options.baseUrl);
       final response = await _dio.post(
-        '/auth/login', // <-- ajuste se sua rota for diferente
-        data: {
-          'username': username, // <-- se sua API usa 'email' troque aqui
-          'password': password,
-        },
+        '/auth/login',
+        data: {'username': username, 'password': password},
       );
 
+      print(response);
+
       final data = response.data as Map<String, dynamic>;
+      final login = LoginResponseDto.fromJson(data);
 
       if (kDebugMode) {
         print(data);
       }
 
-      final token = data['token'] as String;
-      await TokenStorage().saveToken(token);
-      final userJson = Map<String, dynamic>.from(data['user'] as Map);
+      if (login.accessToken.isEmpty || login.refreshToken.isEmpty) {
+        throw Exception('Resposta de autenticação inválida');
+      }
+
+      await TokenStorage().saveSession(
+        accessToken: login.accessToken,
+        refreshToken: login.refreshToken,
+        expiresAt: login.expiresAt,
+      );
+      final userJson = login.user;
 
       final user = UserEntity(
         id: userJson['id'].toString(),
@@ -41,18 +53,22 @@ class AuthRepositoryImpl implements AuthRepository {
       );
 
       return AuthenticatedUserEntity(
-        token: token,
+        accessToken: login.accessToken,
+        refreshToken: login.refreshToken,
+        expiresAt: login.expiresAt,
         user: user,
       );
     } on DioException catch (e) {
       final status = e.response?.statusCode;
+      final networkReason = e.message ?? e.error?.toString() ?? e.type.name;
 
       if (status == 401 || status == 403) {
         throw Exception('Usuário ou senha inválidos');
       }
 
-      // Se sua API retorna mensagem em JSON, dá pra melhorar isso depois
-      throw Exception('Erro ao conectar na API (${status ?? 'sem status'})');
+      throw Exception(
+        'Erro ao conectar na API (${status ?? 'sem status'}): $networkReason',
+      );
     }
   }
 }

@@ -15,36 +15,39 @@ class EventDetailCubit extends Cubit<EventDetailState> {
 
     try {
       final event = await _repository.getEventDetail(eventId);
-
       final results = await Future.wait([
         _repository.getEventParticipants(eventId),
         _repository.getEventSongs(eventId),
         _repository.getProjectSkills(event.projectId),
       ]);
 
-      final participants = results[0] as List<EventParticipant>; // Ajuste conforme seu tipo
+      final participants = results[0] as List<EventParticipant>;
       final songs = results[1] as List<EventSong>;
-      final skillsList = results[2] as List; // Supondo que retorne List<SkillModel>
+      final skillsList = results[2] as List;
 
       final Map<String, String> skillsMap = {
-        for (var skill in skillsList) skill.id: skill.name
+        for (var skill in skillsList) skill.id: skill.name,
       };
 
       if (kDebugMode) {
         print(skillsMap);
       }
-      emit(state.copyWith(
-        status: EventDetailStatus.success,
-        event: event,
-        participants: participants,
-        songs: songs,
-        skillsMap: skillsMap, // Você precisará adicionar esse campo no seu EventDetailState
-      ));
+      emit(
+        state.copyWith(
+          status: EventDetailStatus.success,
+          event: event,
+          participants: participants,
+          songs: songs,
+          skillsMap: skillsMap,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(
-        status: EventDetailStatus.failure,
-        errorMessage: 'Não foi possível carregar os detalhes do evento.',
-      ));
+      emit(
+        state.copyWith(
+          status: EventDetailStatus.failure,
+          errorMessage: 'Não foi possível carregar os detalhes do evento.',
+        ),
+      );
     }
   }
 }

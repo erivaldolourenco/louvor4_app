@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:louvor4_app/core/storage/token_storage.dart';
+import 'package:louvor4_app/core/auth/auth_service.dart';
+import 'package:louvor4_app/core/network/api_client.dart';
 import 'package:louvor4_app/features/auth/presentation/pages/login_page.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 
@@ -24,7 +25,9 @@ class ProfilePage extends StatelessWidget {
             }
 
             if (state.status == UserStatus.failure) {
-              return Center(child: Text(state.errorMessage ?? 'Erro ao carregar'));
+              return Center(
+                child: Text(state.errorMessage ?? 'Erro ao carregar'),
+              );
             }
 
             if (state.status == UserStatus.success && state.user != null) {
@@ -101,7 +104,11 @@ class ProfilePage extends StatelessWidget {
         children: [
           const Text(
             'Informações pessoais',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1D2939)),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1D2939),
+            ),
           ),
           const SizedBox(height: 24),
           _buildInfoField('Nome', user.firstName),
@@ -119,17 +126,19 @@ class ProfilePage extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 50),
               side: BorderSide(color: Colors.grey.shade300),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
               foregroundColor: const Color(0xFF1D2939),
             ),
           ),
-          
+
           const SizedBox(height: 12),
 
           // Botão Sair
           TextButton.icon(
             onPressed: () async {
-              await TokenStorage().clearToken();
+              await AuthService.instance.logout(ApiClient.dio);
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -155,9 +164,23 @@ class ProfilePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 12, color: Colors.blueGrey, fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.blueGrey,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1D2939))),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1D2939),
+            ),
+          ),
         ],
       ),
     );
