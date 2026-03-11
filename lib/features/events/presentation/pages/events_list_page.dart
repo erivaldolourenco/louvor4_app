@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:louvor4_app/core/ui/widgets/standard_section_app_bar.dart';
 
 import '../../data/impl/events_repository_impl.dart';
 import '../../domain/entities/event_entity.dart';
@@ -44,29 +45,9 @@ class _EventsListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F9),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-        toolbarHeight: 88,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Meus Eventos',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Acompanhe suas escalas e apresentações',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: const Color(0xFF64748B)),
-            ),
-          ],
-        ),
+      appBar: const StandardSectionAppBar(
+        title: 'Meus Eventos',
+        subtitle: 'Acompanhe suas escalas e apresentações',
       ),
       body: BlocBuilder<EventsCubit, EventsState>(
         builder: (context, state) {

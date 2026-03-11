@@ -1,9 +1,9 @@
 enum EventPermission {
-  ADD_SONG,              // pode adicionar música ao repertório
-  EDIT_SETLIST,          // pode mudar ordem / tom / bpm
-  REMOVE_SONG,           // pode remover música do repertório
-  MANAGE_PARTICIPANTS,   // pode adicionar/remover participantes
-  EDIT_EVENT
+  ADD_SONG, // pode adicionar música ao repertório
+  EDIT_SETLIST, // pode mudar ordem / tom / bpm
+  REMOVE_SONG, // pode remover música do repertório
+  MANAGE_PARTICIPANTS, // pode adicionar/remover participantes
+  EDIT_EVENT,
 }
 
 class EventParticipant {
@@ -23,7 +23,7 @@ class EventParticipant {
     required this.permissions,
   });
 
-  String get fullName => '$firstName ${lastName ?? ''}';
+  String get fullName => '$firstName ${lastName ?? ''}'.trim();
 
   factory EventParticipant.fromJson(Map<String, dynamic> json) {
     final permissions = (json['permissions'] as List? ?? [])

@@ -1,28 +1,38 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:louvor4_app/features/events/presentation/widgets/event_music_card.dart';
+import 'package:louvor4_app/features/user_profile/data/impl/user_repository_impl.dart';
+import 'package:louvor4_app/features/user_profile/data/user_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/utils/url_utils.dart';
+import '../../data/events_repository.dart';
 import '../../data/impl/events_repository_impl.dart';
 import '../cubit/event_detail_cubit.dart';
 import '../cubit/event_detail_state.dart';
 import '../widgets/event_participant_card.dart';
+import '../widgets/manage_event_participants_sheet.dart';
+import '../widgets/manage_event_songs_sheet.dart';
 
 class EventDetailPage extends StatelessWidget {
   final String eventId;
 
-  const EventDetailPage({
-    super.key,
-    required this.eventId,
-  });
+  const EventDetailPage({super.key, required this.eventId});
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider(
-      create: (_) => EventsRepositoryImpl(),
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<EventsRepository>(create: (_) => EventsRepositoryImpl()),
+        RepositoryProvider<UserRepository>(create: (_) => UserRepositoryImpl()),
+      ],
       child: BlocProvider(
-        create: (ctx) => EventDetailCubit(ctx.read<EventsRepositoryImpl>())..load(eventId),
+        create: (ctx) =>
+            EventDetailCubit(
+              ctx.read<EventsRepository>(),
+              ctx.read<UserRepository>(),
+            )..load(eventId),
         child: _EventDetailView(eventId: eventId),
       ),
     );
@@ -32,9 +42,7 @@ class EventDetailPage extends StatelessWidget {
 class _EventDetailView extends StatefulWidget {
   final String eventId;
 
-  const _EventDetailView({
-    required this.eventId,
-  });
+  const _EventDetailView({required this.eventId});
 
   @override
   State<_EventDetailView> createState() => _EventDetailViewState();
@@ -55,8 +63,11 @@ class _EventDetailViewState extends State<_EventDetailView> {
 
           if (state.status == EventDetailStatus.failure) {
             return _DetailErrorState(
-              message: state.errorMessage ?? 'Não foi possível carregar os detalhes do evento.',
-              onRetry: () => context.read<EventDetailCubit>().load(widget.eventId),
+              message:
+                  state.errorMessage ??
+                  'Não foi possível carregar os detalhes do evento.',
+              onRetry: () =>
+                  context.read<EventDetailCubit>().load(widget.eventId),
             );
           }
 
@@ -64,14 +75,15 @@ class _EventDetailViewState extends State<_EventDetailView> {
           if (event == null) {
             return _DetailErrorState(
               message: 'Evento não encontrado.',
-              onRetry: () => context.read<EventDetailCubit>().load(widget.eventId),
+              onRetry: () =>
+                  context.read<EventDetailCubit>().load(widget.eventId),
             );
           }
 
           return CustomScrollView(
             slivers: [
               SliverAppBar(
-                expandedHeight: 110,
+                expandedHeight: 86,
                 pinned: true,
                 stretch: true,
                 backgroundColor: const Color(0xFF0F172A),
@@ -93,11 +105,8 @@ class _EventDetailViewState extends State<_EventDetailView> {
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                      if (event.projectImageUrl != null && event.projectImageUrl!.isNotEmpty)
-                        Image.network(
-                          event.projectImageUrl!,
-                          fit: BoxFit.cover,
-                        )
+                      if (UrlUtils.isValidNetworkUrl(event.projectImageUrl))
+                        Image.network(event.projectImageUrl!, fit: BoxFit.cover)
                       else
                         Container(color: const Color(0xFF1E293B)),
                       DecoratedBox(
@@ -130,7 +139,8 @@ class _EventDetailViewState extends State<_EventDetailView> {
                           color: Color(0xFF0F172A),
                         ),
                       ),
-                      if (event.description != null && event.description!.trim().isNotEmpty) ...[
+                      if (event.description != null &&
+                          event.description!.trim().isNotEmpty) ...[
                         const SizedBox(height: 8),
                         Text(
                           event.description!,
@@ -150,7 +160,10 @@ class _EventDetailViewState extends State<_EventDetailView> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(18),
@@ -164,7 +177,10 @@ class _EventDetailViewState extends State<_EventDetailView> {
                         ),
                         const SizedBox(
                           height: 24,
-                          child: VerticalDivider(color: Color(0xFFE2E8F0), width: 14),
+                          child: VerticalDivider(
+                            color: Color(0xFFE2E8F0),
+                            width: 14,
+                          ),
                         ),
                         _InlineInfoItem(
                           icon: Icons.access_time_filled_rounded,
@@ -172,7 +188,10 @@ class _EventDetailViewState extends State<_EventDetailView> {
                         ),
                         const SizedBox(
                           height: 24,
-                          child: VerticalDivider(color: Color(0xFFE2E8F0), width: 14),
+                          child: VerticalDivider(
+                            color: Color(0xFFE2E8F0),
+                            width: 14,
+                          ),
                         ),
                         _InlineInfoItem(
                           icon: Icons.location_on_outlined,
@@ -209,13 +228,99 @@ class _EventDetailViewState extends State<_EventDetailView> {
                           label: 'Músicas',
                           count: state.songs.length,
                           selected: !_showParticipants,
-                          onTap: () => setState(() => _showParticipants = false),
+                          onTap: () =>
+                              setState(() => _showParticipants = false),
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
+              if (_showParticipants)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 2, 16, 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'EQUIPE ESCALADA',
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
+                                  color: const Color(0xFF667085),
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 2,
+                                ),
+                          ),
+                        ),
+                        if (state.isProjectAdmin)
+                          FilledButton(
+                            onPressed: () => _onManageSchedule(state),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF10B981),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 22,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 6,
+                              shadowColor: const Color(0x6610B981),
+                            ),
+                            child: const Text(
+                              'Gerenciar Escala',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              if (!_showParticipants)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 2, 16, 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'REPERTÓRIO DO EVENTO',
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
+                                  color: const Color(0xFF667085),
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 2,
+                                ),
+                          ),
+                        ),
+                        FilledButton(
+                          onPressed: () => _onAddSongs(state),
+                          style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xFF2563EB),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 22,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            elevation: 6,
+                            shadowColor: const Color(0x662563EB),
+                          ),
+                          child: const Text(
+                            'Nova Música',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               if (_showParticipants && state.participants.isEmpty)
                 const SliverToBoxAdapter(
                   child: _EmptyTabState(
@@ -229,7 +334,8 @@ class _EventDetailViewState extends State<_EventDetailView> {
                   child: _EmptyTabState(
                     icon: Icons.music_off_rounded,
                     title: 'Sem músicas',
-                    subtitle: 'Ainda não há repertório cadastrado para este evento.',
+                    subtitle:
+                        'Ainda não há repertório cadastrado para este evento.',
                   ),
                 )
               else
@@ -237,36 +343,35 @@ class _EventDetailViewState extends State<_EventDetailView> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   sliver: _showParticipants
                       ? SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, i) {
-                              final participant = state.participants[i];
-                              return EventParticipantCard(
-                                name: participant.fullName,
-                                skill: state.skillsMap[participant.skillId] ?? '',
-                                profileImage: participant.profileImage,
-                              );
-                            },
-                            childCount: state.participants.length,
-                          ),
+                          delegate: SliverChildBuilderDelegate((context, i) {
+                            final participant = state.participants[i];
+                            return EventParticipantCard(
+                              name: participant.fullName,
+                              skill: state.skillsMap[participant.skillId] ?? '',
+                              profileImage: participant.profileImage,
+                            );
+                          }, childCount: state.participants.length),
                         )
                       : SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, i) {
-                              final song = state.songs[i];
-                              return EventMusicCard(
-                                title: song.title,
-                                artist: song.artist ?? 'Desconhecido',
-                                musicKey: song.key ?? '',
-                                youtubeUrl: song.youTubeUrl,
-                              );
-                            },
-                            childCount: state.songs.length,
-                          ),
+                          delegate: SliverChildBuilderDelegate((context, i) {
+                            final song = state.songs[i];
+                            return EventMusicCard(
+                              eventSongId: song.id,
+                              title: song.title,
+                              artist: song.artist ?? 'Desconhecido',
+                              musicKey: song.key ?? '',
+                              addedBy: song.addedBy,
+                              youtubeUrl: song.youTubeUrl,
+                              canRemove: state.isProjectAdmin,
+                              isRemoving: state.deletingSongId == song.id,
+                              onRemove: state.deletingSongId == song.id
+                                  ? null
+                                  : () => _onRemoveSong(song.id),
+                            );
+                          }, childCount: state.songs.length),
                         ),
                 ),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 36),
-              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 36)),
             ],
           );
         },
@@ -306,7 +411,9 @@ class _EventDetailViewState extends State<_EventDetailView> {
               Text(
                 label,
                 style: TextStyle(
-                  color: selected ? const Color(0xFF0F4CDA) : const Color(0xFF64748B),
+                  color: selected
+                      ? const Color(0xFF0F4CDA)
+                      : const Color(0xFF64748B),
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
                 ),
@@ -336,11 +443,90 @@ class _EventDetailViewState extends State<_EventDetailView> {
 
   Future<void> _openMaps(String address) async {
     final query = Uri.encodeComponent(address);
-    final googleMapsUrl = Uri.parse('https://www.google.com/maps/search/?api=1&query=$query');
+    final googleMapsUrl = Uri.parse(
+      'https://www.google.com/maps/search/?api=1&query=$query',
+    );
 
     if (await canLaunchUrl(googleMapsUrl)) {
       await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
     }
+  }
+
+  Future<void> _onManageSchedule(EventDetailState state) async {
+    final event = state.event;
+    if (event == null) return;
+
+    final changed = await showManageEventParticipantsSheet(
+      context,
+      event: event,
+    );
+    if (changed != true || !mounted) return;
+
+    await context.read<EventDetailCubit>().refreshParticipants();
+  }
+
+  Future<void> _onAddSongs(EventDetailState state) async {
+    final event = state.event;
+    if (event == null) return;
+
+    final changed = await showManageEventSongsSheet(
+      context,
+      eventId: event.id,
+    );
+    if (changed != true || !mounted) return;
+
+    await context.read<EventDetailCubit>().refreshSongs();
+  }
+
+  Future<void> _onRemoveSong(String eventSongId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Remover música'),
+          content: const Text(
+            'Tem certeza que deseja remover esta música do evento?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFB3261E),
+              ),
+              child: const Text('Remover'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final removed = await context.read<EventDetailCubit>().removeSong(eventSongId);
+    if (!mounted) return;
+
+    final state = context.read<EventDetailCubit>().state;
+    if (removed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Música removida.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(state.actionErrorMessage ?? 'Erro ao remover música'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFFB3261E),
+      ),
+    );
   }
 }
 
@@ -349,11 +535,7 @@ class _InlineInfoItem extends StatelessWidget {
   final String text;
   final VoidCallback? onTap;
 
-  const _InlineInfoItem({
-    required this.icon,
-    required this.text,
-    this.onTap,
-  });
+  const _InlineInfoItem({required this.icon, required this.text, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -427,10 +609,7 @@ class _DetailErrorState extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
 
-  const _DetailErrorState({
-    required this.message,
-    required this.onRetry,
-  });
+  const _DetailErrorState({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -440,7 +619,11 @@ class _DetailErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline_rounded, size: 48, color: Color(0xFF64748B)),
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: Color(0xFF64748B),
+            ),
             const SizedBox(height: 12),
             Text(
               message,
@@ -500,10 +683,7 @@ class _EmptyTabState extends StatelessWidget {
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF64748B),
-                fontSize: 13,
-              ),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
             ),
           ],
         ),

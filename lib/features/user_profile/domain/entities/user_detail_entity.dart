@@ -28,6 +28,24 @@ class UserDetailEntity {
 
   String get fullName => '$firstName $lastName';
 
+  UserDetailEntity copyWith({
+    String? id,
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? phoneNumber,
+    String? profileImage,
+  }) {
+    return UserDetailEntity(
+      id: id ?? this.id,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      email: email ?? this.email,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      profileImage: profileImage ?? this.profileImage,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

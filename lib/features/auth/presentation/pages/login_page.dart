@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/notifications/push_notification_service.dart';
 import '../../../root/presentation/pages/root_page.dart';
 import '../../data/repositories/impl/auth_repository_impl.dart';
@@ -91,26 +92,26 @@ class _LoginViewState extends State<_LoginView> {
                       textAlign: TextAlign.center,
                       style: theme.textTheme.titleMedium,
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 24),
                     const Divider(indent: 120, endIndent: 120),
                     const SizedBox(height: 28),
+                    const _FieldLabel(label: 'Usuário'),
                     TextField(
                       controller: _userCtrl,
-                      decoration: const InputDecoration(
+                      decoration: appFormFieldDecoration(
                         hintText: 'Digite seu usuário',
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                        prefixIcon: Icons.person_outline_rounded,
                       ),
                       onChanged: (v) => context.read<LoginCubit>().usernameChanged(v),
                     ),
                     const SizedBox(height: 12),
+                    const _FieldLabel(label: 'Senha'),
                     TextField(
                       controller: _passCtrl,
                       obscureText: _obscure,
-                      decoration: InputDecoration(
+                      decoration: appFormFieldDecoration(
                         hintText: 'Digite sua senha',
-                        border: const OutlineInputBorder(),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                        prefixIcon: Icons.lock_outline_rounded,
                         suffixIcon: IconButton(
                           onPressed: () => setState(() => _obscure = !_obscure),
                           icon: Icon(
@@ -136,14 +137,9 @@ class _LoginViewState extends State<_LoginView> {
                         final loading = state.status == LoginStatus.loading;
 
                         return SizedBox(
-                          height: 48,
                           width: double.infinity,
                           child: FilledButton(
-                            style: FilledButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
+                            style: appPrimaryPillButtonStyle(),
                             onPressed: loading ? null : () => context.read<LoginCubit>().submit(),
                             child: loading
                                 ? const SizedBox(
@@ -169,6 +165,27 @@ class _LoginViewState extends State<_LoginView> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  final String label;
+
+  const _FieldLabel({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, bottom: 8),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF111827),
         ),
       ),
     );

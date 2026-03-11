@@ -4,14 +4,13 @@ import 'package:intl/intl.dart';
 class EventDateInfo extends StatelessWidget {
   final DateTime date;
 
-  const EventDateInfo({
-    super.key,
-    required this.date,
-  });
+  const EventDateInfo({super.key, required this.date});
 
   String getRelativeTime(DateTime date) {
     final now = DateTime.now();
-    final difference = date.difference(DateTime(now.year, now.month, now.day)).inDays;
+    final difference = date
+        .difference(DateTime(now.year, now.month, now.day))
+        .inDays;
 
     if (difference == 0) return 'Hoje';
     if (difference == 1) return 'Amanhã';
@@ -26,7 +25,20 @@ class EventDateInfo extends StatelessWidget {
   }
 
   String getMonthName(int month) {
-    const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+    const months = [
+      'JAN',
+      'FEV',
+      'MAR',
+      'ABR',
+      'MAI',
+      'JUN',
+      'JUL',
+      'AGO',
+      'SET',
+      'OUT',
+      'NOV',
+      'DEZ',
+    ];
     return months[month - 1];
   }
 

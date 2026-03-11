@@ -40,7 +40,11 @@ class EventDetailEntity {
       projectImageUrl: json['projectImageUrl']?.toString(),
       participantsCount: (json['participantsCount'] ?? 0) as int,
       repertoireCount: (json['repertoireCount'] ?? 0) as int,
-      participantsProfileImages: (json['participantsProfileImages'] as List?)?.map((e) => e.toString()).toList() ?? [],
+      participantsProfileImages:
+          (json['participantsProfileImages'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
     );
   }
 }

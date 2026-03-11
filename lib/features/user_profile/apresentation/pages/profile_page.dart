@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:louvor4_app/core/auth/auth_service.dart';
 import 'package:louvor4_app/core/network/api_client.dart';
+import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/features/auth/presentation/pages/login_page.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 
@@ -37,7 +39,7 @@ class ProfilePage extends StatelessWidget {
                 child: Column(
                   children: [
                     const SizedBox(height: 40),
-                    _buildTopCard(user),
+                    _buildTopCard(context, user, state.isUploadingImage),
                     const SizedBox(height: 16),
                     _buildInfoCard(user, context),
                   ],
@@ -53,7 +55,14 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Card de Identificação
-  Widget _buildTopCard(UserDetailEntity user) {
+  Widget _buildTopCard(
+    BuildContext context,
+    UserDetailEntity user,
+    bool isUploadingImage,
+  ) {
+    final profileImage = user.profileImage?.trim();
+    final hasProfileImage = profileImage != null && profileImage.isNotEmpty;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
@@ -64,11 +73,64 @@ class ProfilePage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          CircleAvatar(
-            radius: 50,
-            backgroundImage: user.profileImage != null
-                ? NetworkImage(user.profileImage!)
-                : const NetworkImage('https://i.pravatar.cc/300'),
+          InkWell(
+            onTap: isUploadingImage
+                ? null
+                : () => _onChangeProfileImage(context),
+            borderRadius: BorderRadius.circular(999),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  foregroundImage: hasProfileImage
+                      ? NetworkImage(profileImage)
+                      : null,
+                  backgroundColor: const Color(0xFFEFF6FF),
+                  child: !hasProfileImage
+                      ? Text(
+                          _buildUserInitial(user),
+                          style: const TextStyle(
+                            color: Color(0xFF0166FF),
+                            fontSize: 36,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        )
+                      : null,
+                ),
+                Positioned(
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F4CDA),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: isUploadingImage
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.camera_alt_rounded,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Toque na imagem para alterar',
+            style: TextStyle(fontSize: 12, color: Colors.blueGrey),
           ),
           const SizedBox(height: 20),
           Text(
@@ -136,7 +198,7 @@ class ProfilePage extends StatelessWidget {
           const SizedBox(height: 12),
 
           // Botão Sair
-          TextButton.icon(
+          OutlinedButton.icon(
             onPressed: () async {
               await AuthService.instance.logout(ApiClient.dio);
               if (context.mounted) {
@@ -148,8 +210,12 @@ class ProfilePage extends StatelessWidget {
             },
             icon: const Icon(Icons.logout, size: 20, color: Colors.redAccent),
             label: const Text('Sair do Aplicativo'),
-            style: TextButton.styleFrom(
+            style: OutlinedButton.styleFrom(
               minimumSize: const Size(double.infinity, 50),
+              side: const BorderSide(color: Color(0xFFFCA5A5)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
               foregroundColor: Colors.redAccent,
             ),
           ),
@@ -184,5 +250,37 @@ class ProfilePage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _onChangeProfileImage(BuildContext context) async {
+    final picker = ImagePicker();
+    final image = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 1600,
+    );
+
+    if (image == null || !context.mounted) return;
+
+    final success = await context.read<UserCubit>().updateProfileImage(
+      filePath: image.path,
+      fileName: image.name,
+    );
+
+    if (!context.mounted) return;
+
+    if (success) {
+      AppFeedback.showSuccess('Imagem de perfil atualizada.');
+    } else {
+      AppFeedback.showError('Não foi possível atualizar a imagem do perfil.');
+    }
+  }
+
+  String _buildUserInitial(UserDetailEntity user) {
+    final source = user.firstName.trim().isNotEmpty
+        ? user.firstName.trim()
+        : user.email.trim();
+    if (source.isEmpty) return '?';
+    return source[0].toUpperCase();
   }
 }
