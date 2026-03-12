@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/utils/youtube_utils.dart';
@@ -38,135 +39,149 @@ class EventMusicCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          Stack(
-            clipBehavior:
-                Clip.none, // Permite que o badge do tom saia um pouco da borda
-            children: [
-              // 1. O CONTAINER DA CAPA (THUMBNAIL)
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(12),
-                  image: DecorationImage(
-                    // Aqui usamos a função que você trouxe do Angular adaptada para Dart
-                    image: youtubeUrl != null && youtubeUrl!.isNotEmpty
-                        ? NetworkImage(YoutubeUtils.getThumbnail(youtubeUrl))
-                        : const AssetImage('assets/images/default-cover.png')
-                              as ImageProvider,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = theme.textTheme.titleMedium?.color;
+    final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
+      alpha: 0.78,
+    );
 
-              // 2. O BADGE DO TOM DA MÚSICA (KEY)
-              Positioned(
-                top: -5,
-                right: -5,
-                      child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
-                  ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: AppCardSurface(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            Stack(
+              clipBehavior: Clip
+                  .none, // Permite que o badge do tom saia um pouco da borda
+              children: [
+                // 1. O CONTAINER DA CAPA (THUMBNAIL)
+                Container(
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0166FF), // Seu azul #0166ff
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: Colors.white, width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Text(
-                    musicKey,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                    color: isDark ? const Color(0xFF0F172A) : Colors.grey[200],
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      // Aqui usamos a função que você trouxe do Angular adaptada para Dart
+                      image: youtubeUrl != null && youtubeUrl!.isNotEmpty
+                          ? NetworkImage(YoutubeUtils.getThumbnail(youtubeUrl))
+                          : const AssetImage('assets/images/default-cover.png')
+                                as ImageProvider,
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                Text(
-                  artist,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
-                  ),
-                  child: Text(
-                    'Por: ${_toCapitalizedWords(addedBy)}',
-                    style: const TextStyle(
-                      color: Color(0xFF6B7280),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.2,
+
+                // 2. O BADGE DO TOM DA MÚSICA (KEY)
+                Positioned(
+                  top: -5,
+                  right: -5,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0166FF),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: isDark ? const Color(0xFF111827) : Colors.white,
+                        width: 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      musicKey,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
-          ),
-          if (youtubeUrl != null && youtubeUrl!.isNotEmpty)
-            IconButton(
-              onPressed: _launchYoutube,
-              icon: const Icon(
-                Icons.play_circle_filled,
-                color: Color(0xFFFF0000),
-                size: 32,
-              ),
-            ),
-          if (canRemove)
-            isRemoving
-                ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : IconButton(
-                    onPressed: onRemove,
-                    icon: const Icon(
-                      Icons.delete_outline_rounded,
-                      color: Color(0xFFB3261E),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: titleColor,
                     ),
                   ),
-        ],
+                  Text(
+                    artist,
+                    style: TextStyle(color: subtitleColor, fontSize: 13),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF0F172A)
+                          : const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF334155)
+                            : const Color(0xFFE5E7EB),
+                      ),
+                    ),
+                    child: Text(
+                      'Por: ${_toCapitalizedWords(addedBy)}',
+                      style: TextStyle(
+                        color: subtitleColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (youtubeUrl != null && youtubeUrl!.isNotEmpty)
+              IconButton(
+                onPressed: _launchYoutube,
+                icon: const Icon(
+                  Icons.play_circle_filled,
+                  color: Color(0xFFFF0000),
+                  size: 32,
+                ),
+              ),
+            if (canRemove)
+              isRemoving
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : IconButton(
+                      onPressed: onRemove,
+                      icon: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: Color(0xFFB3261E),
+                      ),
+                    ),
+          ],
+        ),
       ),
     );
   }

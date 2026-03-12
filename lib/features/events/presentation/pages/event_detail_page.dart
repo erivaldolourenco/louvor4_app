@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:louvor4_app/core/ui/widgets/header_project_event.dart';
 import 'package:louvor4_app/features/events/presentation/widgets/event_music_card.dart';
 import 'package:louvor4_app/features/user_profile/data/impl/user_repository_impl.dart';
 import 'package:louvor4_app/features/user_profile/data/user_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/utils/formatters.dart';
-import '../../../../core/utils/url_utils.dart';
 import '../../data/events_repository.dart';
 import '../../data/impl/events_repository_impl.dart';
 import '../cubit/event_detail_cubit.dart';
 import '../cubit/event_detail_state.dart';
+import 'edit_event_page.dart';
 import '../widgets/event_participant_card.dart';
 import '../widgets/manage_event_participants_sheet.dart';
 import '../widgets/manage_event_songs_sheet.dart';
@@ -24,15 +25,16 @@ class EventDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
-        RepositoryProvider<EventsRepository>(create: (_) => EventsRepositoryImpl()),
+        RepositoryProvider<EventsRepository>(
+          create: (_) => EventsRepositoryImpl(),
+        ),
         RepositoryProvider<UserRepository>(create: (_) => UserRepositoryImpl()),
       ],
       child: BlocProvider(
-        create: (ctx) =>
-            EventDetailCubit(
-              ctx.read<EventsRepository>(),
-              ctx.read<UserRepository>(),
-            )..load(eventId),
+        create: (ctx) => EventDetailCubit(
+          ctx.read<EventsRepository>(),
+          ctx.read<UserRepository>(),
+        )..load(eventId),
         child: _EventDetailView(eventId: eventId),
       ),
     );
@@ -53,8 +55,13 @@ class _EventDetailViewState extends State<_EventDetailView> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = theme.textTheme.headlineSmall?.color;
+    final bodyColor = theme.textTheme.bodyMedium?.color;
+    final mutedColor = bodyColor?.withValues(alpha: isDark ? 0.82 : 0.72);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       body: BlocBuilder<EventDetailCubit, EventDetailState>(
         builder: (context, state) {
           if (state.status == EventDetailStatus.loading) {
@@ -82,48 +89,42 @@ class _EventDetailViewState extends State<_EventDetailView> {
 
           return CustomScrollView(
             slivers: [
-              SliverAppBar(
-                expandedHeight: 86,
-                pinned: true,
-                stretch: true,
-                backgroundColor: const Color(0xFF0F172A),
-                foregroundColor: Colors.white,
-                title: Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    event.projectTitle,
-                    maxLines: 1,
-                    textAlign: TextAlign.right,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      if (UrlUtils.isValidNetworkUrl(event.projectImageUrl))
-                        Image.network(event.projectImageUrl!, fit: BoxFit.cover)
-                      else
-                        Container(color: const Color(0xFF1E293B)),
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.black.withValues(alpha: 0.25),
-                              Colors.black.withValues(alpha: 0.75),
-                            ],
+              HeaderProjectEvent(
+                title: event.projectTitle,
+                backgroundImageUrl: event.projectImageUrl,
+                actions: [
+                  if (state.isProjectAdmin)
+                    PopupMenuButton<_EventHeaderAction>(
+                      tooltip: 'Ações do evento',
+                      color: isDark ? const Color(0xFF111827) : Colors.white,
+                      icon: const Icon(Icons.more_vert),
+                      onSelected: _onHeaderActionSelected,
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: _EventHeaderAction.edit,
+                          child: ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(Icons.edit_outlined),
+                            title: Text('Editar evento'),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
+                        PopupMenuItem(
+                          value: _EventHeaderAction.delete,
+                          child: ListTile(
+                            contentPadding: EdgeInsets.zero,
+                            leading: Icon(
+                              Icons.delete_outline,
+                              color: Color(0xFFB3261E),
+                            ),
+                            title: Text(
+                              'Deletar evento',
+                              style: TextStyle(color: Color(0xFFB3261E)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
               ),
               SliverToBoxAdapter(
                 child: Padding(
@@ -133,10 +134,9 @@ class _EventDetailViewState extends State<_EventDetailView> {
                       Text(
                         event.title,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 24,
+                        style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
+                          color: titleColor,
                         ),
                       ),
                       if (event.description != null &&
@@ -145,8 +145,8 @@ class _EventDetailViewState extends State<_EventDetailView> {
                         Text(
                           event.description!,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Color(0xFF475569),
+                          style: TextStyle(
+                            color: mutedColor,
                             fontSize: 14,
                             height: 1.4,
                           ),
@@ -165,9 +165,13 @@ class _EventDetailViewState extends State<_EventDetailView> {
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: isDark ? const Color(0xFF111827) : Colors.white,
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(
+                        color: isDark
+                            ? const Color(0xFF243041)
+                            : const Color(0xFFE2E8F0),
+                      ),
                     ),
                     child: Row(
                       children: [
@@ -175,10 +179,12 @@ class _EventDetailViewState extends State<_EventDetailView> {
                           icon: Icons.calendar_month_outlined,
                           text: formatDate(event.date),
                         ),
-                        const SizedBox(
+                        SizedBox(
                           height: 24,
                           child: VerticalDivider(
-                            color: Color(0xFFE2E8F0),
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFE2E8F0),
                             width: 14,
                           ),
                         ),
@@ -186,10 +192,12 @@ class _EventDetailViewState extends State<_EventDetailView> {
                           icon: Icons.access_time_filled_rounded,
                           text: formatTime(event.time),
                         ),
-                        const SizedBox(
+                        SizedBox(
                           height: 24,
                           child: VerticalDivider(
-                            color: Color(0xFFE2E8F0),
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFE2E8F0),
                             width: 14,
                           ),
                         ),
@@ -213,7 +221,9 @@ class _EventDetailViewState extends State<_EventDetailView> {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE2E8F0),
+                      color: isDark
+                          ? const Color(0xFF1E293B)
+                          : const Color(0xFFE2E8F0),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Row(
@@ -224,6 +234,7 @@ class _EventDetailViewState extends State<_EventDetailView> {
                           selected: _showParticipants,
                           onTap: () => setState(() => _showParticipants = true),
                         ),
+                        const SizedBox(width: 6),
                         _buildTabItem(
                           label: 'Músicas',
                           count: state.songs.length,
@@ -248,7 +259,7 @@ class _EventDetailViewState extends State<_EventDetailView> {
                             'EQUIPE ESCALADA',
                             style: Theme.of(context).textTheme.titleSmall
                                 ?.copyWith(
-                                  color: const Color(0xFF667085),
+                                  color: mutedColor,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 2,
                                 ),
@@ -291,7 +302,7 @@ class _EventDetailViewState extends State<_EventDetailView> {
                             'REPERTÓRIO DO EVENTO',
                             style: Theme.of(context).textTheme.titleSmall
                                 ?.copyWith(
-                                  color: const Color(0xFF667085),
+                                  color: mutedColor,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 2,
                                 ),
@@ -385,6 +396,13 @@ class _EventDetailViewState extends State<_EventDetailView> {
     required bool selected,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final activeColor = theme.colorScheme.primary;
+    final inactiveColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
+
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -393,13 +411,17 @@ class _EventDetailViewState extends State<_EventDetailView> {
           curve: Curves.easeOutCubic,
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            color: selected ? Colors.white : Colors.transparent,
+            color: selected
+                ? (isDark ? const Color(0xFF111827) : Colors.white)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
             boxShadow: selected
                 ? [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
+                      color: Colors.black.withValues(
+                        alpha: isDark ? 0.18 : 0.05,
+                      ),
+                      blurRadius: isDark ? 14 : 10,
                       offset: const Offset(0, 4),
                     ),
                   ]
@@ -411,9 +433,7 @@ class _EventDetailViewState extends State<_EventDetailView> {
               Text(
                 label,
                 style: TextStyle(
-                  color: selected
-                      ? const Color(0xFF0F4CDA)
-                      : const Color(0xFF64748B),
+                  color: selected ? activeColor : inactiveColor,
                   fontWeight: FontWeight.w700,
                   fontSize: 15,
                 ),
@@ -422,15 +442,19 @@ class _EventDetailViewState extends State<_EventDetailView> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
+                  color: isDark
+                      ? const Color(0xFF172554)
+                      : const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
                   '$count',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1D4ED8),
+                    color: isDark
+                        ? const Color(0xFF60A5FA)
+                        : const Color(0xFF1D4ED8),
                   ),
                 ),
               ),
@@ -469,10 +493,7 @@ class _EventDetailViewState extends State<_EventDetailView> {
     final event = state.event;
     if (event == null) return;
 
-    final changed = await showManageEventSongsSheet(
-      context,
-      eventId: event.id,
-    );
+    final changed = await showManageEventSongsSheet(context, eventId: event.id);
     if (changed != true || !mounted) return;
 
     await context.read<EventDetailCubit>().refreshSongs();
@@ -506,7 +527,9 @@ class _EventDetailViewState extends State<_EventDetailView> {
 
     if (confirmed != true || !mounted) return;
 
-    final removed = await context.read<EventDetailCubit>().removeSong(eventSongId);
+    final removed = await context.read<EventDetailCubit>().removeSong(
+      eventSongId,
+    );
     if (!mounted) return;
 
     final state = context.read<EventDetailCubit>().state;
@@ -528,7 +551,48 @@ class _EventDetailViewState extends State<_EventDetailView> {
       ),
     );
   }
+
+  Future<void> _onHeaderActionSelected(_EventHeaderAction action) async {
+    switch (action) {
+      case _EventHeaderAction.edit:
+        await _onEditEvent();
+        break;
+      case _EventHeaderAction.delete:
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Deletar evento ainda não foi implementado.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        break;
+    }
+  }
+
+  Future<void> _onEditEvent() async {
+    final event = context.read<EventDetailCubit>().state.event;
+    if (event == null) return;
+
+    final updated = await openEditEventPage(
+      context,
+      event: event,
+      repository: context.read<EventsRepository>(),
+    );
+    if (updated != true || !mounted) return;
+
+    await context.read<EventDetailCubit>().load(widget.eventId);
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Evento atualizado com sucesso.'),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Color(0xFF2E7D32),
+      ),
+    );
+  }
 }
+
+enum _EventHeaderAction { edit, delete }
 
 class _InlineInfoItem extends StatelessWidget {
   final IconData icon;
@@ -539,6 +603,8 @@ class _InlineInfoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final titleColor = Theme.of(context).textTheme.bodyMedium?.color;
+
     return Expanded(
       child: InkWell(
         onTap: onTap,
@@ -554,8 +620,8 @@ class _InlineInfoItem extends StatelessWidget {
                   text,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF0F172A),
+                  style: TextStyle(
+                    color: titleColor,
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                   ),
@@ -574,13 +640,15 @@ class _DetailLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
       children: [
         Container(
           height: 200,
           decoration: BoxDecoration(
-            color: const Color(0xFFE2E8F0),
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
             borderRadius: BorderRadius.circular(18),
           ),
         ),
@@ -588,7 +656,7 @@ class _DetailLoadingState extends StatelessWidget {
         Container(
           height: 140,
           decoration: BoxDecoration(
-            color: const Color(0xFFE2E8F0),
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
             borderRadius: BorderRadius.circular(18),
           ),
         ),
@@ -596,7 +664,7 @@ class _DetailLoadingState extends StatelessWidget {
         Container(
           height: 52,
           decoration: BoxDecoration(
-            color: const Color(0xFFE2E8F0),
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
             borderRadius: BorderRadius.circular(14),
           ),
         ),
@@ -613,25 +681,23 @@ class _DetailErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final mutedColor = theme.textTheme.bodyMedium?.color?.withValues(
+      alpha: 0.78,
+    );
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.error_outline_rounded,
-              size: 48,
-              color: Color(0xFF64748B),
-            ),
+            Icon(Icons.error_outline_rounded, size: 48, color: mutedColor),
             const SizedBox(height: 12),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF475569),
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(color: mutedColor, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 14),
             FilledButton.icon(
@@ -659,31 +725,37 @@ class _EmptyTabState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = theme.textTheme.titleMedium?.color;
+    final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
+      alpha: 0.78,
+    );
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDark ? const Color(0xFF111827) : Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(
+            color: isDark ? const Color(0xFF243041) : const Color(0xFFE2E8F0),
+          ),
         ),
         child: Column(
           children: [
-            Icon(icon, size: 30, color: const Color(0xFF94A3B8)),
+            Icon(icon, size: 30, color: subtitleColor),
             const SizedBox(height: 10),
             Text(
               title,
-              style: const TextStyle(
-                color: Color(0xFF0F172A),
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(color: titleColor, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 4),
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+              style: TextStyle(color: subtitleColor, fontSize: 13),
             ),
           ],
         ),

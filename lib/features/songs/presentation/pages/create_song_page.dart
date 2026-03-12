@@ -123,7 +123,7 @@ class _CreateSongPageState extends State<CreateSongPage> {
                 ),
                 const SizedBox(height: 22),
                 FilledButton(
-                  style: appPrimaryPillButtonStyle(),
+                  style: appPrimaryPillButtonStyle(context),
                   onPressed: _isSaving || !_isFormValid ? null : _save,
                   child: _isSaving
                       ? const SizedBox(
@@ -135,7 +135,7 @@ class _CreateSongPageState extends State<CreateSongPage> {
                 ),
                 const SizedBox(height: 10),
                 OutlinedButton(
-                  style: appSecondaryPillButtonStyle(),
+                  style: appSecondaryPillButtonStyle(context),
                   onPressed: _isSaving
                       ? null
                       : () => Navigator.of(context).pop(),

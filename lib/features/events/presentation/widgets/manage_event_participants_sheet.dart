@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/ui/app_feedback.dart';
+import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../data/events_repository.dart';
 import '../../domain/entities/event_detail_entity.dart';
@@ -34,12 +35,18 @@ Future<bool?> showManageEventParticipantsSheet(
 
 class _ManageEventParticipantsSheet extends StatelessWidget {
   final EventDetailEntity event;
-  static const _primaryColor = Color(0xFF0F4CDA);
 
   const _ManageEventParticipantsSheet({required this.event});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = theme.textTheme.titleLarge?.color;
+    final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(
+      alpha: 0.78,
+    );
+
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
       minChildSize: 0.65,
@@ -47,8 +54,8 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
       expand: false,
       builder: (context, scrollController) {
         return DecoratedBox(
-          decoration: const BoxDecoration(
-            color: Color(0xFFF8FAFC),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC),
             borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
           ),
           child: SafeArea(
@@ -75,7 +82,9 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                           width: 44,
                           height: 5,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFCBD5E1),
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFCBD5E1),
                             borderRadius: BorderRadius.circular(999),
                           ),
                         ),
@@ -87,12 +96,12 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Gerenciar escala',
                                       style: TextStyle(
                                         fontSize: 22,
                                         fontWeight: FontWeight.w800,
-                                        color: Color(0xFF0F172A),
+                                        color: titleColor,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
@@ -100,8 +109,8 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                                       event.title,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Color(0xFF475569),
+                                      style: TextStyle(
+                                        color: subtitleColor,
                                         fontSize: 14,
                                       ),
                                     ),
@@ -124,16 +133,22 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                               width: double.infinity,
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFEE2E2),
+                                color: isDark
+                                    ? const Color(0xFF3F1114)
+                                    : const Color(0xFFFEE2E2),
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: const Color(0xFFFCA5A5),
+                                  color: isDark
+                                      ? const Color(0xFF7F1D1D)
+                                      : const Color(0xFFFCA5A5),
                                 ),
                               ),
                               child: Text(
                                 state.errorMessage!,
-                                style: const TextStyle(
-                                  color: Color(0xFF991B1B),
+                                style: TextStyle(
+                                  color: isDark
+                                      ? const Color(0xFFFCA5A5)
+                                      : const Color(0xFF991B1B),
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -181,10 +196,16 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                         ),
                         Container(
                           padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? const Color(0xFF0F172A)
+                                : Colors.white,
                             border: Border(
-                              top: BorderSide(color: Color(0xFFE2E8F0)),
+                              top: BorderSide(
+                                color: isDark
+                                    ? const Color(0xFF334155)
+                                    : const Color(0xFFE2E8F0),
+                              ),
                             ),
                           ),
                           child: Row(
@@ -194,12 +215,7 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                                   onPressed: state.isSubmitting
                                       ? null
                                       : () => Navigator.of(context).maybePop(),
-                                  style: OutlinedButton.styleFrom(
-                                    minimumSize: const Size.fromHeight(52),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
+                                  style: appSecondaryPillButtonStyle(context),
                                   child: const Text('Cancelar'),
                                 ),
                               ),
@@ -209,13 +225,7 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                                   onPressed: state.isSubmitting
                                       ? null
                                       : () => cubit.submit(event.id),
-                                  style: FilledButton.styleFrom(
-                                    minimumSize: const Size.fromHeight(52),
-                                    backgroundColor: _primaryColor,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
+                                  style: appPrimaryPillButtonStyle(context),
                                   child: state.isSubmitting
                                       ? const Center(
                                           child: SizedBox(
@@ -259,22 +269,30 @@ class _SelectableMemberCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = theme.textTheme.titleMedium?.color;
+    final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
+      alpha: 0.78,
+    );
     final cubit = context.read<ManageEventParticipantsCubit>();
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF111827) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: item.isSelected ? _primaryColor : const Color(0xFFE2E8F0),
+          color: item.isSelected
+              ? _primaryColor
+              : (isDark ? const Color(0xFF243041) : const Color(0xFFE2E8F0)),
           width: item.isSelected ? 1.4 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 14,
+            color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.04),
+            blurRadius: isDark ? 18 : 14,
             offset: const Offset(0, 8),
           ),
         ],
@@ -294,20 +312,17 @@ class _SelectableMemberCard extends StatelessWidget {
                     children: [
                       Text(
                         item.member.fullName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
-                          color: Color(0xFF0F172A),
+                          color: titleColor,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         item.member.projectRole ??
                             'Sem papel definido no projeto',
-                        style: const TextStyle(
-                          color: Color(0xFF64748B),
-                          fontSize: 13,
-                        ),
+                        style: TextStyle(color: subtitleColor, fontSize: 13),
                       ),
                     ],
                   ),
@@ -331,13 +346,18 @@ class _SelectableMemberCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                    Divider(
+                      height: 1,
+                      color: isDark
+                          ? const Color(0xFF334155)
+                          : const Color(0xFFE2E8F0),
+                    ),
                     const SizedBox(height: 14),
-                    const Text(
+                    Text(
                       'Função no evento',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
+                        color: titleColor,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -361,11 +381,11 @@ class _SelectableMemberCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 14),
-                    const Text(
+                    Text(
                       'Permissões no evento',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF0F172A),
+                        color: titleColor,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -411,8 +431,11 @@ class _SkillOptionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
-      color: isSelected ? _primaryColor : Colors.white,
+      color: isSelected
+          ? _primaryColor
+          : (isDark ? const Color(0xFF0F172A) : Colors.white),
       borderRadius: BorderRadius.circular(999),
       child: InkWell(
         onTap: onTap,
@@ -423,7 +446,11 @@ class _SkillOptionButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: isSelected ? _primaryColor : const Color(0xFFD7DCE5),
+              color: isSelected
+                  ? _primaryColor
+                  : (isDark
+                        ? const Color(0xFF334155)
+                        : const Color(0xFFD7DCE5)),
             ),
             boxShadow: isSelected
                 ? [
@@ -457,14 +484,20 @@ class _MemberAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasImage = UrlUtils.isValidNetworkUrl(imageUrl);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return CircleAvatar(
       radius: 24,
-      backgroundColor: const Color(0xFFE2E8F0),
+      backgroundColor: isDark
+          ? const Color(0xFF1E293B)
+          : const Color(0xFFE2E8F0),
       backgroundImage: hasImage ? NetworkImage(imageUrl!) : null,
       child: hasImage
           ? null
-          : const Icon(Icons.person_rounded, color: Color(0xFF475569)),
+          : Icon(
+              Icons.person_rounded,
+              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+            ),
     );
   }
 }
@@ -474,18 +507,20 @@ class _SheetEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final titleColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final iconColor = Theme.of(
+      context,
+    ).textTheme.bodySmall?.color?.withValues(alpha: 0.78);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: const [
-        Icon(Icons.group_off_rounded, size: 40, color: Color(0xFF94A3B8)),
-        SizedBox(height: 12),
+      children: [
+        Icon(Icons.group_off_rounded, size: 40, color: iconColor),
+        const SizedBox(height: 12),
         Text(
           'Nenhum membro encontrado para este projeto.',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF334155),
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700, color: titleColor),
         ),
       ],
     );

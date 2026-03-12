@@ -34,6 +34,7 @@ class SongFormFields extends StatelessWidget {
           focusNode: artistFocusNode,
           textInputAction: TextInputAction.next,
           decoration: appFormFieldDecoration(
+            context,
             hintText: 'Digite o nome do artista',
             prefixIcon: Icons.mic_external_on_rounded,
           ),
@@ -46,6 +47,7 @@ class SongFormFields extends StatelessWidget {
           controller: titleController,
           textInputAction: TextInputAction.next,
           decoration: appFormFieldDecoration(
+            context,
             hintText: 'Digite o título da música',
             prefixIcon: Icons.music_note_rounded,
           ),
@@ -59,6 +61,7 @@ class SongFormFields extends StatelessWidget {
           textCapitalization: TextCapitalization.characters,
           textInputAction: TextInputAction.next,
           decoration: appFormFieldDecoration(
+            context,
             hintText: 'Ex: C, D#, Em, Ab',
             prefixIcon: Icons.piano_rounded,
           ),
@@ -72,6 +75,7 @@ class SongFormFields extends StatelessWidget {
           keyboardType: TextInputType.number,
           textInputAction: TextInputAction.next,
           decoration: appFormFieldDecoration(
+            context,
             hintText: 'Opcional',
             prefixIcon: Icons.speed_rounded,
           ),
@@ -85,6 +89,7 @@ class SongFormFields extends StatelessWidget {
           keyboardType: TextInputType.url,
           textInputAction: TextInputAction.done,
           decoration: appFormFieldDecoration(
+            context,
             hintText: 'Cole o link do vídeo no YouTube',
             prefixIcon: Icons.ondemand_video_rounded,
           ),
@@ -107,10 +112,10 @@ class _FieldLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF111827),
+          color: Theme.of(context).textTheme.bodyMedium?.color,
         ),
       ),
     );

@@ -69,7 +69,9 @@ class _RootPageState extends State<RootPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final activeColor = theme.colorScheme.primary;
-    const inactiveColor = Color(0xFF4D4D4D);
+    final inactiveColor = theme.brightness == Brightness.dark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF4D4D4D);
 
     return BlocProvider.value(
       value: _projectCubit,
@@ -79,14 +81,23 @@ class _RootPageState extends State<RootPage> {
             bottomNavigationBar: Container(
               decoration: BoxDecoration(
                 border: Border(
-                  top: BorderSide(color: Colors.grey.shade200, width: 1.0),
+                  top: BorderSide(
+                    color: theme.brightness == Brightness.dark
+                        ? const Color(0xFF243041)
+                        : Colors.grey.shade200,
+                    width: 1.0,
+                  ),
                 ),
               ),
               child: BottomNavigationBar(
                 currentIndex: _index,
                 onTap: (i) => _go(i, modalContext),
                 type: BottomNavigationBarType.fixed,
-                backgroundColor: Colors.white,
+                backgroundColor:
+                    theme.bottomNavigationBarTheme.backgroundColor ??
+                    (theme.brightness == Brightness.dark
+                        ? const Color(0xFF111827)
+                        : Colors.white),
                 elevation: 0,
                 selectedItemColor: activeColor,
                 unselectedItemColor: inactiveColor,

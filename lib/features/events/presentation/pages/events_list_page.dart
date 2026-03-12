@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 import 'package:louvor4_app/core/ui/widgets/standard_section_app_bar.dart';
 
 import '../../data/impl/events_repository_impl.dart';
@@ -44,7 +45,6 @@ class _EventsListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F9),
       appBar: const StandardSectionAppBar(
         title: 'Meus Eventos',
         subtitle: 'Acompanhe suas escalas e apresentações',
@@ -105,18 +105,18 @@ class _EventsLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       children: List.generate(
         4,
-        (_) => Container(
-          height: 120,
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+        (_) => AppCardSurface(
+          radius: 16,
+          color: isDark ? const Color(0xFF111827) : null,
+          child: Container(
+            height: 120,
+            margin: const EdgeInsets.only(bottom: 12),
           ),
         ),
       ),
@@ -132,6 +132,7 @@ class _EventsErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -147,9 +148,11 @@ class _EventsErrorState extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF475569)),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF475569),
+              ),
             ),
             const SizedBox(height: 14),
             FilledButton.icon(
@@ -169,6 +172,7 @@ class _EventsEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -191,9 +195,11 @@ class _EventsEmptyState extends StatelessWidget {
             Text(
               'Quando houver novas escalas, elas aparecerão aqui.',
               textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: const Color(0xFF64748B)),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B),
+              ),
             ),
           ],
         ),
@@ -246,6 +252,7 @@ class EventDateHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -259,7 +266,7 @@ class EventDateHeader extends StatelessWidget {
               fontWeight: FontWeight.w600,
               fontSize: 22,
               height: 1,
-              color: const Color(0xFF475569),
+              color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF475569),
             ),
           ),
         ),
@@ -269,7 +276,7 @@ class EventDateHeader extends StatelessWidget {
             '${_getMonthName(date.month)} • ${_getWeekDay(date)}',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF475569),
+              color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF475569),
             ),
           ),
         ),
@@ -278,7 +285,7 @@ class EventDateHeader extends StatelessWidget {
           _getRelativeTime(date),
           style: theme.textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF64748B),
+            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
           ),
         ),
       ],
@@ -311,15 +318,20 @@ class EventTimelineColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       width: 28,
       child: Column(
-        children: const [
+        children: [
           Expanded(
             child: SizedBox(
               width: 2,
               child: DecoratedBox(
-                decoration: BoxDecoration(color: Color(0xFFDCE3EC)),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? const Color(0xFF475569)
+                      : const Color(0xFFDCE3EC),
+                ),
               ),
             ),
           ),

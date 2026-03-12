@@ -38,8 +38,12 @@ class _EmptyProjectSelection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(
+      alpha: 0.78,
+    );
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F9),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -62,9 +66,9 @@ class _EmptyProjectSelection extends StatelessWidget {
               Text(
                 'Escolha um projeto para visualizar eventos, membros e funções.',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: const Color(0xFF64748B),
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: subtitleColor),
               ),
               const SizedBox(height: 14),
               FilledButton.icon(

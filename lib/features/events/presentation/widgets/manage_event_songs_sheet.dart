@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:louvor4_app/features/songs/domain/entities/song_entity.dart';
 
 import '../../../../core/ui/app_feedback.dart';
+import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/utils/youtube_utils.dart';
 import '../../data/events_repository.dart';
 import '../cubit/manage_event_songs_cubit.dart';
@@ -20,7 +21,8 @@ Future<bool?> showManageEventSongsSheet(
       return RepositoryProvider.value(
         value: context.read<EventsRepository>(),
         child: BlocProvider(
-          create: (ctx) => ManageEventSongsCubit(ctx.read<EventsRepository>())..load(),
+          create: (ctx) =>
+              ManageEventSongsCubit(ctx.read<EventsRepository>())..load(),
           child: _ManageEventSongsSheet(eventId: eventId),
         ),
       );
@@ -35,6 +37,13 @@ class _ManageEventSongsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = theme.textTheme.titleLarge?.color;
+    final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(
+      alpha: 0.78,
+    );
+
     return Padding(
       padding: EdgeInsets.only(
         left: 16,
@@ -43,7 +52,7 @@ class _ManageEventSongsSheet extends StatelessWidget {
         bottom: MediaQuery.of(context).viewInsets.bottom + 16,
       ),
       child: Material(
-        color: Colors.white,
+        color: isDark ? const Color(0xFF111827) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         child: SafeArea(
           top: false,
@@ -72,30 +81,34 @@ class _ManageEventSongsSheet extends StatelessWidget {
                           width: 42,
                           height: 5,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFCBD5E1),
+                            color: isDark
+                                ? const Color(0xFF334155)
+                                : const Color(0xFFCBD5E1),
                             borderRadius: BorderRadius.circular(999),
                           ),
                         ),
                       ),
                       const SizedBox(height: 20),
-                      const Text(
+                      Text(
                         'Nova música',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF0F172A),
+                          color: titleColor,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
+                      Text(
                         'Selecione uma ou mais músicas do seu catálogo para adicionar ao evento.',
-                        style: TextStyle(fontSize: 14, color: Color(0xFF475569)),
+                        style: TextStyle(fontSize: 14, color: subtitleColor),
                       ),
                       const SizedBox(height: 18),
                       if (state.errorMessage != null)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: _InlineErrorMessage(message: state.errorMessage!),
+                          child: _InlineErrorMessage(
+                            message: state.errorMessage!,
+                          ),
                         ),
                       Expanded(
                         child: state.isLoading
@@ -106,8 +119,8 @@ class _ManageEventSongsSheet extends StatelessWidget {
                                 itemCount: state.songs.length,
                                 itemBuilder: (context, index) {
                                   final song = state.songs[index];
-                                  final isSelected =
-                                      state.selectedSongIds.contains(song.id);
+                                  final isSelected = state.selectedSongIds
+                                      .contains(song.id);
                                   return _SelectableSongCard(
                                     song: song,
                                     isSelected: isSelected,
@@ -123,12 +136,7 @@ class _ManageEventSongsSheet extends StatelessWidget {
                       SizedBox(
                         width: double.infinity,
                         child: FilledButton(
-                          style: FilledButton.styleFrom(
-                            minimumSize: const Size.fromHeight(50),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
+                          style: appPrimaryPillButtonStyle(context),
                           onPressed: state.isSubmitting || !state.hasSelection
                               ? null
                               : () => cubit.submit(eventId),
@@ -173,6 +181,12 @@ class _SelectableSongCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = theme.textTheme.titleMedium?.color;
+    final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
+      alpha: 0.78,
+    );
     return Opacity(
       opacity: enabled ? 1 : 0.72,
       child: Container(
@@ -185,12 +199,18 @@ class _SelectableSongCard extends StatelessWidget {
             onTap: enabled ? onTap : null,
             child: Ink(
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFFEFF6FF) : Colors.white,
+                color: isSelected
+                    ? (isDark
+                          ? const Color(0xFF172554)
+                          : const Color(0xFFEFF6FF))
+                    : (isDark ? const Color(0xFF111827) : Colors.white),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: isSelected
                       ? const Color(0xFF2563EB)
-                      : const Color(0xFFE2E8F0),
+                      : (isDark
+                            ? const Color(0xFF243041)
+                            : const Color(0xFFE2E8F0)),
                   width: isSelected ? 1.6 : 1,
                 ),
               ),
@@ -208,10 +228,12 @@ class _SelectableSongCard extends StatelessWidget {
                         errorBuilder: (_, _, _) => Container(
                           width: 72,
                           height: 72,
-                          color: const Color(0xFFE2E8F0),
-                          child: const Icon(
+                          color: isDark
+                              ? const Color(0xFF1E293B)
+                              : const Color(0xFFE2E8F0),
+                          child: Icon(
                             Icons.music_note_rounded,
-                            color: Color(0xFF64748B),
+                            color: subtitleColor,
                           ),
                         ),
                       ),
@@ -225,10 +247,10 @@ class _SelectableSongCard extends StatelessWidget {
                             song.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w800,
                               fontSize: 15,
-                              color: Color(0xFF0F172A),
+                              color: titleColor,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -236,8 +258,8 @@ class _SelectableSongCard extends StatelessWidget {
                             song.artist,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Color(0xFF64748B),
+                            style: TextStyle(
+                              color: subtitleColor,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -263,7 +285,9 @@ class _SelectableSongCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Checkbox(
                       value: isSelected,
-                      onChanged: enabled && onTap != null ? (_) => onTap!() : null,
+                      onChanged: enabled && onTap != null
+                          ? (_) => onTap!()
+                          : null,
                     ),
                   ],
                 ),
@@ -284,24 +308,28 @@ class _MetaBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = Theme.of(context).textTheme.bodySmall?.color;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: const Color(0xFF64748B)),
+          Icon(icon, size: 14, color: textColor?.withValues(alpha: 0.78)),
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF334155),
+              color: textColor,
             ),
           ),
         ],
@@ -315,31 +343,31 @@ class _EmptySongsState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    final titleColor = Theme.of(context).textTheme.titleMedium?.color;
+    final subtitleColor = Theme.of(
+      context,
+    ).textTheme.bodySmall?.color?.withValues(alpha: 0.78);
+    return Center(
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 32),
+        padding: const EdgeInsets.symmetric(vertical: 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.library_music_outlined,
-              size: 44,
-              color: Color(0xFF94A3B8),
-            ),
-            SizedBox(height: 10),
+            Icon(Icons.library_music_outlined, size: 44, color: subtitleColor),
+            const SizedBox(height: 10),
             Text(
               'Nenhuma música cadastrada',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 16,
-                color: Color(0xFF0F172A),
+                color: titleColor,
               ),
             ),
-            SizedBox(height: 6),
+            const SizedBox(height: 6),
             Text(
               'Cadastre músicas na sua biblioteca para adicioná-las ao repertório do evento.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF64748B)),
+              style: TextStyle(color: subtitleColor),
             ),
           ],
         ),
@@ -355,18 +383,21 @@ class _InlineErrorMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFEE2E2),
+        color: isDark ? const Color(0xFF3F1114) : const Color(0xFFFEE2E2),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFFCA5A5)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5),
+        ),
       ),
       child: Text(
         message,
-        style: const TextStyle(
-          color: Color(0xFF991B1B),
+        style: TextStyle(
+          color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
           fontWeight: FontWeight.w600,
         ),
       ),

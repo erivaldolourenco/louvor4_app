@@ -16,8 +16,10 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   UserDetailEntity? _currentUser;
   List<ProjectMemberEntity> _projectMembers = const [];
 
-  EventDetailCubit(this._repository, this._userRepository)
-    : super(const EventDetailState());
+  EventDetailCubit(
+    this._repository,
+    this._userRepository,
+  ) : super(const EventDetailState());
 
   Future<void> load(String eventId) async {
     emit(state.copyWith(status: EventDetailStatus.loading));

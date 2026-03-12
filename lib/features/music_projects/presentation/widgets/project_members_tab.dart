@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
+import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/utils/url_utils.dart';
@@ -45,6 +46,9 @@ class _ProjectMembersTabView extends StatelessWidget {
     return BlocBuilder<ProjectMembersCubit, ProjectMembersState>(
       builder: (context, state) {
         final cubit = context.read<ProjectMembersCubit>();
+        final subtitleColor = Theme.of(
+          context,
+        ).textTheme.bodySmall?.color?.withValues(alpha: 0.78);
 
         if (state.isLoading) {
           return const AppLoadingState();
@@ -53,7 +57,8 @@ class _ProjectMembersTabView extends StatelessWidget {
         if (state.status == ProjectMembersStatus.failure &&
             state.members.isEmpty) {
           return AppErrorState(
-            message: state.errorMessage ?? 'Não foi possível carregar os membros.',
+            message:
+                state.errorMessage ?? 'Não foi possível carregar os membros.',
             onRetry: () => cubit.load(),
           );
         }
@@ -82,7 +87,7 @@ class _ProjectMembersTabView extends StatelessWidget {
                             Text(
                               'Equipe do projeto, permissões e funções musicais',
                               style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: const Color(0xFF64748B)),
+                                  ?.copyWith(color: subtitleColor),
                             ),
                           ],
                         ),
@@ -91,7 +96,9 @@ class _ProjectMembersTabView extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
                   if (state.members.isEmpty)
-                    _MembersEmptyState(canManageMembers: cubit.canManageMembers),
+                    _MembersEmptyState(
+                      canManageMembers: cubit.canManageMembers,
+                    ),
                   if (state.members.isNotEmpty)
                     ...state.members.map(
                       (member) => Padding(
@@ -141,13 +148,9 @@ class _MembersEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AppCardSurface(
+      radius: 16,
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
       child: AppEmptyState(
         icon: Icons.group_off_rounded,
         title: 'Nenhum membro vinculado',
@@ -168,6 +171,10 @@ class _ProjectMemberCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<ProjectMembersCubit>();
     final state = context.watch<ProjectMembersCubit>().state;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = theme.textTheme.titleMedium?.color;
+    final menuColor = isDark ? const Color(0xFF111827) : Colors.white;
     final skillNames = member.skillIds
         .map(
           (skillId) => state.skills
@@ -183,18 +190,7 @@ class _ProjectMemberCard extends StatelessWidget {
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(20),
       child: Ink(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x10000000),
-              blurRadius: 14,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
+        decoration: appCardDecoration(context),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(
@@ -219,7 +215,7 @@ class _ProjectMemberCard extends StatelessWidget {
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
                                   fontWeight: FontWeight.w800,
-                                  color: const Color(0xFF0F172A),
+                                  color: titleColor,
                                 ),
                           ),
                         ),
@@ -254,6 +250,7 @@ class _ProjectMemberCard extends StatelessWidget {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : PopupMenuButton<String>(
+                        color: menuColor,
                         icon: const Icon(
                           Icons.more_vert_rounded,
                           color: Color(0xFF64748B),
@@ -309,7 +306,10 @@ class _ProjectMemberCard extends StatelessWidget {
                                 value: 'remove',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.delete_outline_rounded, size: 18),
+                                    Icon(
+                                      Icons.delete_outline_rounded,
+                                      size: 18,
+                                    ),
                                     SizedBox(width: 8),
                                     Text('Remover'),
                                   ],
@@ -405,6 +405,7 @@ class _AddProjectMemberSheetState extends State<_AddProjectMemberSheet> {
               enabled: !isSubmitting,
               textInputAction: TextInputAction.done,
               decoration: appFormFieldDecoration(
+                context,
                 hintText: 'ex: joao.silva',
                 prefixIcon: Icons.alternate_email_rounded,
               ),
@@ -424,7 +425,7 @@ class _AddProjectMemberSheetState extends State<_AddProjectMemberSheet> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    style: appSecondaryPillButtonStyle(),
+                    style: appSecondaryPillButtonStyle(context),
                     onPressed: isSubmitting
                         ? null
                         : () => Navigator.of(context).maybePop(false),
@@ -434,7 +435,7 @@ class _AddProjectMemberSheetState extends State<_AddProjectMemberSheet> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
-                    style: appPrimaryPillButtonStyle(),
+                    style: appPrimaryPillButtonStyle(context),
                     onPressed: isSubmitting
                         ? null
                         : () async {
@@ -478,7 +479,8 @@ class _EditProjectMemberSheet extends StatefulWidget {
   const _EditProjectMemberSheet({required this.memberId});
 
   @override
-  State<_EditProjectMemberSheet> createState() => _EditProjectMemberSheetState();
+  State<_EditProjectMemberSheet> createState() =>
+      _EditProjectMemberSheetState();
 }
 
 class _EditProjectMemberSheetState extends State<_EditProjectMemberSheet> {
@@ -529,7 +531,8 @@ class _EditProjectMemberSheetState extends State<_EditProjectMemberSheet> {
 
     return _MemberSheetScaffold(
       title: 'Editar membro',
-      subtitle: 'Ajuste permissões e funções musicais atribuídas ao integrante.',
+      subtitle:
+          'Ajuste permissões e funções musicais atribuídas ao integrante.',
       icon: Icons.manage_accounts_rounded,
       child: _isLoading
           ? const Padding(
@@ -573,13 +576,14 @@ class _EditProjectMemberSheetState extends State<_EditProjectMemberSheet> {
                   'Funções musicais',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: const Color(0xFF0F172A),
+                    color: Theme.of(context).textTheme.titleMedium?.color,
                   ),
                 ),
                 const SizedBox(height: 8),
                 if (state.skills.isEmpty)
                   const _InlineHint(
-                    message: 'Nenhuma função musical cadastrada para este projeto.',
+                    message:
+                        'Nenhuma função musical cadastrada para este projeto.',
                   )
                 else
                   Wrap(
@@ -607,9 +611,21 @@ class _EditProjectMemberSheetState extends State<_EditProjectMemberSheet> {
                               fontWeight: FontWeight.w700,
                               color: _selectedSkillIds.contains(skill.id)
                                   ? const Color(0xFF0166FF)
-                                  : const Color(0xFF475569),
+                                  : Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color,
                             ),
-                            side: const BorderSide(color: Color(0xFFCBD5E1)),
+                            backgroundColor:
+                                Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF0F172A)
+                                : Colors.white,
+                            side: BorderSide(
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFCBD5E1),
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(999),
                             ),
@@ -626,7 +642,7 @@ class _EditProjectMemberSheetState extends State<_EditProjectMemberSheet> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        style: appSecondaryPillButtonStyle(),
+                        style: appSecondaryPillButtonStyle(context),
                         onPressed: isSubmitting
                             ? null
                             : () => Navigator.of(context).maybePop(false),
@@ -636,7 +652,7 @@ class _EditProjectMemberSheetState extends State<_EditProjectMemberSheet> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: FilledButton(
-                        style: appPrimaryPillButtonStyle(),
+                        style: appPrimaryPillButtonStyle(context),
                         onPressed: isSubmitting
                             ? null
                             : () async {
@@ -648,7 +664,8 @@ class _EditProjectMemberSheetState extends State<_EditProjectMemberSheet> {
                                 if (!mounted) return;
                                 if (success) {
                                   Navigator.of(this.context).pop(true);
-                                } else if (cubit.state.actionErrorMessage != null) {
+                                } else if (cubit.state.actionErrorMessage !=
+                                    null) {
                                   AppFeedback.showError(
                                     cubit.state.actionErrorMessage!,
                                   );
@@ -709,10 +726,10 @@ class _FormSectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF111827),
+          color: Theme.of(context).textTheme.bodyMedium?.color,
         ),
       ),
     );
@@ -726,16 +743,20 @@ class _MemberHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final theme = Theme.of(context);
+    final titleColor = theme.textTheme.titleMedium?.color;
+    final mutedColor = theme.textTheme.bodySmall?.color?.withValues(
+      alpha: 0.78,
+    );
+
+    return AppCardSurface(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
       child: Row(
         children: [
-          _MemberAvatar(imageUrl: member.profileImage, fullName: member.fullName),
+          _MemberAvatar(
+            imageUrl: member.profileImage,
+            fullName: member.fullName,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -745,7 +766,7 @@ class _MemberHeader extends StatelessWidget {
                   member.fullName,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: const Color(0xFF0F172A),
+                    color: titleColor,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -759,9 +780,9 @@ class _MemberHeader extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   member.email,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFF64748B),
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: mutedColor),
                 ),
               ],
             ),
@@ -787,46 +808,43 @@ class _PermissionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isAdmin = selectedRole.hasAdministrativeAccess;
 
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Permissão no projeto',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF0F172A),
+      child: AppCardSurface(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Permissão no projeto',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).textTheme.titleMedium?.color,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            value: isAdmin,
-            onChanged: onRoleChanged,
-            title: const Text(
-              'Acesso administrativo',
-              style: TextStyle(fontWeight: FontWeight.w700),
+            const SizedBox(height: 8),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              value: isAdmin,
+              onChanged: onRoleChanged,
+              title: const Text(
+                'Acesso administrativo',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              subtitle: Text(
+                member.isOwner
+                    ? 'O owner do projeto permanece com privilégios administrativos bloqueados.'
+                    : isAdmin
+                    ? 'Pode gerenciar membros, eventos e configurações do projeto.'
+                    : 'Acesso restrito como membro comum.',
+              ),
             ),
-            subtitle: Text(
-              member.isOwner
-                  ? 'O owner do projeto permanece com privilégios administrativos bloqueados.'
-                  : isAdmin
-                  ? 'Pode gerenciar membros, eventos e configurações do projeto.'
-                  : 'Acesso restrito como membro comum.',
-            ),
-          ),
-          if (member.isOwner) ...[
-            const SizedBox(height: 6),
-            const _LockedOwnerBanner(),
+            if (member.isOwner) ...[
+              const SizedBox(height: 6),
+              const _LockedOwnerBanner(),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
@@ -840,17 +858,18 @@ class _MemberAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (UrlUtils.isValidNetworkUrl(imageUrl)) {
-      return CircleAvatar(
-        radius: 26,
-        backgroundImage: NetworkImage(imageUrl!),
-      );
+      return CircleAvatar(radius: 26, backgroundImage: NetworkImage(imageUrl!));
     }
 
     final initial = fullName.trim().isEmpty ? '?' : fullName.trim()[0];
     return CircleAvatar(
       radius: 26,
-      backgroundColor: const Color(0xFFEFF6FF),
+      backgroundColor: isDark
+          ? const Color(0xFF172554)
+          : const Color(0xFFEFF6FF),
       child: Text(
         initial.toUpperCase(),
         style: const TextStyle(
@@ -870,18 +889,19 @@ class _RoleBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final (background, foreground) = switch (role) {
       ProjectMemberRole.owner => (
-        const Color(0xFFFFF7ED),
-        const Color(0xFFC2410C),
+        isDark ? const Color(0xFF3F1D0B) : const Color(0xFFFFF7ED),
+        isDark ? const Color(0xFFF59E0B) : const Color(0xFFC2410C),
       ),
       ProjectMemberRole.admin => (
-        const Color(0xFFEFF6FF),
-        const Color(0xFF1D4ED8),
+        isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF),
+        isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
       ),
       ProjectMemberRole.member => (
-        const Color(0xFFF1F5F9),
-        const Color(0xFF475569),
+        isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+        isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
       ),
     };
 
@@ -911,17 +931,25 @@ class _SkillTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: muted ? const Color(0xFFF8FAFC) : const Color(0xFFF1F5F9),
+        color: muted
+            ? (isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC))
+            : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: muted ? const Color(0xFF94A3B8) : const Color(0xFF334155),
+          color: muted
+              ? (isDark ? const Color(0xFF94A3B8) : const Color(0xFF94A3B8))
+              : (isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155)),
           fontWeight: FontWeight.w700,
           fontSize: 12,
         ),
@@ -935,23 +963,33 @@ class _LockedOwnerBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF7ED),
+        color: isDark ? const Color(0xFF3F1D0B) : const Color(0xFFFFF7ED),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFFED7AA)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF7C2D12) : const Color(0xFFFED7AA),
+        ),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.lock_rounded, size: 18, color: Color(0xFFC2410C)),
-          SizedBox(width: 8),
+          Icon(
+            Icons.lock_rounded,
+            size: 18,
+            color: isDark ? const Color(0xFFF59E0B) : const Color(0xFFC2410C),
+          ),
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               'Owner bloqueado para alteração de privilégio administrativo.',
               style: TextStyle(
-                color: Color(0xFF9A3412),
+                color: isDark
+                    ? const Color(0xFFFDE68A)
+                    : const Color(0xFF9A3412),
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -969,18 +1007,22 @@ class _InlineErrorMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFEE2E2),
+        color: isDark ? const Color(0xFF3F1114) : const Color(0xFFFEE2E2),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFFCA5A5)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5),
+        ),
       ),
       child: Text(
         message,
-        style: const TextStyle(
-          color: Color(0xFF991B1B),
+        style: TextStyle(
+          color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -995,18 +1037,22 @@ class _InlineHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+        ),
       ),
       child: Text(
         message,
-        style: const TextStyle(
-          color: Color(0xFF64748B),
+        style: TextStyle(
+          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
           fontWeight: FontWeight.w600,
         ),
       ),

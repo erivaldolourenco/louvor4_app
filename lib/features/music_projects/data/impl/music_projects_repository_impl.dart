@@ -7,6 +7,7 @@ import '../../domain/entities/music_event_detail_entity.dart';
 import '../../domain/entities/music_project_entity.dart';
 import '../../domain/entities/project_member_entity.dart';
 import '../../domain/entities/project_skill_entity.dart';
+import '../../domain/entities/update_music_project_input.dart';
 import '../../domain/entities/update_project_member_input.dart';
 import '../music_projects_repository.dart';
 
@@ -139,7 +140,10 @@ class MusicProjectsRepositoryImpl implements MusicProjectsRepository {
     AddProjectMemberInput input,
   ) async {
     try {
-      await _dio.post('/music-project/$projectId/members', data: input.toJson());
+      await _dio.post(
+        '/music-project/$projectId/members',
+        data: input.toJson(),
+      );
     } on DioException catch (e) {
       throw Exception(_extractApiErrorMessage(e));
     }
@@ -199,6 +203,59 @@ class MusicProjectsRepositoryImpl implements MusicProjectsRepository {
         _extractApiErrorMessage(
           e,
           fallback: 'Não foi possível adicionar o evento. Tente novamente.',
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<MusicProjectEntity> updateProject(
+    String projectId,
+    UpdateMusicProjectInput input,
+  ) async {
+    try {
+      final response = await _dio.put(
+        '/music-project/$projectId',
+        data: input.toJson(),
+      );
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        return MusicProjectEntity.fromJson(data);
+      }
+      if (data is Map) {
+        return MusicProjectEntity.fromJson(Map<String, dynamic>.from(data));
+      }
+      throw Exception('Resposta inválida ao atualizar projeto.');
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível atualizar o projeto.',
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<void> updateProjectProfileImage({
+    required String projectId,
+    required String filePath,
+    required String fileName,
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        'profileImage': await MultipartFile.fromFile(
+          filePath,
+          filename: fileName,
+        ),
+      });
+
+      await _dio.put('/music-project/$projectId/profile-image', data: formData);
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível atualizar a imagem do projeto.',
         ),
       );
     }

@@ -5,6 +5,7 @@ import '../domain/entities/project_skill_entity.dart';
 import '../domain/entities/update_project_member_input.dart';
 import '../domain/entities/music_event_detail_entity.dart';
 import '../domain/entities/music_project_entity.dart';
+import '../domain/entities/update_music_project_input.dart';
 
 abstract class MusicProjectsRepository {
   Future<List<MusicProjectEntity>> getUserMusicProjects();
@@ -17,7 +18,10 @@ abstract class MusicProjectsRepository {
 
   Future<List<ProjectMemberEntity>> getProjectMembers(String projectId);
 
-  Future<ProjectMemberEntity> getProjectMember(String projectId, String memberId);
+  Future<ProjectMemberEntity> getProjectMember(
+    String projectId,
+    String memberId,
+  );
 
   Future<void> addProjectMember(String projectId, AddProjectMemberInput input);
 
@@ -35,4 +39,15 @@ abstract class MusicProjectsRepository {
     String projectId,
     CreateProjectEventInput input,
   );
+
+  Future<MusicProjectEntity> updateProject(
+    String projectId,
+    UpdateMusicProjectInput input,
+  );
+
+  Future<void> updateProjectProfileImage({
+    required String projectId,
+    required String filePath,
+    required String fileName,
+  });
 }

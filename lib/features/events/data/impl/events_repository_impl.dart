@@ -10,6 +10,7 @@ import '../../domain/entities/event_participant_entity.dart';
 import '../../domain/entities/event_song_input_entity.dart';
 import '../../domain/entities/event_song_entity.dart';
 import '../../domain/entities/project_member_entity.dart';
+import '../../domain/entities/update_event_input_entity.dart';
 import '../events_repository.dart';
 
 class EventsRepositoryImpl implements EventsRepository {
@@ -61,7 +62,8 @@ class EventsRepositoryImpl implements EventsRepository {
       final list = response.data as List;
       return list
           .map(
-            (item) => SongEntity.fromJson(Map<String, dynamic>.from(item as Map)),
+            (item) =>
+                SongEntity.fromJson(Map<String, dynamic>.from(item as Map)),
           )
           .toList();
     } on DioException catch (e) {
@@ -168,6 +170,20 @@ class EventsRepositoryImpl implements EventsRepository {
     } on DioException catch (e) {
       throw Exception(
         _extractApiErrorMessage(e, fallback: 'Erro ao remover música'),
+      );
+    }
+  }
+
+  @override
+  Future<void> updateEvent(String eventId, UpdateEventInputEntity input) async {
+    try {
+      await _dio.put('/events/$eventId', data: input.toJson());
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível atualizar o evento. Tente novamente.',
+        ),
       );
     }
   }

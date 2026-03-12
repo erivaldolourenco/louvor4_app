@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/ui/app_feedback.dart';
+import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/impl/songs_repository_impl.dart';
 import '../../domain/entities/song_entity.dart';
 import '../utils/song_validators.dart';
@@ -127,7 +129,10 @@ class _EditSongPageState extends State<EditSongPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Editar Música')),
+      appBar: const StandardSectionAppBar(
+        title: 'Editar Música',
+        subtitle: 'Atualize os dados da canção do seu catálogo pessoal',
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
@@ -148,8 +153,9 @@ class _EditSongPageState extends State<EditSongPage> {
                         artistFocusNode: _artistFocusNode,
                         onChanged: _onFormChanged,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 22),
                       FilledButton(
+                        style: appPrimaryPillButtonStyle(context),
                         onPressed: _isSaving || !_isFormValid ? null : _save,
                         child: _isSaving
                             ? const SizedBox(
@@ -159,10 +165,11 @@ class _EditSongPageState extends State<EditSongPage> {
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text('Atualizar'),
+                            : const Text('Salvar alterações'),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       OutlinedButton(
+                        style: appSecondaryPillButtonStyle(context),
                         onPressed: _isSaving
                             ? null
                             : () => Navigator.of(context).pop(),

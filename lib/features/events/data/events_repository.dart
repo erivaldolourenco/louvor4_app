@@ -9,6 +9,7 @@ import '../domain/entities/event_entity.dart';
 import '../domain/entities/event_participant_entity.dart';
 import '../domain/entities/event_song_entity.dart';
 import '../domain/entities/project_member_entity.dart';
+import '../domain/entities/update_event_input_entity.dart';
 
 abstract class EventsRepository {
   Future<List<EventEntity>> getEvents();
@@ -43,4 +44,6 @@ abstract class EventsRepository {
   );
 
   Future<void> removeSongFromEvent(String eventId, String eventSongId);
+
+  Future<void> updateEvent(String eventId, UpdateEventInputEntity input);
 }

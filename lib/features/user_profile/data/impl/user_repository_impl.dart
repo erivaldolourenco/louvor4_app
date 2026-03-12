@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:louvor4_app/features/user_profile/data/user_repository.dart';
+import 'package:louvor4_app/features/user_profile/domain/entities/update_user_input_entity.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 
 import '../../../../core/network/api_client.dart';
@@ -10,10 +11,38 @@ class UserRepositoryImpl implements UserRepository {
 
   @override
   Future<UserDetailEntity> getUserDetail() async {
-    final response = await _dio.get('/users/detail');
-    return UserDetailEntity.fromJson(
-      Map<String, dynamic>.from(response.data as Map),
-    );
+    try {
+      final response = await _dio.get('/users/detail');
+      return UserDetailEntity.fromJson(
+        Map<String, dynamic>.from(response.data as Map),
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível carregar os detalhes do perfil.',
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<UserDetailEntity> updateUserProfile(
+    UpdateUserInputEntity input,
+  ) async {
+    try {
+      final response = await _dio.put('/users/update', data: input.toJson());
+      return UserDetailEntity.fromJson(
+        Map<String, dynamic>.from(response.data as Map),
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível atualizar seu perfil.',
+        ),
+      );
+    }
   }
 
   @override
@@ -34,5 +63,29 @@ class UserRepositoryImpl implements UserRepository {
     );
 
     return response.data.toString();
+  }
+
+  String _extractApiErrorMessage(
+    DioException error, {
+    required String fallback,
+  }) {
+    final data = error.response?.data;
+
+    if (data is Map<String, dynamic>) {
+      final message = data['detail'] ?? data['message'];
+      if (message != null && message.toString().trim().isNotEmpty) {
+        return message.toString();
+      }
+    }
+
+    if (data is Map) {
+      final map = Map<String, dynamic>.from(data);
+      final message = map['detail'] ?? map['message'];
+      if (message != null && message.toString().trim().isNotEmpty) {
+        return message.toString();
+      }
+    }
+
+    return error.message ?? fallback;
   }
 }

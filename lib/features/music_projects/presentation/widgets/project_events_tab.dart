@@ -3,6 +3,7 @@ import 'package:louvor4_app/features/events/presentation/pages/event_detail_page
 
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
+import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../data/music_projects_repository.dart';
@@ -92,6 +93,11 @@ class _ProjectEventsTabState extends State<ProjectEventsTab> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
+      alpha: 0.78,
+    );
+
     if (_isLoading) {
       return const AppLoadingState();
     }
@@ -126,8 +132,9 @@ class _ProjectEventsTabState extends State<ProjectEventsTab> {
                         const SizedBox(height: 2),
                         Text(
                           'Próximos eventos do projeto',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: const Color(0xFF64748B)),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(color: subtitleColor),
                         ),
                       ],
                     ),
@@ -157,13 +164,9 @@ class _ProjectEventsTabState extends State<ProjectEventsTab> {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return Container(
+    return AppCardSurface(
+      radius: 16,
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
       child: AppEmptyState(
         icon: Icons.calendar_today_rounded,
         title: 'Nenhum evento agendado',
@@ -188,6 +191,11 @@ class _ProjectEventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = theme.textTheme.titleMedium?.color;
+    final bodyColor = theme.textTheme.bodyMedium?.color;
+    final mutedColor = bodyColor?.withValues(alpha: isDark ? 0.82 : 0.72);
     final month = _monthAbbreviation(event.date.month);
     final day = event.date.day.toString().padLeft(2, '0');
     final normalizedTime = event.time.trim().isEmpty
@@ -210,35 +218,17 @@ class _ProjectEventCard extends StatelessWidget {
           );
         },
         child: Ink(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x10000000),
-                blurRadius: 14,
-                offset: Offset(0, 3),
-              ),
-            ],
-          ),
+          decoration: appCardDecoration(context),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Coluna 1: data (mês + dia)
-                Container(
+                SizedBox(
                   width: 68,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 8,
-                    horizontal: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         month,
@@ -250,11 +240,11 @@ class _ProjectEventCard extends StatelessWidget {
                       ),
                       Text(
                         day,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 30,
                           height: 1,
-                          color: Color(0xFF0F172A),
+                          color: titleColor,
                         ),
                       ),
                     ],
@@ -274,7 +264,7 @@ class _ProjectEventCard extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
                               fontWeight: FontWeight.w800,
-                              color: const Color(0xFF0F172A),
+                              color: titleColor,
                             ),
                       ),
                       const SizedBox(height: 6),
@@ -307,7 +297,7 @@ class _ProjectEventCard extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: const Color(0xFF64748B)),
+                                  ?.copyWith(color: mutedColor),
                             ),
                           ),
                         ],
@@ -363,13 +353,10 @@ class _ProjectEventCard extends StatelessWidget {
                 const SizedBox(width: 6),
 
                 // Indicador de navegação
-                const SizedBox(
+                SizedBox(
                   height: 68,
                   child: Center(
-                    child: Icon(
-                      Icons.chevron_right_rounded,
-                      color: Color(0xFF94A3B8),
-                    ),
+                    child: Icon(Icons.chevron_right_rounded, color: mutedColor),
                   ),
                 ),
               ],

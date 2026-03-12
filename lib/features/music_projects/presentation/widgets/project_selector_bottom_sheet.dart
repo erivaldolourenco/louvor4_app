@@ -19,7 +19,7 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
     context: context,
     showDragHandle: true,
     isScrollControlled: true,
-    backgroundColor: Colors.white,
+    backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),
@@ -29,6 +29,11 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
         child: SafeArea(
           child: BlocBuilder<ProjectCubit, ProjectState>(
             builder: (context, state) {
+              final theme = Theme.of(context);
+              final isDark = theme.brightness == Brightness.dark;
+              final subtitleColor = theme.textTheme.bodyMedium?.color
+                  ?.withValues(alpha: 0.75);
+
               if (state.status == ProjectStatus.loading) {
                 return const SizedBox(
                   height: 240,
@@ -84,11 +89,13 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                     ),
                     if (projects.isEmpty)
                       ListTile(
-                        leading: const CircleAvatar(
-                          backgroundColor: Color(0xFFEFF6FF),
+                        leading: CircleAvatar(
+                          backgroundColor: isDark
+                              ? const Color(0xFF172554)
+                              : const Color(0xFFEFF6FF),
                           child: Icon(
                             Icons.add_rounded,
-                            color: Color(0xFF0166FF),
+                            color: theme.colorScheme.primary,
                           ),
                         ),
                         title: const Text('Adicionar Novo Projeto'),
@@ -115,7 +122,9 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                                   ),
                                   decoration: BoxDecoration(
                                     color: isActive
-                                        ? const Color(0xFFEFF6FF)
+                                        ? (isDark
+                                              ? const Color(0xFF172554)
+                                              : const Color(0xFFEFF6FF))
                                         : Colors.transparent,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -124,7 +133,9 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     leading: CircleAvatar(
-                                      backgroundColor: const Color(0xFFEFF6FF),
+                                      backgroundColor: isDark
+                                          ? const Color(0xFF172554)
+                                          : const Color(0xFFEFF6FF),
                                       backgroundImage:
                                           UrlUtils.isValidNetworkUrl(
                                             project.profileImage,
@@ -152,11 +163,12 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(color: subtitleColor),
                                     ),
                                     trailing: isActive
-                                        ? const Icon(
+                                        ? Icon(
                                             Icons.check_circle,
-                                            color: Color(0xFF0166FF),
+                                            color: theme.colorScheme.primary,
                                           )
                                         : null,
                                     onTap: () {
@@ -168,11 +180,13 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                               }),
                               const Divider(height: 24),
                               ListTile(
-                                leading: const CircleAvatar(
-                                  backgroundColor: Color(0xFFEFF6FF),
+                                leading: CircleAvatar(
+                                  backgroundColor: isDark
+                                      ? const Color(0xFF172554)
+                                      : const Color(0xFFEFF6FF),
                                   child: Icon(
                                     Icons.add_rounded,
-                                    color: Color(0xFF0166FF),
+                                    color: theme.colorScheme.primary,
                                   ),
                                 ),
                                 title: const Text('Adicionar Novo Projeto'),

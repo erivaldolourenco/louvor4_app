@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
+import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../data/repositories/project_skills_repository.dart';
 import '../../data/repositories/project_skills_repository_impl.dart';
@@ -48,14 +49,19 @@ class _ProjectSkillsView extends StatelessWidget {
     return BlocBuilder<ProjectSkillsCubit, ProjectSkillsState>(
       builder: (context, state) {
         final cubit = context.read<ProjectSkillsCubit>();
+        final subtitleColor = Theme.of(
+          context,
+        ).textTheme.bodySmall?.color?.withValues(alpha: 0.78);
 
         if (state.isInitialLoading) {
           return const AppLoadingState();
         }
 
-        if (state.status == ProjectSkillsStatus.failure && state.skills.isEmpty) {
+        if (state.status == ProjectSkillsStatus.failure &&
+            state.skills.isEmpty) {
           return AppErrorState(
-            message: state.errorMessage ?? 'Não foi possível carregar as funções.',
+            message:
+                state.errorMessage ?? 'Não foi possível carregar as funções.',
             onRetry: () => cubit.load(),
           );
         }
@@ -86,7 +92,7 @@ class _ProjectSkillsView extends StatelessWidget {
                                   ? 'Funções disponíveis em ${state.projectName}'
                                   : 'Instrumentos, vocais e funções do projeto',
                               style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: const Color(0xFF64748B)),
+                                  ?.copyWith(color: subtitleColor),
                             ),
                           ],
                         ),
@@ -127,10 +133,8 @@ class _ProjectSkillsView extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => BlocProvider.value(
-        value: cubit,
-        child: const AddProjectSkillSheet(),
-      ),
+      builder: (_) =>
+          BlocProvider.value(value: cubit, child: const AddProjectSkillSheet()),
     );
 
     if (success == true) {
@@ -146,13 +150,9 @@ class _SkillsEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AppCardSurface(
+      radius: 16,
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
       child: AppEmptyState(
         icon: Icons.music_off_rounded,
         title: 'Nenhuma função cadastrada',
@@ -173,24 +173,16 @@ class _ProjectSkillCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<ProjectSkillsCubit>();
     final state = context.watch<ProjectSkillsCubit>().state;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = theme.textTheme.titleMedium?.color;
     final isDeleting = state.isDeletingSkill(skill.id);
 
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(20),
       child: Ink(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x10000000),
-              blurRadius: 14,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
+        decoration: appCardDecoration(context),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(
@@ -199,7 +191,9 @@ class _ProjectSkillCard extends StatelessWidget {
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
+                  color: isDark
+                      ? const Color(0xFF172554)
+                      : const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(
@@ -213,7 +207,7 @@ class _ProjectSkillCard extends StatelessWidget {
                   skill.name,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: const Color(0xFF0F172A),
+                    color: titleColor,
                   ),
                 ),
               ),

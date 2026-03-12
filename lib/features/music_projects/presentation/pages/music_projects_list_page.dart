@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
+import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/impl/music_projects_repository_impl.dart';
 import '../../domain/entities/music_project_entity.dart';
@@ -83,7 +84,7 @@ class _MusicProjectsListPageState extends State<MusicProjectsListPage> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE2E8F0),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const StandardSectionAppBar(
         title: 'Selecionar projeto',
         subtitle: 'Escolha um projeto para acompanhar eventos e detalhes',
@@ -93,6 +94,8 @@ class _MusicProjectsListPageState extends State<MusicProjectsListPage> {
   }
 
   Widget _buildBody(BuildContext context) {
+    final theme = Theme.of(context);
+
     if (_isLoading) {
       return const AppLoadingState();
     }
@@ -106,8 +109,8 @@ class _MusicProjectsListPageState extends State<MusicProjectsListPage> {
 
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8FAFC),
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: RefreshIndicator(
@@ -151,23 +154,18 @@ class _ProjectSelectableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final titleColor = theme.textTheme.titleMedium?.color;
+    final chevronColor = theme.iconTheme.color?.withValues(alpha: 0.62);
+
     return Material(
-      color: Colors.white,
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onTap,
         child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x12000000),
-                blurRadius: 10,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
+          decoration: appCardDecoration(context, radius: 16),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
@@ -197,7 +195,7 @@ class _ProjectSelectableCard extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF0F172A),
+                              color: titleColor,
                             ),
                       ),
                       const SizedBox(height: 6),
@@ -206,10 +204,7 @@ class _ProjectSelectableCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                const Icon(
-                  Icons.chevron_right_rounded,
-                  color: Color(0xFF94A3B8),
-                ),
+                Icon(Icons.chevron_right_rounded, color: chevronColor),
               ],
             ),
           ),
@@ -218,11 +213,14 @@ class _ProjectSelectableCard extends StatelessWidget {
     );
   }
 
-  Widget _avatarFallback() {
+  Widget _avatarFallback([BuildContext? context]) {
+    final isDark = context != null
+        ? Theme.of(context).brightness == Brightness.dark
+        : false;
     return Container(
       width: 56,
       height: 56,
-      color: const Color(0xFFEFF6FF),
+      color: isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF),
       child: const Icon(
         Icons.multitrack_audio_rounded,
         color: Color(0xFF0166FF),
@@ -239,6 +237,8 @@ class _CreateProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -246,10 +246,13 @@ class _CreateProjectCard extends StatelessWidget {
         onTap: onTap,
         child: Ink(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF94A3B8), width: 1.5),
-            color: const Color(0xFFFFFFFF),
+          decoration: appCardDecoration(
+            context,
+            radius: 16,
+            borderColor: isDark
+                ? const Color(0xFF3B82F6)
+                : const Color(0xFF94A3B8),
+            color: Theme.of(context).cardColor,
           ),
           child: Row(
             children: [
@@ -257,7 +260,9 @@ class _CreateProjectCard extends StatelessWidget {
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEFF6FF),
+                  color: isDark
+                      ? const Color(0xFF172554)
+                      : const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: const Icon(Icons.add_rounded, color: Color(0xFF0166FF)),

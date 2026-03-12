@@ -61,7 +61,9 @@ class _LoginViewState extends State<_LoginView> {
                 listener: (context, state) {
                   if (state.status == LoginStatus.failure) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.errorMessage ?? 'Erro no login')),
+                      SnackBar(
+                        content: Text(state.errorMessage ?? 'Erro no login'),
+                      ),
                     );
                   }
 
@@ -75,9 +77,7 @@ class _LoginViewState extends State<_LoginView> {
                     unawaited(PushNotificationService.instance.syncTokenNow());
 
                     Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (_) => const RootPage(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const RootPage()),
                     );
                   }
                 },
@@ -85,7 +85,10 @@ class _LoginViewState extends State<_LoginView> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SvgPicture.asset('assets/images/logos/logo.svg', height: 42),
+                    SvgPicture.asset(
+                      'assets/images/logos/logo.svg',
+                      height: 42,
+                    ),
                     const SizedBox(height: 22),
                     Text(
                       'Gerencie bandas, ministérios e eventos com simplicidade',
@@ -99,10 +102,12 @@ class _LoginViewState extends State<_LoginView> {
                     TextField(
                       controller: _userCtrl,
                       decoration: appFormFieldDecoration(
+                        context,
                         hintText: 'Digite seu usuário',
                         prefixIcon: Icons.person_outline_rounded,
                       ),
-                      onChanged: (v) => context.read<LoginCubit>().usernameChanged(v),
+                      onChanged: (v) =>
+                          context.read<LoginCubit>().usernameChanged(v),
                     ),
                     const SizedBox(height: 12),
                     const _FieldLabel(label: 'Senha'),
@@ -110,16 +115,20 @@ class _LoginViewState extends State<_LoginView> {
                       controller: _passCtrl,
                       obscureText: _obscure,
                       decoration: appFormFieldDecoration(
+                        context,
                         hintText: 'Digite sua senha',
                         prefixIcon: Icons.lock_outline_rounded,
                         suffixIcon: IconButton(
                           onPressed: () => setState(() => _obscure = !_obscure),
                           icon: Icon(
-                            _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                            _obscure
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
                           ),
                         ),
                       ),
-                      onChanged: (v) => context.read<LoginCubit>().passwordChanged(v),
+                      onChanged: (v) =>
+                          context.read<LoginCubit>().passwordChanged(v),
                       onSubmitted: (_) => context.read<LoginCubit>().submit(),
                     ),
                     const SizedBox(height: 8),
@@ -139,13 +148,17 @@ class _LoginViewState extends State<_LoginView> {
                         return SizedBox(
                           width: double.infinity,
                           child: FilledButton(
-                            style: appPrimaryPillButtonStyle(),
-                            onPressed: loading ? null : () => context.read<LoginCubit>().submit(),
+                            style: appPrimaryPillButtonStyle(context),
+                            onPressed: loading
+                                ? null
+                                : () => context.read<LoginCubit>().submit(),
                             child: loading
                                 ? const SizedBox(
                                     height: 22,
                                     width: 22,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   )
                                 : const Text('Entrar'),
                           ),
@@ -157,9 +170,12 @@ class _LoginViewState extends State<_LoginView> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Text('Ainda não tem uma conta?'),
-                        TextButton(onPressed: () {}, child: const Text('Criar conta'))
+                        TextButton(
+                          onPressed: () {},
+                          child: const Text('Criar conta'),
+                        ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ),

@@ -2,66 +2,87 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../data/music_projects_repository.dart';
-import '../../domain/entities/create_project_event_input.dart';
-import '../cubit/create_project_event_cubit.dart';
+import '../../data/events_repository.dart';
+import '../../domain/entities/event_detail_entity.dart';
+import '../../domain/entities/update_event_input_entity.dart';
+import '../cubit/edit_event_cubit.dart';
 
-Future<bool?> openCreateProjectEventPage(
+Future<bool?> openEditEventPage(
   BuildContext context, {
-  required String projectId,
-  required MusicProjectsRepository repository,
+  required EventDetailEntity event,
+  required EventsRepository repository,
 }) {
   return Navigator.of(context).push<bool>(
     MaterialPageRoute(
-      builder: (_) =>
-          CreateProjectEventPage(projectId: projectId, repository: repository),
+      builder: (_) => EditEventPage(event: event, repository: repository),
     ),
   );
 }
 
-class CreateProjectEventPage extends StatelessWidget {
-  final String projectId;
-  final MusicProjectsRepository repository;
+class EditEventPage extends StatelessWidget {
+  final EventDetailEntity event;
+  final EventsRepository repository;
 
-  const CreateProjectEventPage({
+  const EditEventPage({
     super.key,
-    required this.projectId,
+    required this.event,
     required this.repository,
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => CreateProjectEventCubit(repository),
-      child: _CreateProjectEventView(projectId: projectId),
+      create: (_) => EditEventCubit(repository)..startEditing(),
+      child: _EditEventView(event: event),
     );
   }
 }
 
-class _CreateProjectEventView extends StatefulWidget {
-  final String projectId;
+class _EditEventView extends StatefulWidget {
+  final EventDetailEntity event;
 
-  const _CreateProjectEventView({required this.projectId});
+  const _EditEventView({required this.event});
 
   @override
-  State<_CreateProjectEventView> createState() =>
-      _CreateProjectEventViewState();
+  State<_EditEventView> createState() => _EditEventViewState();
 }
 
-class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
+class _EditEventViewState extends State<_EditEventView> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  final _dateController = TextEditingController();
-  final _timeController = TextEditingController();
-  final _locationController = TextEditingController();
+  late final TextEditingController _titleController;
+  late final TextEditingController _descriptionController;
+  late final TextEditingController _dateController;
+  late final TextEditingController _timeController;
+  late final TextEditingController _locationController;
 
-  DateTime? _selectedDate;
-  TimeOfDay? _selectedTime;
+  late DateTime _selectedDate;
+  late TimeOfDay _selectedTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = DateTime(
+      widget.event.date.year,
+      widget.event.date.month,
+      widget.event.date.day,
+    );
+    _selectedTime = _parseTime(widget.event.time);
+
+    _titleController = TextEditingController(text: widget.event.title);
+    _descriptionController = TextEditingController(
+      text: widget.event.description ?? '',
+    );
+    _dateController = TextEditingController(text: formatDate(_selectedDate));
+    _timeController = TextEditingController(
+      text: _formatTimeOfDay(_selectedTime),
+    );
+    _locationController = TextEditingController(
+      text: widget.event.location ?? '',
+    );
+  }
 
   @override
   void dispose() {
@@ -75,13 +96,13 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<CreateProjectEventCubit>();
-    final state = context.watch<CreateProjectEventCubit>().state;
+    final cubit = context.read<EditEventCubit>();
+    final state = context.watch<EditEventCubit>().state;
 
     return Scaffold(
       appBar: const StandardSectionAppBar(
-        title: 'Novo Evento',
-        subtitle: 'Adicione um evento ao projeto atual',
+        title: 'Editar Evento',
+        subtitle: 'Atualize os dados do evento atual',
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -96,7 +117,6 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
                   controller: _titleController,
                   enabled: !state.isSubmitting,
                   maxLength: 80,
-                  style: const TextStyle(fontSize: 15),
                   decoration: appFormFieldDecoration(
                     context,
                     hintText: 'Ex: Culto Domingo',
@@ -230,7 +250,7 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text('Adicionar evento'),
+                      : const Text('Salvar alterações'),
                 ),
                 const SizedBox(height: 10),
                 OutlinedButton(
@@ -252,60 +272,61 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
     final now = DateTime.now();
     final selected = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? now,
+      initialDate: _selectedDate,
       firstDate: DateTime(now.year - 1),
       lastDate: DateTime(now.year + 5),
     );
 
     if (!mounted || selected == null) return;
     setState(() {
-      _selectedDate = selected;
-      _dateController.text = formatDate(selected);
+      _selectedDate = DateTime(selected.year, selected.month, selected.day);
+      _dateController.text = formatDate(_selectedDate);
     });
   }
 
   Future<void> _pickTime() async {
     final selected = await showTimePicker(
       context: context,
-      initialTime: _selectedTime ?? TimeOfDay.now(),
+      initialTime: _selectedTime,
     );
 
     if (!mounted || selected == null) return;
     setState(() {
       _selectedTime = selected;
-      _timeController.text =
-          '${selected.hour.toString().padLeft(2, '0')}:${selected.minute.toString().padLeft(2, '0')}';
+      _timeController.text = _formatTimeOfDay(selected);
     });
   }
 
-  Future<void> _submit(CreateProjectEventCubit cubit) async {
+  Future<void> _submit(EditEventCubit cubit) async {
     if (!_formKey.currentState!.validate()) return;
-    if (_selectedDate == null || _selectedTime == null) return;
 
-    final dateFormatter = DateFormat('yyyy-MM-dd');
-    final startTime =
-        '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
-
+    final description = _descriptionController.text.trim();
     final success = await cubit.submit(
-      projectId: widget.projectId,
-      input: CreateProjectEventInput(
-        title: _titleController.text,
-        description: _descriptionController.text,
-        startDate: dateFormatter.format(_selectedDate!),
-        startTime: startTime,
-        location: _locationController.text,
+      eventId: widget.event.id,
+      input: UpdateEventInputEntity(
+        title: _titleController.text.trim(),
+        description: description.isEmpty ? null : description,
+        startDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
+        startTime:
+            '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
+        location: _locationController.text.trim(),
       ),
     );
 
-    if (!mounted) return;
-    if (success) {
-      AppFeedback.showSuccess(
-        'Evento criado com sucesso. Crie outro evento ou feche para voltar.',
-      );
-      Navigator.of(context).pop(true);
-    } else if (cubit.state.errorMessage != null) {
-      AppFeedback.showError(cubit.state.errorMessage!);
-    }
+    if (!mounted || !success) return;
+    Navigator.of(context).pop(true);
+  }
+
+  TimeOfDay _parseTime(String value) {
+    final sanitized = formatTime(value);
+    final parts = sanitized.split(':');
+    final hour = parts.isNotEmpty ? int.tryParse(parts[0]) ?? 0 : 0;
+    final minute = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+    return TimeOfDay(hour: hour, minute: minute);
+  }
+
+  String _formatTimeOfDay(TimeOfDay time) {
+    return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
   }
 }
 
@@ -320,10 +341,10 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         label,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: Theme.of(context).textTheme.bodyMedium?.color,
+          color: Color(0xFF111827),
         ),
       ),
     );
@@ -337,22 +358,18 @@ class _InlineErrorMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF3F1114) : const Color(0xFFFEE2E2),
+        color: const Color(0xFFFEE2E2),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5),
-        ),
+        border: Border.all(color: const Color(0xFFFCA5A5)),
       ),
       child: Text(
         message,
-        style: TextStyle(
-          color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
+        style: const TextStyle(
+          color: Color(0xFF991B1B),
           fontWeight: FontWeight.w600,
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 
 class EventParticipantCard extends StatelessWidget {
   final String name;
@@ -14,37 +15,53 @@ class EventParticipantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundImage: profileImage != null
-                ? NetworkImage(profileImage!)
-                : null,
-            child: profileImage == null ? const Icon(Icons.person) : null,
-          ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(
-                  skill,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                ),
-              ],
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = theme.textTheme.titleMedium?.color;
+    final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
+      alpha: 0.78,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: AppCardSurface(
+        radius: 15,
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: isDark
+                  ? const Color(0xFF172554)
+                  : const Color(0xFFEFF6FF),
+              backgroundImage: profileImage != null
+                  ? NetworkImage(profileImage!)
+                  : null,
+              child: profileImage == null
+                  ? const Icon(Icons.person, color: Color(0xFF0166FF))
+                  : null,
             ),
-          ),
-          const Icon(Icons.check_circle, color: Colors.green, size: 20),
-        ],
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: titleColor,
+                    ),
+                  ),
+                  Text(
+                    skill,
+                    style: TextStyle(color: subtitleColor, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.check_circle, color: Colors.green, size: 20),
+          ],
+        ),
       ),
     );
   }

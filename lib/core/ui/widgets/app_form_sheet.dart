@@ -16,6 +16,14 @@ class AppFormSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final sheetColor = isDark ? const Color(0xFF111827) : Colors.white;
+    final titleColor = theme.textTheme.titleLarge?.color;
+    final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(
+      alpha: 0.78,
+    );
+
     return Padding(
       padding: EdgeInsets.only(
         left: 16,
@@ -28,12 +36,14 @@ class AppFormSheet extends StatelessWidget {
         children: [
           DecoratedBox(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: sheetColor,
               borderRadius: BorderRadius.circular(28),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x140166FF),
-                  blurRadius: 24,
+                  color: isDark
+                      ? const Color(0x33000000)
+                      : const Color(0x140166FF),
+                  blurRadius: isDark ? 28 : 24,
                   offset: Offset(0, 8),
                 ),
               ],
@@ -48,19 +58,19 @@ class AppFormSheet extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
-                          color: Color(0xFF111827),
+                          color: titleColor,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         subtitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           height: 1.4,
-                          color: Color(0xFF6B7280),
+                          color: subtitleColor,
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -80,12 +90,14 @@ class AppFormSheet extends StatelessWidget {
                 width: 84,
                 height: 84,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDark ? const Color(0xFF0F172A) : Colors.white,
                   borderRadius: BorderRadius.circular(28),
-                  boxShadow: const [
+                  boxShadow: [
                     BoxShadow(
-                      color: Color(0x12000000),
-                      blurRadius: 18,
+                      color: isDark
+                          ? const Color(0x22000000)
+                          : const Color(0x12000000),
+                      blurRadius: isDark ? 22 : 18,
                       offset: Offset(0, 6),
                     ),
                   ],
@@ -100,7 +112,8 @@ class AppFormSheet extends StatelessWidget {
   }
 }
 
-InputDecoration appFormFieldDecoration({
+InputDecoration appFormFieldDecoration(
+  BuildContext context, {
   required String hintText,
   IconData? prefixIcon,
   Widget? suffixIcon,
@@ -110,22 +123,31 @@ InputDecoration appFormFieldDecoration({
     vertical: 18,
   ),
 }) {
+  final theme = Theme.of(context);
+  final isDark = theme.brightness == Brightness.dark;
+  final fillColor = isDark ? const Color(0xFF0F172A) : const Color(0xFFF6F8FF);
+  final borderColor = isDark
+      ? const Color(0xFF334155)
+      : const Color(0xFFE5E7EB);
+  final hintColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF9CA3AF);
+
   return InputDecoration(
     hintText: hintText,
+    hintStyle: TextStyle(color: hintColor),
     alignLabelWithHint: alignLabelWithHint,
     prefixIcon: prefixIcon == null
         ? null
-        : Icon(prefixIcon, color: const Color(0xFF0166FF)),
+        : Icon(prefixIcon, color: theme.colorScheme.primary),
     suffixIcon: suffixIcon,
     filled: true,
-    fillColor: const Color(0xFFF6F8FF),
+    fillColor: fillColor,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(22),
-      borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+      borderSide: BorderSide(color: borderColor),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(22),
-      borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+      borderSide: BorderSide(color: borderColor),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(22),
@@ -144,23 +166,27 @@ InputDecoration appFormFieldDecoration({
   );
 }
 
-ButtonStyle appPrimaryPillButtonStyle() {
+ButtonStyle appPrimaryPillButtonStyle(BuildContext context) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
   return FilledButton.styleFrom(
     minimumSize: const Size.fromHeight(56),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
     backgroundColor: const Color(0xFF0166FF),
     foregroundColor: Colors.white,
-    elevation: 6,
-    shadowColor: const Color(0x330166FF),
+    elevation: isDark ? 0 : 6,
+    shadowColor: isDark ? Colors.transparent : const Color(0x330166FF),
   );
 }
 
-ButtonStyle appSecondaryPillButtonStyle() {
+ButtonStyle appSecondaryPillButtonStyle(BuildContext context) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
   return OutlinedButton.styleFrom(
     minimumSize: const Size.fromHeight(56),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-    side: const BorderSide(color: Color(0xFFD6E4FF)),
-    foregroundColor: const Color(0xFF2563EB),
-    backgroundColor: const Color(0xFFF8FBFF),
+    side: BorderSide(
+      color: isDark ? const Color(0xFF334155) : const Color(0xFFD6E4FF),
+    ),
+    foregroundColor: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF2563EB),
+    backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FBFF),
   );
 }

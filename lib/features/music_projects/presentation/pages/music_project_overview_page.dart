@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/ui/app_feedback.dart';
-import '../../../../core/utils/url_utils.dart';
+import '../../../../core/ui/widgets/header_project_event.dart';
 import '../../data/impl/music_projects_repository_impl.dart';
 import '../../domain/entities/music_project_entity.dart';
+import 'edit_music_project_page.dart';
 import '../utils/music_project_ui_utils.dart';
 import '../widgets/project_events_tab.dart';
 import '../widgets/project_members_tab.dart';
@@ -88,8 +89,17 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage> {
     }
   }
 
-  void _onEditProject() {
-    AppFeedback.showSuccess('Edição de projeto será implementada em breve.');
+  Future<void> _onEditProject() async {
+    final updated = await openEditMusicProjectPage(
+      context,
+      projectId: widget.projectId,
+      repository: _repository,
+    );
+    if (updated != true || !mounted) return;
+
+    await _loadOverview();
+    if (!mounted) return;
+    AppFeedback.showSuccess('Projeto atualizado com sucesso.');
   }
 
   void _onOpenDashboard() {
@@ -98,13 +108,13 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F9),
-      body: _buildBody(),
-    );
+    return Scaffold(body: _buildBody());
   }
 
   Widget _buildBody() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -143,28 +153,12 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage> {
     return NestedScrollView(
       headerSliverBuilder: (context, innerBoxIsScrolled) {
         return [
-          SliverAppBar(
-            expandedHeight: 110,
-            pinned: true,
-            stretch: true,
-            backgroundColor: Colors.black,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-            centerTitle: false,
-            title: Text(
-              project.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-                fontSize: 24,
-              ),
-            ),
+          HeaderProjectEvent(
+            title: project.name,
             actions: [
               if (_isAdmin)
                 PopupMenuButton<String>(
-                  color: Colors.white,
+                  color: isDark ? const Color(0xFF111827) : Colors.white,
                   icon: const Icon(
                     Icons.more_vert_rounded,
                     color: Colors.white,
@@ -197,112 +191,60 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage> {
                   ],
                 ),
             ],
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: false,
-              titlePadding: const EdgeInsetsDirectional.only(
-                start: 20,
-                bottom: 16,
-              ),
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  UrlUtils.isValidNetworkUrl(project.profileImage)
-                      ? Image.network(
-                          project.profileImage!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              _headerFallback(),
-                        )
-                      : _headerFallback(),
-                  Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Color(0x8A000000), Color(0xCC000000)],
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 20,
-                    right: 20,
-                    bottom: 22,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF22C55E),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          MusicProjectUiUtils.typeLabel(project.type),
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(76),
-              child: Container(
-                color: const Color(0xFFF5F7F9),
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-                child: _ProjectTabs(
-                  activeIndex: _activeTab,
-                  onChange: (index) => setState(() => _activeTab = index),
+            backgroundImageUrl: project.profileImage,
+            backgroundOverlay: Positioned(
+              left: 20,
+              right: 20,
+              bottom: 22,
+              child: Text(
+                MusicProjectUiUtils.typeLabel(project.type),
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           ),
         ];
       },
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 220),
-        child: _activeTab == 0
-            ? ProjectEventsTab(
-                key: ValueKey('events-${project.id}'),
-                projectId: project.id,
-                isAdmin: _isAdmin,
-                fallbackImageUrl: project.profileImage,
-                repository: _repository,
-              )
-            : _activeTab == 1
-            ? ProjectMembersTab(
-                key: ValueKey('members-${project.id}'),
-                projectId: project.id,
-                canManageMembers: _isAdmin,
-                repository: _repository,
-              )
-            : ProjectSkillsPage(
-                key: ValueKey('skills-${project.id}'),
-                projectId: project.id,
-                initialRole: projectRoleFromString(_memberRole),
-                initialProjectName: project.name,
-              ),
-      ),
-    );
-  }
-
-  Widget _headerFallback() {
-    return Container(
-      color: const Color(0xFF0F172A),
-      child: const Center(
-        child: Icon(
-          Icons.multitrack_audio_rounded,
-          color: Colors.white70,
-          size: 58,
-        ),
+      body: Column(
+        children: [
+          Container(
+            color: theme.scaffoldBackgroundColor,
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+            child: _ProjectTabs(
+              activeIndex: _activeTab,
+              onChange: (index) => setState(() => _activeTab = index),
+            ),
+          ),
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              child: _activeTab == 0
+                  ? ProjectEventsTab(
+                      key: ValueKey('events-${project.id}'),
+                      projectId: project.id,
+                      isAdmin: _isAdmin,
+                      fallbackImageUrl: project.profileImage,
+                      repository: _repository,
+                    )
+                  : _activeTab == 1
+                  ? ProjectMembersTab(
+                      key: ValueKey('members-${project.id}'),
+                      projectId: project.id,
+                      canManageMembers: _isAdmin,
+                      repository: _repository,
+                    )
+                  : ProjectSkillsPage(
+                      key: ValueKey('skills-${project.id}'),
+                      projectId: project.id,
+                      initialRole: projectRoleFromString(_memberRole),
+                      initialProjectName: project.name,
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -316,6 +258,13 @@ class _ProjectTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final activeColor = theme.colorScheme.primary;
+    final inactiveColor = isDark
+        ? const Color(0xFF94A3B8)
+        : const Color(0xFF64748B);
+
     const tabs = [
       (icon: Icons.calendar_month_rounded, label: 'Eventos'),
       (icon: Icons.groups_2_rounded, label: 'Membros'),
@@ -325,59 +274,63 @@ class _ProjectTabs extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: const Color(0xFFE2E8F0),
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
-        children: List.generate(tabs.length, (index) {
-          final active = index == activeIndex;
-          final tab = tabs[index];
-
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => onChange(index),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: active ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: active
-                      ? const [
-                          BoxShadow(
-                            color: Color(0x18000000),
-                            blurRadius: 8,
-                            offset: Offset(0, 2),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      tab.icon,
-                      size: 18,
-                      color: active
-                          ? const Color(0xFF0166FF)
-                          : const Color(0xFF64748B),
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      tab.label,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        color: active
-                            ? const Color(0xFF0166FF)
-                            : const Color(0xFF64748B),
+        children: [
+          for (var index = 0; index < tabs.length; index++) ...[
+            if (index > 0) const SizedBox(width: 6),
+            Expanded(
+              child: GestureDetector(
+                onTap: () => onChange(index),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: index == activeIndex
+                        ? (isDark ? const Color(0xFF111827) : Colors.white)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: index == activeIndex
+                        ? [
+                            BoxShadow(
+                              color: isDark
+                                  ? const Color(0x26000000)
+                                  : const Color(0x18000000),
+                              blurRadius: isDark ? 12 : 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        tabs[index].icon,
+                        size: 18,
+                        color: index == activeIndex
+                            ? activeColor
+                            : inactiveColor,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 6),
+                      Text(
+                        tabs[index].label,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: index == activeIndex
+                              ? activeColor
+                              : inactiveColor,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          );
-        }),
+          ],
+        ],
       ),
     );
   }

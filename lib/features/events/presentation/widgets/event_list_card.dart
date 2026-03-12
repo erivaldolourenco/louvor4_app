@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 
 import '../../domain/entities/event_entity.dart';
 import '../pages/event_detail_page.dart';
@@ -22,6 +23,8 @@ class EventListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const primaryBlue = Color(0xFF0166FF);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final timeDisplay = event.time.length >= 5
         ? event.time.substring(0, 5)
         : event.time;
@@ -42,7 +45,9 @@ class EventListCard extends StatelessWidget {
                         width: 2,
                         color: isFirstInGroup
                             ? Colors.transparent
-                            : const Color(0xFFE2E8F0),
+                            : (isDark
+                                  ? const Color(0xFF475569)
+                                  : const Color(0xFFE2E8F0)),
                       ),
                     ),
                     Container(
@@ -58,7 +63,9 @@ class EventListCard extends StatelessWidget {
                         width: 2,
                         color: isLastInGroup
                             ? Colors.transparent
-                            : const Color(0xFFE2E8F0),
+                            : (isDark
+                                  ? const Color(0xFF475569)
+                                  : const Color(0xFFE2E8F0)),
                       ),
                     ),
                   ],
@@ -67,19 +74,8 @@ class EventListCard extends StatelessWidget {
               const SizedBox(width: 10),
             ],
             Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 14,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
+              child: AppCardSurface(
+                radius: 16,
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
                   onTap: () {
@@ -107,7 +103,9 @@ class EventListCard extends StatelessWidget {
                                       Container(
                                         width: 70,
                                         height: 70,
-                                        color: const Color(0xFFEFF6FF),
+                                        color: isDark
+                                            ? const Color(0xFF1E293B)
+                                            : const Color(0xFFEFF6FF),
                                         child: const Icon(
                                           Icons.music_note,
                                           color: primaryBlue,
@@ -118,7 +116,9 @@ class EventListCard extends StatelessWidget {
                               : Container(
                                   width: 70,
                                   height: 70,
-                                  color: const Color(0xFFEFF6FF),
+                                  color: isDark
+                                      ? const Color(0xFF1E293B)
+                                      : const Color(0xFFEFF6FF),
                                   child: const Icon(
                                     Icons.music_note,
                                     color: primaryBlue,
@@ -134,10 +134,12 @@ class EventListCard extends StatelessWidget {
                             children: [
                               Text(
                                 event.title,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   fontSize: 16,
-                                  color: Color(0xFF1E293B),
+                                  color: isDark
+                                      ? const Color(0xFFF8FAFC)
+                                      : const Color(0xFF1E293B),
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -145,9 +147,11 @@ class EventListCard extends StatelessWidget {
                               const SizedBox(height: 6),
                               Text(
                                 '$timeDisplay • ${event.location ?? 'Local não informado'}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
-                                  color: Color(0xFF475569),
+                                  color: isDark
+                                      ? const Color(0xFFCBD5E1)
+                                      : const Color(0xFF475569),
                                   fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
@@ -172,15 +176,17 @@ class EventListCard extends StatelessWidget {
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                              color: Colors.white,
+                                              color: isDark
+                                                  ? const Color(0xFF111827)
+                                                  : Colors.white,
                                               width: 1.5,
                                             ),
                                           ),
                                           child: CircleAvatar(
                                             radius: 10,
-                                            backgroundColor: const Color(
-                                              0xFFE2E8F0,
-                                            ),
+                                            backgroundColor: isDark
+                                                ? const Color(0xFF334155)
+                                                : const Color(0xFFE2E8F0),
                                             backgroundImage: NetworkImage(
                                               event
                                                   .participantsProfileImages[index],
@@ -196,9 +202,11 @@ class EventListCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 6),
-                        const Icon(
+                        Icon(
                           Icons.chevron_right_rounded,
-                          color: Color(0xFF94A3B8),
+                          color: isDark
+                              ? const Color(0xFF64748B)
+                              : const Color(0xFF94A3B8),
                         ),
                       ],
                     ),

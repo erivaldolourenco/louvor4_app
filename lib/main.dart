@@ -7,6 +7,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'core/notifications/push_notification_service.dart';
 import 'core/storage/token_storage.dart';
+import 'core/theme/app_theme_controller.dart';
 import 'core/ui/app_feedback.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/root/presentation/pages/root_page.dart';
@@ -36,6 +37,7 @@ void main() async {
       const Duration(seconds: 2),
       onTimeout: () => null,
     );
+    await AppThemeController.instance.load();
 
     final bool isLoggedIn = token != null && token.isNotEmpty;
 
@@ -61,62 +63,93 @@ class Louvor4App extends StatelessWidget {
     const primaryBlue = Color(0xFF0166FF);
     const textGrey = Color(0xFF4D4D4D);
 
-    return MaterialApp(
-      title: 'Louvor4',
-      debugShowCheckedModeBanner: false,
-      navigatorKey: AppFeedback.navigatorKey,
-      locale: const Locale('pt', 'BR'),
-      supportedLocales: const [
-        Locale('pt', 'BR'),
-        Locale('en', 'US'),
-      ],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      theme: ThemeData(
-        useMaterial3: true,
-        fontFamily: 'Outfit',
+    return AnimatedBuilder(
+      animation: AppThemeController.instance,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'Louvor4',
+          debugShowCheckedModeBanner: false,
+          navigatorKey: AppFeedback.navigatorKey,
+          locale: const Locale('pt', 'BR'),
+          supportedLocales: const [Locale('pt', 'BR'), Locale('en', 'US')],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          themeMode: AppThemeController.instance.themeMode,
+          theme: ThemeData(
+            useMaterial3: true,
+            fontFamily: 'Outfit',
 
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: primaryBlue,
-          primary: primaryBlue,
-          onPrimary: Colors.white,
-        ),
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: primaryBlue,
+              primary: primaryBlue,
+              onPrimary: Colors.white,
+            ),
 
-        textTheme: const TextTheme(
-          displayLarge: TextStyle(color: textGrey),
-          displayMedium: TextStyle(color: textGrey),
-          displaySmall: TextStyle(color: textGrey),
-          headlineLarge: TextStyle(color: textGrey),
-          headlineMedium: TextStyle(color: textGrey),
-          headlineSmall: TextStyle(color: textGrey),
-          titleLarge: TextStyle(color: textGrey),
-          titleMedium: TextStyle(color: textGrey),
-          titleSmall: TextStyle(color: textGrey),
-          bodyLarge: TextStyle(color: textGrey),
-          bodyMedium: TextStyle(color: textGrey),
-          bodySmall: TextStyle(color: textGrey),
-          labelLarge: TextStyle(color: textGrey),
-        ),
+            textTheme: const TextTheme(
+              displayLarge: TextStyle(color: textGrey),
+              displayMedium: TextStyle(color: textGrey),
+              displaySmall: TextStyle(color: textGrey),
+              headlineLarge: TextStyle(color: textGrey),
+              headlineMedium: TextStyle(color: textGrey),
+              headlineSmall: TextStyle(color: textGrey),
+              titleLarge: TextStyle(color: textGrey),
+              titleMedium: TextStyle(color: textGrey),
+              titleSmall: TextStyle(color: textGrey),
+              bodyLarge: TextStyle(color: textGrey),
+              bodyMedium: TextStyle(color: textGrey),
+              bodySmall: TextStyle(color: textGrey),
+              labelLarge: TextStyle(color: textGrey),
+            ),
 
-        scaffoldBackgroundColor: Colors.white,
-        filledButtonTheme: FilledButtonThemeData(
-          style: FilledButton.styleFrom(
-            backgroundColor: primaryBlue,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+            scaffoldBackgroundColor: Colors.white,
+            filledButtonTheme: FilledButtonThemeData(
+              style: FilledButton.styleFrom(
+                backgroundColor: primaryBlue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+
+            progressIndicatorTheme: const ProgressIndicatorThemeData(
+              color: primaryBlue,
             ),
           ),
-        ),
-
-        progressIndicatorTheme: const ProgressIndicatorThemeData(
-          color: primaryBlue,
-        ),
-      ),
-      home: isLoggedIn ? const RootPage() : const LoginPage(),
+          darkTheme: ThemeData(
+            useMaterial3: true,
+            fontFamily: 'Outfit',
+            brightness: Brightness.dark,
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: primaryBlue,
+              brightness: Brightness.dark,
+              primary: primaryBlue,
+            ),
+            scaffoldBackgroundColor: const Color(0xFF0F172A),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF111827),
+              foregroundColor: Colors.white,
+            ),
+            cardColor: const Color(0xFF111827),
+            filledButtonTheme: FilledButtonThemeData(
+              style: FilledButton.styleFrom(
+                backgroundColor: primaryBlue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            progressIndicatorTheme: const ProgressIndicatorThemeData(
+              color: primaryBlue,
+            ),
+          ),
+          home: isLoggedIn ? const RootPage() : const LoginPage(),
+        );
+      },
     );
   }
 }

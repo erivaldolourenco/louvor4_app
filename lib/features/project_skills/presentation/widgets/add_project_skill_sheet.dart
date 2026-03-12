@@ -31,7 +31,8 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
 
     return AppFormSheet(
       title: 'Nova função',
-      subtitle: 'Cadastre uma nova função musical disponível para uso nas escalas.',
+      subtitle:
+          'Cadastre uma nova função musical disponível para uso nas escalas.',
       icon: Icons.music_note_rounded,
       child: Form(
         key: _formKey,
@@ -43,6 +44,7 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
               controller: _nameController,
               enabled: !isSubmitting,
               decoration: appFormFieldDecoration(
+                context,
                 hintText: 'Ex: Guitarra, Vocal, Teclado',
                 prefixIcon: Icons.music_note_rounded,
               ),
@@ -62,7 +64,7 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    style: appSecondaryPillButtonStyle(),
+                    style: appSecondaryPillButtonStyle(context),
                     onPressed: isSubmitting
                         ? null
                         : () => Navigator.of(context).maybePop(false),
@@ -72,7 +74,7 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
-                    style: appPrimaryPillButtonStyle(),
+                    style: appPrimaryPillButtonStyle(context),
                     onPressed: isSubmitting
                         ? null
                         : () async {
@@ -123,10 +125,10 @@ class _FieldLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF111827),
+          color: Theme.of(context).textTheme.bodyMedium?.color,
         ),
       ),
     );
@@ -140,18 +142,21 @@ class _InlineError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFEE2E2),
+        color: isDark ? const Color(0xFF3F1114) : const Color(0xFFFEE2E2),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFFCA5A5)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5),
+        ),
       ),
       child: Text(
         message,
-        style: const TextStyle(
-          color: Color(0xFF991B1B),
+        style: TextStyle(
+          color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
           fontWeight: FontWeight.w600,
         ),
       ),
