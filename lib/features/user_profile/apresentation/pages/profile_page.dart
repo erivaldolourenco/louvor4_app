@@ -5,6 +5,7 @@ import 'package:louvor4_app/core/auth/auth_service.dart';
 import 'package:louvor4_app/core/network/api_client.dart';
 import 'package:louvor4_app/core/theme/app_theme_controller.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
+import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 import 'package:louvor4_app/features/auth/presentation/pages/login_page.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
@@ -93,7 +94,7 @@ class ProfilePage extends StatelessWidget {
                   CircleAvatar(
                     radius: 50,
                     foregroundImage: hasProfileImage
-                        ? NetworkImage(profileImage)
+                        ? appCachedImageProvider(profileImage)
                         : null,
                     backgroundColor: isDark
                         ? const Color(0xFF172554)
@@ -159,7 +160,7 @@ class ProfilePage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              user.firstName,
+              _buildProfileSubtitle(user),
               style: TextStyle(fontSize: 16, color: subtitleColor),
             ),
           ],
@@ -201,7 +202,6 @@ class ProfilePage extends StatelessWidget {
               'Telefone',
               user.phoneNumber ?? 'Não informado',
             ),
-            _buildInfoField(context, 'Bio', 'Descrição'),
 
             const SizedBox(height: 12),
 
@@ -344,5 +344,16 @@ class ProfilePage extends StatelessWidget {
         : user.email.trim();
     if (source.isEmpty) return '?';
     return source[0].toUpperCase();
+  }
+
+  String _buildProfileSubtitle(UserDetailEntity user) {
+    final username = user.username.trim().isNotEmpty
+        ? '@${user.username.trim()}'
+        : '@nao_informado';
+    final planName = user.planName?.trim();
+    if (planName == null || planName.isEmpty) {
+      return username;
+    }
+    return '$username - $planName';
   }
 }

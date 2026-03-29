@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/features/events/presentation/pages/event_detail_page.dart';
 
 import '../../../../core/ui/app_feedback.dart';
@@ -28,7 +29,8 @@ class ProjectEventsTab extends StatefulWidget {
   State<ProjectEventsTab> createState() => _ProjectEventsTabState();
 }
 
-class _ProjectEventsTabState extends State<ProjectEventsTab> {
+class _ProjectEventsTabState extends State<ProjectEventsTab>
+    with AutomaticKeepAliveClientMixin {
   bool _isLoading = true;
   bool _hasError = false;
   String? _errorMessage;
@@ -93,6 +95,7 @@ class _ProjectEventsTabState extends State<ProjectEventsTab> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final theme = Theme.of(context);
     final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
       alpha: 0.78,
@@ -182,6 +185,9 @@ class _ProjectEventsTabState extends State<ProjectEventsTab> {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class _ProjectEventCard extends StatelessWidget {
@@ -222,7 +228,7 @@ class _ProjectEventCard extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Coluna 1: data (mês + dia)
                 SizedBox(
@@ -273,7 +279,7 @@ class _ProjectEventCard extends StatelessWidget {
                           const Icon(
                             Icons.schedule_rounded,
                             size: 15,
-                            color: Color(0xFF4F46E5),
+                            color: Color(0xFFF59E0B),
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -281,14 +287,14 @@ class _ProjectEventCard extends StatelessWidget {
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF4F46E5),
+                                  color: const Color(0xFFF59E0B),
                                 ),
                           ),
                           const SizedBox(width: 10),
                           const Icon(
                             Icons.place_outlined,
                             size: 15,
-                            color: Color(0xFF64748B),
+                            color: Color(0xFF10B981),
                           ),
                           const SizedBox(width: 4),
                           Expanded(
@@ -297,7 +303,7 @@ class _ProjectEventCard extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: mutedColor),
+                                  ?.copyWith(color: const Color(0xFF10B981)),
                             ),
                           ),
                         ],
@@ -313,10 +319,14 @@ class _ProjectEventCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        const Icon(
-                          Icons.groups_2_outlined,
-                          size: 18,
-                          color: Color(0xFF2563EB),
+                        SvgPicture.asset(
+                          'assets/icons/users-round.svg',
+                          width: 18,
+                          height: 18,
+                          colorFilter: const ColorFilter.mode(
+                            Color(0xFF2563EB),
+                            BlendMode.srcIn,
+                          ),
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -332,10 +342,14 @@ class _ProjectEventCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(
-                          Icons.music_note_rounded,
-                          size: 18,
-                          color: Color(0xFFD97706),
+                        SvgPicture.asset(
+                          'assets/icons/music.svg',
+                          width: 18,
+                          height: 18,
+                          colorFilter: const ColorFilter.mode(
+                            Color(0xFFD97706),
+                            BlendMode.srcIn,
+                          ),
                         ),
                         const SizedBox(width: 4),
                         Text(

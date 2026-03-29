@@ -17,7 +17,10 @@ class ApiClient {
     if (apiBaseUrl.isNotEmpty) return apiBaseUrl;
 
     // Android emulator uses 10.0.2.2 to reach host machine localhost.
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    // Keep this only for local debug builds; real devices/release should use production.
+    if (!kIsWeb &&
+        !kReleaseMode &&
+        defaultTargetPlatform == TargetPlatform.android) {
       return 'http://10.0.2.2:8080';
     }
 

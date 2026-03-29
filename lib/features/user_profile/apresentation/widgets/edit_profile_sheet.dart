@@ -134,7 +134,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
           const _FieldLabel(label: 'Email'),
           TextFormField(
             controller: _emailController,
-            enabled: canEdit && !state.isSubmitting,
+            enabled: false,
             keyboardType: TextInputType.emailAddress,
             decoration: appFormFieldDecoration(
               context,

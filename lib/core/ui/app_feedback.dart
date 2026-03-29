@@ -36,4 +36,20 @@ class AppFeedback {
       ),
     );
   }
+
+  static void showInfo(String message) {
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
+
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: const Color(0xFF2563EB),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 }

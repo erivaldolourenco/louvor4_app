@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:louvor4_app/core/ui/widgets/song_details_sheet.dart';
+import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 import 'package:louvor4_app/core/ui/widgets/header_project_event.dart';
 import 'package:louvor4_app/features/events/presentation/widgets/event_music_card.dart';
 import 'package:louvor4_app/features/user_profile/data/impl/user_repository_impl.dart';
@@ -11,10 +14,10 @@ import '../../data/events_repository.dart';
 import '../../data/impl/events_repository_impl.dart';
 import '../cubit/event_detail_cubit.dart';
 import '../cubit/event_detail_state.dart';
-import 'edit_event_page.dart';
 import '../widgets/event_participant_card.dart';
 import '../widgets/manage_event_participants_sheet.dart';
 import '../widgets/manage_event_songs_sheet.dart';
+import 'edit_event_page.dart';
 
 class EventDetailPage extends StatelessWidget {
   final String eventId;
@@ -50,8 +53,21 @@ class _EventDetailView extends StatefulWidget {
   State<_EventDetailView> createState() => _EventDetailViewState();
 }
 
-class _EventDetailViewState extends State<_EventDetailView> {
-  bool _showParticipants = true;
+class _EventDetailViewState extends State<_EventDetailView>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,380 +103,149 @@ class _EventDetailViewState extends State<_EventDetailView> {
             );
           }
 
-          return CustomScrollView(
-            slivers: [
-              HeaderProjectEvent(
-                title: event.projectTitle,
-                backgroundImageUrl: event.projectImageUrl,
-                actions: [
-                  if (state.isProjectAdmin)
-                    PopupMenuButton<_EventHeaderAction>(
-                      tooltip: 'Ações do evento',
-                      color: isDark ? const Color(0xFF111827) : Colors.white,
-                      icon: const Icon(Icons.more_vert),
-                      onSelected: _onHeaderActionSelected,
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(
-                          value: _EventHeaderAction.edit,
-                          child: ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: Icon(Icons.edit_outlined),
-                            title: Text('Editar evento'),
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: _EventHeaderAction.delete,
-                          child: ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: Icon(
-                              Icons.delete_outline,
-                              color: Color(0xFFB3261E),
-                            ),
-                            title: Text(
-                              'Deletar evento',
-                              style: TextStyle(color: Color(0xFFB3261E)),
+          return NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              return [
+                HeaderProjectEvent(
+                  title: event.projectTitle,
+                  backgroundImageUrl: event.projectImageUrl,
+                  actions: [
+                    if (state.isProjectAdmin)
+                      PopupMenuButton<_EventHeaderAction>(
+                        tooltip: 'Ações do evento',
+                        color: isDark ? const Color(0xFF111827) : Colors.white,
+                        icon: const Icon(Icons.more_vert),
+                        onSelected: _onHeaderActionSelected,
+                        itemBuilder: (context) => const [
+                          PopupMenuItem(
+                            value: _EventHeaderAction.edit,
+                            child: ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Icon(Icons.edit_outlined),
+                              title: Text('Editar evento'),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-                  child: Column(
-                    children: [
-                      Text(
-                        event.title,
-                        textAlign: TextAlign.center,
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: titleColor,
-                        ),
+                          PopupMenuItem(
+                            value: _EventHeaderAction.delete,
+                            child: ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: Icon(
+                                Icons.delete_outline,
+                                color: Color(0xFFB3261E),
+                              ),
+                              title: Text(
+                                'Deletar evento',
+                                style: TextStyle(color: Color(0xFFB3261E)),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      if (event.description != null &&
-                          event.description!.trim().isNotEmpty) ...[
-                        const SizedBox(height: 8),
+                  ],
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                    child: Column(
+                      children: [
                         Text(
-                          event.description!,
+                          event.title,
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: mutedColor,
-                            fontSize: 14,
-                            height: 1.4,
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: titleColor,
                           ),
                         ),
+                        if (event.description != null &&
+                            event.description!.trim().isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            event.description!,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: mutedColor,
+                              fontSize: 14,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF111827) : Colors.white,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF243041)
-                            : const Color(0xFFE2E8F0),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                    child: Center(
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _EventInfoHighlightItem(
+                            assetPath: 'assets/icons/calendar.svg',
+                            text: formatDate(event.date),
+                            backgroundColor: isDark
+                                ? const Color(0xFF172554)
+                                : const Color(0xFFEAF2FF),
+                            iconColor: const Color(0xFF2563EB),
+                          ),
+                          _EventInfoHighlightItem(
+                            assetPath: 'assets/icons/alarm-clock.svg',
+                            text: formatTime(event.time),
+                            backgroundColor: isDark
+                                ? const Color(0xFF3F2A13)
+                                : const Color(0xFFFFF6E5),
+                            iconColor: const Color(0xFFF59E0B),
+                          ),
+                          _EventInfoHighlightItem(
+                            assetPath: 'assets/icons/map-pinned.svg',
+                            text: event.location?.trim().isNotEmpty == true
+                                ? event.location!
+                                : 'Sem local definido',
+                            backgroundColor: isDark
+                                ? const Color(0xFF123227)
+                                : const Color(0xFFE8FBF3),
+                            iconColor: const Color(0xFF10B981),
+                            onTap: event.location?.trim().isNotEmpty == true
+                                ? () => _openMaps(event.location!)
+                                : null,
+                          ),
+                        ],
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        _InlineInfoItem(
-                          icon: Icons.calendar_month_outlined,
-                          text: formatDate(event.date),
-                        ),
-                        SizedBox(
-                          height: 24,
-                          child: VerticalDivider(
-                            color: isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFE2E8F0),
-                            width: 14,
-                          ),
-                        ),
-                        _InlineInfoItem(
-                          icon: Icons.access_time_filled_rounded,
-                          text: formatTime(event.time),
-                        ),
-                        SizedBox(
-                          height: 24,
-                          child: VerticalDivider(
-                            color: isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFE2E8F0),
-                            width: 14,
-                          ),
-                        ),
-                        _InlineInfoItem(
-                          icon: Icons.location_on_outlined,
-                          text: event.location?.trim().isNotEmpty == true
-                              ? event.location!
-                              : 'Não consta endereço',
-                          onTap: event.location?.trim().isNotEmpty == true
-                              ? () => _openMaps(event.location!)
-                              : null,
-                        ),
-                      ],
-                    ),
                   ),
                 ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF1E293B)
-                          : const Color(0xFFE2E8F0),
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Row(
-                      children: [
-                        _buildTabItem(
-                          label: 'Equipe',
-                          count: state.participants.length,
-                          selected: _showParticipants,
-                          onTap: () => setState(() => _showParticipants = true),
-                        ),
-                        const SizedBox(width: 6),
-                        _buildTabItem(
-                          label: 'Músicas',
-                          count: state.songs.length,
-                          selected: !_showParticipants,
-                          onTap: () =>
-                              setState(() => _showParticipants = false),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              if (_showParticipants)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 2, 16, 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'EQUIPE ESCALADA',
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(
-                                  color: mutedColor,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 2,
-                                ),
-                          ),
-                        ),
-                        if (state.isProjectAdmin)
-                          FilledButton(
-                            onPressed: () => _onManageSchedule(state),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF10B981),
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 22,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              elevation: 6,
-                              shadowColor: const Color(0x6610B981),
-                            ),
-                            child: const Text(
-                              'Gerenciar Escala',
-                              style: TextStyle(fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                      ],
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+                    child: _EventDetailTabs(
+                      controller: _tabController,
+                      participantsCount: state.participants.length,
+                      songsCount: state.songs.length,
                     ),
                   ),
                 ),
-              if (!_showParticipants)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 2, 16, 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'REPERTÓRIO DO EVENTO',
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(
-                                  color: mutedColor,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 2,
-                                ),
-                          ),
-                        ),
-                        FilledButton(
-                          onPressed: () => _onAddSongs(state),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF2563EB),
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 22,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            elevation: 6,
-                            shadowColor: const Color(0x662563EB),
-                          ),
-                          child: const Text(
-                            'Nova Música',
-                            style: TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              ];
+            },
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                _ParticipantsTab(
+                  state: state,
+                  mutedColor: mutedColor,
+                  onManageSchedule: () => _onManageSchedule(state),
                 ),
-              if (_showParticipants && state.participants.isEmpty)
-                const SliverToBoxAdapter(
-                  child: _EmptyTabState(
-                    icon: Icons.group_off_rounded,
-                    title: 'Sem participantes',
-                    subtitle: 'Nenhum integrante foi vinculado a este evento.',
-                  ),
-                )
-              else if (!_showParticipants && state.songs.isEmpty)
-                const SliverToBoxAdapter(
-                  child: _EmptyTabState(
-                    icon: Icons.music_off_rounded,
-                    title: 'Sem músicas',
-                    subtitle:
-                        'Ainda não há repertório cadastrado para este evento.',
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: _showParticipants
-                      ? SliverList(
-                          delegate: SliverChildBuilderDelegate((context, i) {
-                            final participant = state.participants[i];
-                            return EventParticipantCard(
-                              name: participant.fullName,
-                              skill: state.skillsMap[participant.skillId] ?? '',
-                              profileImage: participant.profileImage,
-                            );
-                          }, childCount: state.participants.length),
-                        )
-                      : SliverList(
-                          delegate: SliverChildBuilderDelegate((context, i) {
-                            final song = state.songs[i];
-                            return EventMusicCard(
-                              eventSongId: song.id,
-                              title: song.title,
-                              artist: song.artist ?? 'Desconhecido',
-                              musicKey: song.key ?? '',
-                              addedBy: song.addedBy,
-                              youtubeUrl: song.youTubeUrl,
-                              canRemove: state.isProjectAdmin,
-                              isRemoving: state.deletingSongId == song.id,
-                              onRemove: state.deletingSongId == song.id
-                                  ? null
-                                  : () => _onRemoveSong(song.id),
-                            );
-                          }, childCount: state.songs.length),
-                        ),
+                _SongsTab(
+                  state: state,
+                  mutedColor: mutedColor,
+                  onAddSongs: () => _onAddSongs(state),
+                  onRemoveSong: _onRemoveSong,
                 ),
-              const SliverToBoxAdapter(child: SizedBox(height: 36)),
-            ],
+              ],
+            ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildTabItem({
-    required String label,
-    required int count,
-    required bool selected,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final activeColor = theme.colorScheme.primary;
-    final inactiveColor = isDark
-        ? const Color(0xFF94A3B8)
-        : const Color(0xFF64748B);
-
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 220),
-          curve: Curves.easeOutCubic,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: selected
-                ? (isDark ? const Color(0xFF111827) : Colors.white)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(
-                        alpha: isDark ? 0.18 : 0.05,
-                      ),
-                      blurRadius: isDark ? 14 : 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                label,
-                style: TextStyle(
-                  color: selected ? activeColor : inactiveColor,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF172554)
-                      : const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  '$count',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: isDark
-                        ? const Color(0xFF60A5FA)
-                        : const Color(0xFF1D4ED8),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -499,7 +284,7 @@ class _EventDetailViewState extends State<_EventDetailView> {
     await context.read<EventDetailCubit>().refreshSongs();
   }
 
-  Future<void> _onRemoveSong(String eventSongId) async {
+  Future<bool> _onRemoveSong(String eventSongId) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -525,12 +310,12 @@ class _EventDetailViewState extends State<_EventDetailView> {
       },
     );
 
-    if (confirmed != true || !mounted) return;
+    if (confirmed != true || !mounted) return false;
 
     final removed = await context.read<EventDetailCubit>().removeSong(
       eventSongId,
     );
-    if (!mounted) return;
+    if (!mounted) return false;
 
     final state = context.read<EventDetailCubit>().state;
     if (removed) {
@@ -540,7 +325,7 @@ class _EventDetailViewState extends State<_EventDetailView> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-      return;
+      return true;
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -550,6 +335,7 @@ class _EventDetailViewState extends State<_EventDetailView> {
         backgroundColor: const Color(0xFFB3261E),
       ),
     );
+    return false;
   }
 
   Future<void> _onHeaderActionSelected(_EventHeaderAction action) async {
@@ -594,41 +380,390 @@ class _EventDetailViewState extends State<_EventDetailView> {
 
 enum _EventHeaderAction { edit, delete }
 
-class _InlineInfoItem extends StatelessWidget {
-  final IconData icon;
-  final String text;
-  final VoidCallback? onTap;
+class _EventDetailTabs extends StatelessWidget {
+  final TabController controller;
+  final int participantsCount;
+  final int songsCount;
 
-  const _InlineInfoItem({required this.icon, required this.text, this.onTap});
+  const _EventDetailTabs({
+    required this.controller,
+    required this.participantsCount,
+    required this.songsCount,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = Theme.of(context).textTheme.bodyMedium?.color;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-          child: Row(
-            children: [
-              Icon(icon, size: 18, color: const Color(0xFF1D4ED8)),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  text,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: titleColor,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 13,
-                  ),
+    return AnimatedBuilder(
+      animation: controller.animation ?? controller,
+      builder: (context, child) {
+        final tabIndex =
+            controller.animation?.value.round() ?? controller.index;
+
+        return Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: TabBar(
+            controller: controller,
+            dividerColor: Colors.transparent,
+            indicatorSize: TabBarIndicatorSize.tab,
+            indicator: BoxDecoration(
+              color: isDark ? const Color(0xFF111827) : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.05),
+                  blurRadius: isDark ? 14 : 10,
+                  offset: const Offset(0, 4),
                 ),
+              ],
+            ),
+            splashFactory: NoSplash.splashFactory,
+            overlayColor: WidgetStateProperty.all(Colors.transparent),
+            tabs: [
+              _EventDetailTabLabel(
+                label: 'Equipe',
+                count: participantsCount,
+                selected: tabIndex == 0,
+              ),
+              _EventDetailTabLabel(
+                label: 'Músicas',
+                count: songsCount,
+                selected: tabIndex == 1,
               ),
             ],
           ),
+        );
+      },
+    );
+  }
+}
+
+class _EventDetailTabLabel extends StatelessWidget {
+  final String label;
+  final int count;
+  final bool selected;
+
+  const _EventDetailTabLabel({
+    required this.label,
+    required this.count,
+    required this.selected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Tab(
+      height: 48,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+              color: selected
+                  ? theme.colorScheme.primary
+                  : (isDark
+                        ? const Color(0xFF94A3B8)
+                        : const Color(0xFF64748B)),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              '$count',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isDark
+                    ? const Color(0xFF60A5FA)
+                    : const Color(0xFF1D4ED8),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ParticipantsTab extends StatelessWidget {
+  final EventDetailState state;
+  final Color? mutedColor;
+  final VoidCallback onManageSchedule;
+
+  const _ParticipantsTab({
+    required this.state,
+    required this.mutedColor,
+    required this.onManageSchedule,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 2, 16, 36),
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                'EQUIPE ESCALADA',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: mutedColor,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 2,
+                ),
+              ),
+            ),
+            if (state.isProjectAdmin)
+              FilledButton(
+                onPressed: onManageSchedule,
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 22,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 6,
+                  shadowColor: const Color(0x662563EB),
+                ),
+                child: const Text(
+                  'Gerenciar Escala',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (state.participants.isEmpty)
+          const _EmptyTabState(
+            icon: Icons.group_off_rounded,
+            title: 'Sem participantes',
+            subtitle: 'Nenhum integrante foi vinculado a este evento.',
+          )
+        else
+          ...state.participants.map(
+            (participant) => EventParticipantCard(
+              name: participant.fullName,
+              skill: state.skillsMap[participant.skillId] ?? '',
+              profileImage: participant.profileImage,
+              onTap: () => showUserProfileDialog(
+                context,
+                name: participant.fullName,
+                profileImageUrl: participant.profileImage,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _SongsTab extends StatelessWidget {
+  final EventDetailState state;
+  final Color? mutedColor;
+  final VoidCallback onAddSongs;
+  final Future<bool> Function(String eventSongId) onRemoveSong;
+
+  const _SongsTab({
+    required this.state,
+    required this.mutedColor,
+    required this.onAddSongs,
+    required this.onRemoveSong,
+  });
+
+  Map<String, List<dynamic>> _groupSongsByAddedBy() {
+    final grouped = <String, List<dynamic>>{};
+
+    for (final song in state.songs) {
+      final addedBy = _formatAddedBy(song.addedBy);
+      grouped.putIfAbsent(addedBy, () => []).add(song);
+    }
+
+    return grouped;
+  }
+
+  String _formatAddedBy(String value) {
+    final words = value.trim().split(RegExp(r'\s+')).where((word) {
+      return word.isNotEmpty;
+    });
+
+    final normalized = words
+        .map((word) {
+          return word.length == 1
+              ? word.toUpperCase()
+              : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}';
+        })
+        .join(' ');
+
+    return normalized.isEmpty ? 'Não informado' : normalized;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final groupedSongs = _groupSongsByAddedBy();
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 2, 16, 36),
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Text(
+                'REPERTÓRIO DO EVENTO',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: mutedColor,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 2,
+                ),
+              ),
+            ),
+            FilledButton(
+              onPressed: onAddSongs,
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 22,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 6,
+                shadowColor: const Color(0x662563EB),
+              ),
+              child: const Text(
+                'Nova Música',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (state.songs.isEmpty)
+          const _EmptyTabState(
+            icon: Icons.music_off_rounded,
+            title: 'Sem músicas',
+            subtitle: 'Ainda não há repertório cadastrado para este evento.',
+          )
+        else
+          ...groupedSongs.entries.expand(
+            (group) => [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 4, 4, 10),
+                child: Text(
+                  'Adicionado por: ${group.key}',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: mutedColor,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+              ...group.value.map(
+                (song) => EventMusicCard(
+                  eventSongId: song.id,
+                  title: song.title,
+                  artist: song.artist ?? 'Desconhecido',
+                  musicKey: song.key ?? '',
+                  bpm: song.bpm,
+                  youtubeUrl: song.youTubeUrl,
+                  onTap: () => showSongDetailsModal(
+                    context,
+                    title: song.title,
+                    artist: song.artist ?? 'Desconhecido',
+                    musicKey: song.key,
+                    bpm: song.bpm?.toString(),
+                    youTubeUrl: song.youTubeUrl ?? '',
+                    notes: song.notes,
+                  ),
+                  canRemove: state.isProjectAdmin,
+                  isRemoving: state.deletingSongId == song.id,
+                  onRemove: state.deletingSongId == song.id
+                      ? null
+                      : () => onRemoveSong(song.id),
+                ),
+              ),
+              const SizedBox(height: 6),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+class _EventInfoHighlightItem extends StatelessWidget {
+  final String assetPath;
+  final String text;
+  final Color backgroundColor;
+  final Color iconColor;
+  final VoidCallback? onTap;
+
+  const _EventInfoHighlightItem({
+    required this.assetPath,
+    required this.text,
+    required this.backgroundColor,
+    required this.iconColor,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final titleColor = Theme.of(context).textTheme.titleMedium?.color;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: backgroundColor.withValues(alpha: 0.6),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: backgroundColor, width: 1.5),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(
+              assetPath,
+              width: 16,
+              height: 16,
+              colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+            ),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: titleColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -732,33 +867,30 @@ class _EmptyTabState extends StatelessWidget {
       alpha: 0.78,
     );
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF111827) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDark ? const Color(0xFF243041) : const Color(0xFFE2E8F0),
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF111827) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? const Color(0xFF243041) : const Color(0xFFE2E8F0),
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 30, color: subtitleColor),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            style: TextStyle(color: titleColor, fontWeight: FontWeight.w700),
           ),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 30, color: subtitleColor),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: TextStyle(color: titleColor, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(color: subtitleColor, fontSize: 13),
-            ),
-          ],
-        ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: subtitleColor, fontSize: 13),
+          ),
+        ],
       ),
     );
   }

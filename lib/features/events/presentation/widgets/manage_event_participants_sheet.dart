@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
@@ -116,12 +117,6 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                              ),
-                              IconButton(
-                                onPressed: state.isSubmitting
-                                    ? null
-                                    : () => Navigator.of(context).maybePop(),
-                                icon: const Icon(Icons.close_rounded),
                               ),
                             ],
                           ),
@@ -272,9 +267,6 @@ class _SelectableMemberCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final titleColor = theme.textTheme.titleMedium?.color;
-    final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
-      alpha: 0.78,
-    );
     final cubit = context.read<ManageEventParticipantsCubit>();
 
     return AnimatedContainer(
@@ -320,9 +312,12 @@ class _SelectableMemberCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        item.member.projectRole ??
-                            'Sem papel definido no projeto',
-                        style: TextStyle(color: subtitleColor, fontSize: 13),
+                        item.member.projectRole ?? 'Membro',
+                        style: TextStyle(
+                          color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF71717A),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
@@ -391,11 +386,11 @@ class _SelectableMemberCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     SwitchListTile(
                       value: item.permissions.contains(
-                        EventPermission.ADD_SONG,
+                        EventPermission.addSong,
                       ),
                       onChanged: (value) => cubit.togglePermission(
                         item.member.id,
-                        EventPermission.ADD_SONG,
+                        EventPermission.addSong,
                         value,
                       ),
                       contentPadding: EdgeInsets.zero,
@@ -491,7 +486,7 @@ class _MemberAvatar extends StatelessWidget {
       backgroundColor: isDark
           ? const Color(0xFF1E293B)
           : const Color(0xFFE2E8F0),
-      backgroundImage: hasImage ? NetworkImage(imageUrl!) : null,
+      backgroundImage: hasImage ? appCachedImageProvider(imageUrl) : null,
       child: hasImage
           ? null
           : Icon(

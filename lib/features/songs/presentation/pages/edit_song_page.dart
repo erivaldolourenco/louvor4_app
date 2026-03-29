@@ -24,6 +24,7 @@ class _EditSongPageState extends State<EditSongPage> {
   final _keyController = TextEditingController();
   final _bpmController = TextEditingController();
   final _youTubeUrlController = TextEditingController();
+  final _notesController = TextEditingController();
   final _artistFocusNode = FocusNode();
   final _repo = SongsRepositoryImpl();
 
@@ -44,6 +45,7 @@ class _EditSongPageState extends State<EditSongPage> {
     _keyController.dispose();
     _bpmController.dispose();
     _youTubeUrlController.dispose();
+    _notesController.dispose();
     _artistFocusNode.dispose();
     super.dispose();
   }
@@ -58,6 +60,7 @@ class _EditSongPageState extends State<EditSongPage> {
       _keyController.text = song.key;
       _bpmController.text = song.bpm ?? '';
       _youTubeUrlController.text = song.youTubeUrl;
+      _notesController.text = song.notes ?? '';
 
       _onFormChanged();
 
@@ -107,6 +110,9 @@ class _EditSongPageState extends State<EditSongPage> {
           ? null
           : _bpmController.text.trim(),
       youTubeUrl: _youTubeUrlController.text.trim(),
+      notes: _notesController.text.trim().isEmpty
+          ? null
+          : _notesController.text.trim(),
     );
 
     try {
@@ -150,6 +156,7 @@ class _EditSongPageState extends State<EditSongPage> {
                         keyController: _keyController,
                         bpmController: _bpmController,
                         youTubeUrlController: _youTubeUrlController,
+                        notesController: _notesController,
                         artistFocusNode: _artistFocusNode,
                         onChanged: _onFormChanged,
                       ),

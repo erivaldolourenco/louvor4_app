@@ -8,6 +8,7 @@ class LoginState extends Equatable {
   final String password;
   final LoginStatus status;
   final String? errorMessage;
+  final int? errorStatusCode;
   final AuthenticatedUserEntity? auth;
 
   const LoginState({
@@ -15,6 +16,7 @@ class LoginState extends Equatable {
     this.password = '',
     this.status = LoginStatus.initial,
     this.errorMessage,
+    this.errorStatusCode,
     this.auth,
   });
 
@@ -23,6 +25,7 @@ class LoginState extends Equatable {
     String? password,
     LoginStatus? status,
     String? errorMessage,
+    int? errorStatusCode,
     AuthenticatedUserEntity? auth,
   }) {
     return LoginState(
@@ -30,10 +33,18 @@ class LoginState extends Equatable {
       password: password ?? this.password,
       status: status ?? this.status,
       errorMessage: errorMessage,
+      errorStatusCode: errorStatusCode,
       auth: auth ?? this.auth,
     );
   }
 
   @override
-  List<Object?> get props => [username, password, status, errorMessage, auth];
+  List<Object?> get props => [
+    username,
+    password,
+    status,
+    errorMessage,
+    errorStatusCode,
+    auth,
+  ];
 }

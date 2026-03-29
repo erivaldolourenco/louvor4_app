@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
@@ -13,7 +14,7 @@ import '../state/project_skills_cubit.dart';
 import '../state/project_skills_state.dart';
 import '../widgets/add_project_skill_sheet.dart';
 
-class ProjectSkillsPage extends StatelessWidget {
+class ProjectSkillsPage extends StatefulWidget {
   final String projectId;
   final ProjectRole? initialRole;
   final String? initialProjectName;
@@ -28,17 +29,38 @@ class ProjectSkillsPage extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ProjectSkillsCubit(
-        repository: repository ?? ProjectSkillsRepositoryImpl(),
-        projectId: projectId,
-        initialRole: initialRole,
-        initialProjectName: initialProjectName,
-      )..load(),
-      child: const _ProjectSkillsView(),
-    );
+  State<ProjectSkillsPage> createState() => _ProjectSkillsPageState();
+}
+
+class _ProjectSkillsPageState extends State<ProjectSkillsPage>
+    with AutomaticKeepAliveClientMixin {
+  late final ProjectSkillsCubit _cubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = ProjectSkillsCubit(
+      repository: widget.repository ?? ProjectSkillsRepositoryImpl(),
+      projectId: widget.projectId,
+      initialRole: widget.initialRole,
+      initialProjectName: widget.initialProjectName,
+    )..load();
   }
+
+  @override
+  void dispose() {
+    _cubit.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return BlocProvider.value(value: _cubit, child: const _ProjectSkillsView());
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class _ProjectSkillsView extends StatelessWidget {
@@ -219,13 +241,17 @@ class _ProjectSkillCard extends StatelessWidget {
                         height: 24,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : IconButton(
+                    : _CircularSkillActionButton(
                         tooltip: 'Excluir função',
                         onPressed: () => _onDeleteSkill(context, cubit, skill),
-                        icon: const Icon(
-                          Icons.delete_outline_rounded,
-                          color: Color(0xFFB3261E),
-                        ),
+                        assetPath: 'assets/icons/trash-2.svg',
+                        iconColor: const Color(0xFFB3261E),
+                        backgroundColor: isDark
+                            ? const Color(0xFF2A1313)
+                            : const Color(0xFFFFF1F2),
+                        borderColor: isDark
+                            ? const Color(0xFF7F1D1D)
+                            : const Color(0xFFFECDD3),
                       ),
               ],
             ],
@@ -274,5 +300,55 @@ class _ProjectSkillCard extends StatelessWidget {
     } else if (cubit.state.actionErrorMessage != null) {
       AppFeedback.showError(cubit.state.actionErrorMessage!);
     }
+  }
+}
+
+class _CircularSkillActionButton extends StatelessWidget {
+  final String tooltip;
+  final VoidCallback? onPressed;
+  final String assetPath;
+  final Color iconColor;
+  final Color backgroundColor;
+  final Color borderColor;
+
+  const _CircularSkillActionButton({
+    required this.tooltip,
+    required this.onPressed,
+    required this.assetPath,
+    required this.iconColor,
+    required this.backgroundColor,
+    required this.borderColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: Ink(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              shape: BoxShape.circle,
+              border: Border.all(color: borderColor),
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                assetPath,
+                width: 18,
+                height: 18,
+                colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

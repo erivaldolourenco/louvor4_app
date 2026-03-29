@@ -3,6 +3,7 @@ import 'package:louvor4_app/features/events/data/events_repository.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_detail_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_entity.dart';
+import 'package:louvor4_app/features/events/domain/entities/update_event_input_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_input_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_song_input_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_song_entity.dart';
@@ -24,6 +25,9 @@ class _FakeEventsRepository implements EventsRepository {
     this.role = 'admin',
     this.projectMembers = const [],
     this.initialSongs = const [],
+    this.throwOnProjectRole = false,
+    this.throwOnProjectMembers = false,
+    this.throwOnProjectSkills = false,
   });
 
   final EventDetailEntity event;
@@ -34,6 +38,9 @@ class _FakeEventsRepository implements EventsRepository {
   final String role;
   final List<ProjectMemberEntity> projectMembers;
   final List<EventSong> initialSongs;
+  final bool throwOnProjectRole;
+  final bool throwOnProjectMembers;
+  final bool throwOnProjectSkills;
   int participantsCalls = 0;
   int skillsCalls = 0;
   String? removedSongId;
@@ -52,12 +59,20 @@ class _FakeEventsRepository implements EventsRepository {
 
   @override
   Future<List<SkillEntity>> getProjectSkills(String projectId) async {
+    if (throwOnProjectSkills) {
+      throw Exception('erro skills');
+    }
     skillsCalls += 1;
     return skillsCalls == 1 ? initialSkills : refreshedSkills;
   }
 
   @override
-  Future<String> getProjectMemberRole(String projectId) async => role;
+  Future<String> getProjectMemberRole(String projectId) async {
+    if (throwOnProjectRole) {
+      throw Exception('erro role');
+    }
+    return role;
+  }
 
   @override
   Future<List<EventEntity>> getEvents() async => throw UnimplementedError();
@@ -69,8 +84,12 @@ class _FakeEventsRepository implements EventsRepository {
   ) async => throw UnimplementedError();
 
   @override
-  Future<List<ProjectMemberEntity>> getProjectMembers(String projectId) async =>
-      projectMembers;
+  Future<List<ProjectMemberEntity>> getProjectMembers(String projectId) async {
+    if (throwOnProjectMembers) {
+      throw Exception('erro members');
+    }
+    return projectMembers;
+  }
 
   @override
   Future<void> saveEventParticipants(
@@ -91,6 +110,11 @@ class _FakeEventsRepository implements EventsRepository {
   Future<void> removeSongFromEvent(String eventId, String eventSongId) async {
     removedSongId = eventSongId;
   }
+
+  @override
+  Future<void> updateEvent(String eventId, UpdateEventInputEntity input) async {
+    throw UnimplementedError();
+  }
 }
 
 class _FakeUserRepository implements UserRepository {
@@ -101,6 +125,7 @@ class _FakeUserRepository implements UserRepository {
       firstName: 'Ana',
       lastName: 'Silva',
       email: 'ana@mail.com',
+      username: 'ana.silva',
     );
   }
 
@@ -109,6 +134,11 @@ class _FakeUserRepository implements UserRepository {
     required String filePath,
     required String fileName,
   }) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<UserDetailEntity> updateUserProfile(dynamic input) async {
     throw UnimplementedError();
   }
 }
@@ -213,89 +243,122 @@ void main() {
       await cubit.close();
     });
 
-    test('libera adicionar músicas para participante com permissão ADD_SONG', () async {
-      final repo = _FakeEventsRepository(
-        event: EventDetailEntity(
-          id: 'e1',
-          projectId: 'p1',
-          title: 'Culto',
-          date: DateTime(2026, 3, 11),
-          time: '19:00',
-          projectTitle: 'Louvor',
-          participantsCount: 1,
-          repertoireCount: 0,
-        ),
-        role: 'member',
-        projectMembers: const [
-          ProjectMemberEntity(
-            id: 'm1',
-            userId: 'u1',
-            firstName: 'Ana',
+    test(
+      'libera adicionar músicas para participante com permissão ADD_SONG',
+      () async {
+        final repo = _FakeEventsRepository(
+          event: EventDetailEntity(
+            id: 'e1',
+            projectId: 'p1',
+            title: 'Culto',
+            date: DateTime(2026, 3, 11),
+            time: '19:00',
+            projectTitle: 'Louvor',
+            participantsCount: 1,
+            repertoireCount: 0,
           ),
-        ],
-        initialParticipants: const [
-          EventParticipant(
-            memberId: 'm1',
-            firstName: 'Ana',
-            skillId: 's1',
-            permissions: {EventPermission.ADD_SONG},
+          role: 'member',
+          projectMembers: const [
+            ProjectMemberEntity(id: 'm1', userId: 'u1', firstName: 'Ana'),
+          ],
+          initialParticipants: const [
+            EventParticipant(
+              memberId: 'm1',
+              firstName: 'Ana',
+              skillId: 's1',
+              permissions: {EventPermission.addSong},
+            ),
+          ],
+          refreshedParticipants: const [],
+          initialSkills: const [SkillEntity(id: 's1', name: 'Vocal')],
+          refreshedSkills: const [],
+        );
+
+        final cubit = EventDetailCubit(repo, _FakeUserRepository());
+
+        await cubit.load('e1');
+
+        expect(cubit.state.isProjectAdmin, isFalse);
+        expect(cubit.state.canAddSongs, isTrue);
+
+        await cubit.close();
+      },
+    );
+
+    test(
+      'libera adicionar músicas quando participant.memberId vem como userId',
+      () async {
+        final repo = _FakeEventsRepository(
+          event: EventDetailEntity(
+            id: 'e1',
+            projectId: 'p1',
+            title: 'Culto',
+            date: DateTime(2026, 3, 11),
+            time: '19:00',
+            projectTitle: 'Louvor',
+            participantsCount: 1,
+            repertoireCount: 0,
           ),
-        ],
-        refreshedParticipants: const [],
-        initialSkills: const [SkillEntity(id: 's1', name: 'Vocal')],
-        refreshedSkills: const [],
-      );
+          role: 'member',
+          projectMembers: const [
+            ProjectMemberEntity(id: 'm1', userId: 'u1', firstName: 'Ana'),
+          ],
+          initialParticipants: const [
+            EventParticipant(
+              memberId: 'u1',
+              firstName: 'Ana',
+              skillId: 's1',
+              permissions: {EventPermission.addSong},
+            ),
+          ],
+          refreshedParticipants: const [],
+          initialSkills: const [SkillEntity(id: 's1', name: 'Vocal')],
+          refreshedSkills: const [],
+        );
 
-      final cubit = EventDetailCubit(repo, _FakeUserRepository());
+        final cubit = EventDetailCubit(repo, _FakeUserRepository());
 
-      await cubit.load('e1');
+        await cubit.load('e1');
 
-      expect(cubit.state.isProjectAdmin, isFalse);
-      expect(cubit.state.canAddSongs, isTrue);
+        expect(cubit.state.canAddSongs, isTrue);
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
 
-    test('libera adicionar músicas quando participant.memberId vem como userId', () async {
-      final repo = _FakeEventsRepository(
-        event: EventDetailEntity(
-          id: 'e1',
-          projectId: 'p1',
-          title: 'Culto',
-          date: DateTime(2026, 3, 11),
-          time: '19:00',
-          projectTitle: 'Louvor',
-          participantsCount: 1,
-          repertoireCount: 0,
-        ),
-        role: 'member',
-        projectMembers: const [
-          ProjectMemberEntity(
-            id: 'm1',
-            userId: 'u1',
-            firstName: 'Ana',
+    test(
+      'mantém a tela utilizável mesmo se chamadas auxiliares falharem',
+      () async {
+        final repo = _FakeEventsRepository(
+          event: EventDetailEntity(
+            id: 'e1',
+            projectId: 'p1',
+            title: 'Culto',
+            date: DateTime(2026, 3, 11),
+            time: '19:00',
+            projectTitle: 'Louvor',
+            participantsCount: 1,
+            repertoireCount: 0,
           ),
-        ],
-        initialParticipants: const [
-          EventParticipant(
-            memberId: 'u1',
-            firstName: 'Ana',
-            skillId: 's1',
-            permissions: {EventPermission.ADD_SONG},
-          ),
-        ],
-        refreshedParticipants: const [],
-        initialSkills: const [SkillEntity(id: 's1', name: 'Vocal')],
-        refreshedSkills: const [],
-      );
+          initialParticipants: const [],
+          refreshedParticipants: const [],
+          initialSkills: const [],
+          refreshedSkills: const [],
+          throwOnProjectRole: true,
+          throwOnProjectMembers: true,
+          throwOnProjectSkills: true,
+        );
 
-      final cubit = EventDetailCubit(repo, _FakeUserRepository());
+        final cubit = EventDetailCubit(repo, _FakeUserRepository());
 
-      await cubit.load('e1');
+        await cubit.load('e1');
 
-      expect(cubit.state.canAddSongs, isTrue);
+        expect(cubit.state.status, EventDetailStatus.success);
+        expect(cubit.state.event?.id, 'e1');
+        expect(cubit.state.isProjectAdmin, isFalse);
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
   });
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'app_cached_network_image.dart';
 import '../../utils/url_utils.dart';
 
 class HeaderProjectEvent extends StatelessWidget {
@@ -44,7 +45,10 @@ class HeaderProjectEvent extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             if (UrlUtils.isValidNetworkUrl(backgroundImageUrl))
-              Image.network(backgroundImageUrl!, fit: BoxFit.cover)
+              AppCachedNetworkImage(
+                imageUrl: backgroundImageUrl!,
+                fit: BoxFit.cover,
+              )
             else
               Container(
                 color: const Color(0xFF0F172A),

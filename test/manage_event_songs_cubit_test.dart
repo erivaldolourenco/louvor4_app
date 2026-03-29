@@ -79,6 +79,16 @@ class _FakeEventsRepository implements EventsRepository {
   ) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> removeSongFromEvent(String eventId, String eventSongId) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> updateEvent(String eventId, dynamic input) async {
+    throw UnimplementedError();
+  }
 }
 
 void main() {

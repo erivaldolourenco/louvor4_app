@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/header_project_event.dart';
@@ -26,8 +27,10 @@ class MusicProjectOverviewPage extends StatefulWidget {
       _MusicProjectOverviewPageState();
 }
 
-class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage> {
+class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
+    with SingleTickerProviderStateMixin {
   final _repository = MusicProjectsRepositoryImpl();
+  late final TabController _tabController;
 
   bool _isLoading = true;
   bool _hasError = false;
@@ -35,11 +38,11 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage> {
   MusicProjectEntity? _project;
   bool _isAdmin = false;
   String? _memberRole;
-  int _activeTab = 0;
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     _loadOverview();
   }
 
@@ -47,9 +50,15 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage> {
   void didUpdateWidget(covariant MusicProjectOverviewPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.projectId != widget.projectId) {
-      _activeTab = 0;
+      _tabController.index = 0;
       _loadOverview();
     }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadOverview() async {
@@ -213,35 +222,32 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage> {
           Container(
             color: theme.scaffoldBackgroundColor,
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-            child: _ProjectTabs(
-              activeIndex: _activeTab,
-              onChange: (index) => setState(() => _activeTab = index),
-            ),
+            child: _ProjectTabs(controller: _tabController),
           ),
           Expanded(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 220),
-              child: _activeTab == 0
-                  ? ProjectEventsTab(
-                      key: ValueKey('events-${project.id}'),
-                      projectId: project.id,
-                      isAdmin: _isAdmin,
-                      fallbackImageUrl: project.profileImage,
-                      repository: _repository,
-                    )
-                  : _activeTab == 1
-                  ? ProjectMembersTab(
-                      key: ValueKey('members-${project.id}'),
-                      projectId: project.id,
-                      canManageMembers: _isAdmin,
-                      repository: _repository,
-                    )
-                  : ProjectSkillsPage(
-                      key: ValueKey('skills-${project.id}'),
-                      projectId: project.id,
-                      initialRole: projectRoleFromString(_memberRole),
-                      initialProjectName: project.name,
-                    ),
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                ProjectEventsTab(
+                  key: ValueKey('events-${project.id}'),
+                  projectId: project.id,
+                  isAdmin: _isAdmin,
+                  fallbackImageUrl: project.profileImage,
+                  repository: _repository,
+                ),
+                ProjectMembersTab(
+                  key: ValueKey('members-${project.id}'),
+                  projectId: project.id,
+                  canManageMembers: _isAdmin,
+                  repository: _repository,
+                ),
+                ProjectSkillsPage(
+                  key: ValueKey('skills-${project.id}'),
+                  projectId: project.id,
+                  initialRole: projectRoleFromString(_memberRole),
+                  initialProjectName: project.name,
+                ),
+              ],
             ),
           ),
         ],
@@ -251,87 +257,136 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage> {
 }
 
 class _ProjectTabs extends StatelessWidget {
-  final int activeIndex;
-  final ValueChanged<int> onChange;
+  final TabController controller;
 
-  const _ProjectTabs({required this.activeIndex, required this.onChange});
+  const _ProjectTabs({required this.controller});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final activeColor = theme.colorScheme.primary;
     final inactiveColor = isDark
         ? const Color(0xFF94A3B8)
         : const Color(0xFF64748B);
 
     const tabs = [
-      (icon: Icons.calendar_month_rounded, label: 'Eventos'),
-      (icon: Icons.groups_2_rounded, label: 'Membros'),
-      (icon: Icons.build_circle_rounded, label: 'Funções'),
+      (
+        assetPath: 'assets/icons/calendar-fold.svg',
+        label: 'Eventos',
+        color: Color(0xFF2563EB),
+      ),
+      (
+        assetPath: 'assets/icons/users-round.svg',
+        label: 'Membros',
+        color: Color(0xFF059669),
+      ),
+      (
+        assetPath: 'assets/icons/wrench.svg',
+        label: 'Funções',
+        color: Color(0xFFD97706),
+      ),
     ];
 
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          for (var index = 0; index < tabs.length; index++) ...[
-            if (index > 0) const SizedBox(width: 6),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => onChange(index),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  decoration: BoxDecoration(
-                    color: index == activeIndex
-                        ? (isDark ? const Color(0xFF111827) : Colors.white)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10),
-                    boxShadow: index == activeIndex
-                        ? [
-                            BoxShadow(
-                              color: isDark
-                                  ? const Color(0x26000000)
-                                  : const Color(0x18000000),
-                              blurRadius: isDark ? 12 : 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
-                        : null,
-                  ),
+    return AnimatedBuilder(
+      animation: controller.animation ?? controller,
+      builder: (context, child) {
+        final activeIndex =
+            controller.animation?.value.round() ?? controller.index;
+
+        return Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: TabBar(
+            controller: controller,
+            dividerColor: Colors.transparent,
+            indicatorSize: TabBarIndicatorSize.tab,
+            indicator: BoxDecoration(
+              color: indexColor(
+                activeIndex,
+                isDark: isDark,
+                fallbackDark: const Color(0xFF111827),
+                fallbackLight: Colors.white,
+              ),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: isDark
+                      ? const Color(0x26000000)
+                      : const Color(0x18000000),
+                  blurRadius: isDark ? 12 : 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            splashFactory: NoSplash.splashFactory,
+            overlayColor: WidgetStateProperty.all(Colors.transparent),
+            tabs: [
+              for (var index = 0; index < tabs.length; index++)
+                Tab(
+                  height: 44,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        tabs[index].icon,
-                        size: 18,
-                        color: index == activeIndex
-                            ? activeColor
-                            : inactiveColor,
+                      SvgPicture.asset(
+                        tabs[index].assetPath,
+                        width: 18,
+                        height: 18,
+                        colorFilter: ColorFilter.mode(
+                          index == activeIndex
+                              ? tabs[index].color
+                              : inactiveColor,
+                          BlendMode.srcIn,
+                        ),
                       ),
                       const SizedBox(width: 6),
-                      Text(
-                        tabs[index].label,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: index == activeIndex
-                              ? activeColor
-                              : inactiveColor,
+                      Flexible(
+                        child: Text(
+                          tabs[index].label,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w700,
+                            color: index == activeIndex
+                                ? tabs[index].color
+                                : inactiveColor,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ),
-          ],
-        ],
-      ),
+            ],
+          ),
+        );
+      },
     );
+  }
+
+  Color indexColor(
+    int index, {
+    required bool isDark,
+    required Color fallbackDark,
+    required Color fallbackLight,
+  }) {
+    const activeBackgroundsLight = [
+      Color(0xFFEFF6FF),
+      Color(0xFFECFDF5),
+      Color(0xFFFFF7ED),
+    ];
+    const activeBackgroundsDark = [
+      Color(0xFF172554),
+      Color(0xFF052E2B),
+      Color(0xFF3F2A13),
+    ];
+
+    if (index < 0 || index > 2) {
+      return isDark ? fallbackDark : fallbackLight;
+    }
+
+    return isDark
+        ? activeBackgroundsDark[index]
+        : activeBackgroundsLight[index];
   }
 }

@@ -9,6 +9,7 @@ class SongFormFields extends StatelessWidget {
   final TextEditingController keyController;
   final TextEditingController bpmController;
   final TextEditingController youTubeUrlController;
+  final TextEditingController notesController;
   final FocusNode artistFocusNode;
   final VoidCallback onChanged;
 
@@ -19,6 +20,7 @@ class SongFormFields extends StatelessWidget {
     required this.keyController,
     required this.bpmController,
     required this.youTubeUrlController,
+    required this.notesController,
     required this.artistFocusNode,
     required this.onChanged,
   });
@@ -87,13 +89,28 @@ class SongFormFields extends StatelessWidget {
         TextFormField(
           controller: youTubeUrlController,
           keyboardType: TextInputType.url,
-          textInputAction: TextInputAction.done,
+          textInputAction: TextInputAction.next,
           decoration: appFormFieldDecoration(
             context,
             hintText: 'Cole o link do vídeo no YouTube',
             prefixIcon: Icons.ondemand_video_rounded,
           ),
           validator: SongValidators.validateYouTubeUrl,
+          onChanged: (_) => onChanged(),
+        ),
+        const SizedBox(height: 12),
+        const _FieldLabel(label: 'Observações'),
+        TextFormField(
+          controller: notesController,
+          keyboardType: TextInputType.multiline,
+          textInputAction: TextInputAction.newline,
+          minLines: 4,
+          maxLines: 6,
+          decoration: appFormFieldDecoration(
+            context,
+            hintText: 'Adicione observações, cifra simplificada ou instruções',
+            prefixIcon: Icons.notes_rounded,
+          ),
           onChanged: (_) => onChanged(),
         ),
       ],

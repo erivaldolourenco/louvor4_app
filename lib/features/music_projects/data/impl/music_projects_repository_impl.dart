@@ -3,12 +3,14 @@ import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
 import '../../domain/entities/add_project_member_input.dart';
 import '../../domain/entities/create_project_event_input.dart';
+import '../../domain/entities/create_music_project_input.dart';
 import '../../domain/entities/music_event_detail_entity.dart';
 import '../../domain/entities/music_project_entity.dart';
 import '../../domain/entities/project_member_entity.dart';
 import '../../domain/entities/project_skill_entity.dart';
 import '../../domain/entities/update_music_project_input.dart';
 import '../../domain/entities/update_project_member_input.dart';
+import '../../domain/exceptions/music_project_request_exception.dart';
 import '../music_projects_repository.dart';
 
 class MusicProjectsRepositoryImpl implements MusicProjectsRepository {
@@ -47,6 +49,35 @@ class MusicProjectsRepositoryImpl implements MusicProjectsRepository {
       throw Exception('Resposta inválida ao buscar projeto.');
     } on DioException catch (e) {
       throw Exception(_extractApiErrorMessage(e));
+    }
+  }
+
+  @override
+  Future<MusicProjectEntity> createProject(
+    CreateMusicProjectInput input,
+  ) async {
+    try {
+      final response = await _dio.post(
+        '/music-project/create',
+        data: input.toJson(),
+      );
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        return MusicProjectEntity.fromJson(data);
+      }
+      if (data is Map) {
+        return MusicProjectEntity.fromJson(Map<String, dynamic>.from(data));
+      }
+      throw const MusicProjectRequestException(
+        message: 'Não foi possível criar o projeto.',
+      );
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      final detail = _extractApiErrorMessage(
+        e,
+        fallback: 'Não foi possível criar o projeto.',
+      );
+      throw MusicProjectRequestException(message: detail, statusCode: status);
     }
   }
 

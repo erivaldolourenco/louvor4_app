@@ -26,20 +26,43 @@ class EventEntity {
 
   factory EventEntity.fromJson(Map<String, dynamic> json) {
     return EventEntity(
-      id: json['id'].toString(),
-      date: DateTime.parse(json['date'].toString()),
+      id: _readString(json['id']),
+      date: _parseDate(json['date']),
       time: json['time'].toString(),
       title: (json['title'] ?? '').toString(),
-      location: json['location']?.toString(),
+      location: _normalizeOptionalValue(json['location']),
       projectTitle: (json['projectTitle'] ?? '').toString(),
-      projectImageUrl: json['projectImageUrl']?.toString(),
-      participantsCount: (json['participantsCount'] ?? 0) as int,
-      repertoireCount: (json['repertoireCount'] ?? 0) as int,
+      projectImageUrl: _normalizeOptionalValue(json['projectImageUrl']),
+      participantsCount: _toInt(json['participantsCount']),
+      repertoireCount: _toInt(json['repertoireCount']),
       participantsProfileImages:
           (json['participantsProfileImages'] as List?)
               ?.map((e) => e.toString())
               .toList() ??
           [],
     );
+  }
+
+  static DateTime _parseDate(dynamic value) {
+    if (value == null) return DateTime.now();
+    return DateTime.tryParse(value.toString()) ?? DateTime.now();
+  }
+
+  static int _toInt(dynamic value) {
+    if (value is int) return value;
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  static String _readString(dynamic value) {
+    final normalized = _normalizeOptionalValue(value);
+    return normalized ?? '';
+  }
+
+  static String? _normalizeOptionalValue(dynamic value) {
+    if (value == null) return null;
+    final normalized = value.toString().trim();
+    return normalized.isEmpty || normalized.toLowerCase() == 'null'
+        ? null
+        : normalized;
   }
 }

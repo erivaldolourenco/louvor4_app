@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 
-import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/utils/url_utils.dart';
+import '../../data/impl/music_projects_repository_impl.dart';
 import '../../domain/entities/music_project_entity.dart';
 import '../cubit/project_cubit.dart';
 import '../cubit/project_state.dart';
+import '../pages/create_music_project_page.dart';
 import '../utils/music_project_ui_utils.dart';
 
 Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
   final cubit = context.read<ProjectCubit>();
+  final repository = MusicProjectsRepositoryImpl();
 
-  if (cubit.state.status == ProjectStatus.initial) {
-    cubit.loadProjects();
-  }
+  cubit.loadProjects();
 
   return showModalBottomSheet<MusicProjectEntity>(
     context: context,
@@ -99,11 +100,19 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                           ),
                         ),
                         title: const Text('Adicionar Novo Projeto'),
-                        onTap: () {
-                          Navigator.of(sheetContext).pop();
-                          AppFeedback.showSuccess(
-                            'Criação de projeto será implementada em breve.',
-                          );
+                        onTap: () async {
+                          final createdProject =
+                              await openCreateMusicProjectPage(
+                                context,
+                                repository: repository,
+                              );
+                          if (createdProject == null || !context.mounted) {
+                            return;
+                          }
+
+                          cubit.upsertProject(createdProject);
+                          if (!sheetContext.mounted) return;
+                          Navigator.of(sheetContext).pop(createdProject);
                         },
                       )
                     else
@@ -140,7 +149,9 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                                           UrlUtils.isValidNetworkUrl(
                                             project.profileImage,
                                           )
-                                          ? NetworkImage(project.profileImage!)
+                                          ? appCachedImageProvider(
+                                              project.profileImage,
+                                            )
                                           : null,
                                       child:
                                           !UrlUtils.isValidNetworkUrl(
@@ -190,11 +201,22 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                                   ),
                                 ),
                                 title: const Text('Adicionar Novo Projeto'),
-                                onTap: () {
-                                  Navigator.of(sheetContext).pop();
-                                  AppFeedback.showSuccess(
-                                    'Criação de projeto será implementada em breve.',
-                                  );
+                                onTap: () async {
+                                  final createdProject =
+                                      await openCreateMusicProjectPage(
+                                        context,
+                                        repository: repository,
+                                      );
+                                  if (createdProject == null ||
+                                      !context.mounted) {
+                                    return;
+                                  }
+
+                                  cubit.upsertProject(createdProject);
+                                  if (!sheetContext.mounted) return;
+                                  Navigator.of(
+                                    sheetContext,
+                                  ).pop(createdProject);
                                 },
                               ),
                             ],

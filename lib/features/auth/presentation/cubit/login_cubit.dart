@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/exceptions/auth_request_exception.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'login_state.dart';
 
@@ -12,29 +13,47 @@ class LoginCubit extends Cubit<LoginState> {
 
   Future<void> submit() async {
     if (state.username.trim().isEmpty || state.password.isEmpty) {
-      emit(state.copyWith(
-        status: LoginStatus.failure,
-        errorMessage: 'Informe usuário e senha',
-      ));
+      emit(
+        state.copyWith(
+          status: LoginStatus.failure,
+          errorMessage: 'Informe usuário e senha',
+          errorStatusCode: null,
+        ),
+      );
       return;
     }
 
-    emit(state.copyWith(status: LoginStatus.loading, errorMessage: null));
+    emit(
+      state.copyWith(
+        status: LoginStatus.loading,
+        errorMessage: null,
+        errorStatusCode: null,
+      ),
+    );
 
     try {
-      print("Tentando login");
       final auth = await _authRepository.login(
         state.username.trim(),
         state.password,
       );
 
       emit(state.copyWith(status: LoginStatus.success, auth: auth));
+    } on AuthRequestException catch (e) {
+      emit(
+        state.copyWith(
+          status: LoginStatus.failure,
+          errorMessage: e.message,
+          errorStatusCode: e.statusCode,
+        ),
+      );
     } catch (e) {
-      print(e);
-      emit(state.copyWith(
-        status: LoginStatus.failure,
-        errorMessage: e.toString().replaceAll('Exception: ', ''),
-      ));
+      emit(
+        state.copyWith(
+          status: LoginStatus.failure,
+          errorMessage: e.toString().replaceAll('Exception: ', ''),
+          errorStatusCode: null,
+        ),
+      );
     }
   }
 }

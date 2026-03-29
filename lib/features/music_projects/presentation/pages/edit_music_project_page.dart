@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../core/ui/widgets/app_cached_network_image.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/music_projects_repository.dart';
@@ -261,7 +262,7 @@ class _ProjectImageCard extends StatelessWidget {
                   foregroundImage: hasLocalImage
                       ? FileImage(File(selectedImage!.path))
                       : hasNetworkImage
-                      ? NetworkImage(imageUrl)
+                      ? appCachedImageProvider(imageUrl)
                       : null,
                   backgroundColor: isDark
                       ? const Color(0xFF172554)

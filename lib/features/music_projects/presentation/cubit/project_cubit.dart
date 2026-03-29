@@ -11,6 +11,7 @@ class ProjectCubit extends Cubit<ProjectState> {
 
   Future<void> loadProjects({bool force = false}) async {
     if (!force &&
+        !state.needsRefresh &&
         state.projects.isNotEmpty &&
         state.status == ProjectStatus.success) {
       return;
@@ -33,6 +34,7 @@ class ProjectCubit extends Cubit<ProjectState> {
           projects: projects,
           activeProject: active,
           errorMessage: null,
+          needsRefresh: false,
         ),
       );
     } catch (e) {
@@ -47,6 +49,30 @@ class ProjectCubit extends Cubit<ProjectState> {
 
   void selectProject(MusicProjectEntity project) {
     emit(state.copyWith(activeProject: project));
+  }
+
+  void upsertProject(MusicProjectEntity project) {
+    final projects = List<MusicProjectEntity>.from(state.projects);
+    final index = projects.indexWhere((item) => item.id == project.id);
+
+    if (index >= 0) {
+      projects[index] = project;
+    } else {
+      projects.insert(0, project);
+    }
+
+    emit(
+      state.copyWith(
+        status: ProjectStatus.success,
+        projects: projects,
+        activeProject: project,
+        errorMessage: null,
+      ),
+    );
+  }
+
+  void invalidateProjects() {
+    emit(state.copyWith(needsRefresh: true));
   }
 
   void clearActiveProject() {

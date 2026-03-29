@@ -105,20 +105,177 @@ class _EventsLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final lineColor = isDark
+        ? const Color(0xFF1E293B)
+        : const Color(0xFFE5EDF6);
+    final cardFill = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      children: List.generate(
-        4,
-        (_) => AppCardSurface(
-          radius: 16,
-          color: isDark ? const Color(0xFF111827) : null,
-          child: Container(
-            height: 120,
-            margin: const EdgeInsets.only(bottom: 12),
+      children: [
+        for (var sectionIndex = 0; sectionIndex < 3; sectionIndex++) ...[
+          Padding(
+            padding: EdgeInsets.only(bottom: sectionIndex == 2 ? 0 : 18),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 190,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: lineColor,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      width: 92,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: lineColor,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                _EventTimelineItemSkeleton(
+                  cardFill: cardFill,
+                  lineColor: lineColor,
+                ),
+              ],
+            ),
           ),
-        ),
+        ],
+      ],
+    );
+  }
+}
+
+class _EventTimelineItemSkeleton extends StatelessWidget {
+  final Color cardFill;
+  final Color lineColor;
+
+  const _EventTimelineItemSkeleton({
+    required this.cardFill,
+    required this.lineColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            width: 22,
+            child: Column(
+              children: [
+                Expanded(child: Container(width: 2, color: lineColor)),
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Color(0xFF0166FF),
+                  ),
+                ),
+                Expanded(child: Container(width: 2, color: lineColor)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: AppCardSurface(
+              radius: 16,
+              color: cardFill,
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: lineColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: double.infinity,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              color: lineColor,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Container(
+                            width: 170,
+                            height: 13,
+                            decoration: BoxDecoration(
+                              color: lineColor,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            height: 22,
+                            child: Stack(
+                              children: List.generate(
+                                3,
+                                (index) => Positioned(
+                                  left: index * 14.0,
+                                  child: Container(
+                                    width: 20,
+                                    height: 20,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: isDark
+                                          ? const Color(0xFF334155)
+                                          : const Color(0xFFDCE6F1),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? const Color(0xFF111827)
+                                            : Colors.white,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: lineColor,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

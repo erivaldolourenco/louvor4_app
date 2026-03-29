@@ -9,12 +9,14 @@ class ProjectState extends Equatable {
   final List<MusicProjectEntity> projects;
   final MusicProjectEntity? activeProject;
   final String? errorMessage;
+  final bool needsRefresh;
 
   const ProjectState({
     this.status = ProjectStatus.initial,
     this.projects = const [],
     this.activeProject,
     this.errorMessage,
+    this.needsRefresh = false,
   });
 
   ProjectState copyWith({
@@ -23,6 +25,7 @@ class ProjectState extends Equatable {
     MusicProjectEntity? activeProject,
     bool clearActiveProject = false,
     String? errorMessage,
+    bool? needsRefresh,
   }) {
     return ProjectState(
       status: status ?? this.status,
@@ -31,9 +34,16 @@ class ProjectState extends Equatable {
           ? null
           : (activeProject ?? this.activeProject),
       errorMessage: errorMessage,
+      needsRefresh: needsRefresh ?? this.needsRefresh,
     );
   }
 
   @override
-  List<Object?> get props => [status, projects, activeProject, errorMessage];
+  List<Object?> get props => [
+    status,
+    projects,
+    activeProject,
+    errorMessage,
+    needsRefresh,
+  ];
 }

@@ -30,10 +30,24 @@ Future<bool?> showManageEventSongsSheet(
   );
 }
 
-class _ManageEventSongsSheet extends StatelessWidget {
+class _ManageEventSongsSheet extends StatefulWidget {
   final String eventId;
 
   const _ManageEventSongsSheet({required this.eventId});
+
+  @override
+  State<_ManageEventSongsSheet> createState() => _ManageEventSongsSheetState();
+}
+
+class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +85,13 @@ class _ManageEventSongsSheet extends StatelessWidget {
               builder: (context, state) {
                 final cubit = context.read<ManageEventSongsCubit>();
 
+                final filteredSongs = state.songs.where((song) {
+                  final query = _searchQuery.toLowerCase();
+                  final title = song.title.toLowerCase();
+                  final artist = song.artist.toLowerCase();
+                  return title.contains(query) || artist.contains(query);
+                }).toList();
+
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
                   child: Column(
@@ -103,6 +124,34 @@ class _ManageEventSongsSheet extends StatelessWidget {
                         style: TextStyle(fontSize: 14, color: subtitleColor),
                       ),
                       const SizedBox(height: 18),
+                      TextField(
+                        controller: _searchController,
+                        onChanged: (value) =>
+                            setState(() => _searchQuery = value),
+                        decoration: InputDecoration(
+                          hintText: 'Buscar por título ou artista...',
+                          prefixIcon: const Icon(Icons.search_rounded),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(Icons.clear_rounded),
+                                  onPressed: () {
+                                    _searchController.clear();
+                                    setState(() => _searchQuery = '');
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                            horizontal: 16,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
                       if (state.errorMessage != null)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 12),
@@ -115,10 +164,17 @@ class _ManageEventSongsSheet extends StatelessWidget {
                             ? const Center(child: CircularProgressIndicator())
                             : state.songs.isEmpty
                             ? const _EmptySongsState()
+                            : filteredSongs.isEmpty
+                            ? Center(
+                                child: Text(
+                                  'Nenhuma música encontrada.',
+                                  style: TextStyle(color: subtitleColor),
+                                ),
+                              )
                             : ListView.builder(
-                                itemCount: state.songs.length,
+                                itemCount: filteredSongs.length,
                                 itemBuilder: (context, index) {
-                                  final song = state.songs[index];
+                                  final song = filteredSongs[index];
                                   final isSelected = state.selectedSongIds
                                       .contains(song.id);
                                   return _SelectableSongCard(
@@ -139,7 +195,7 @@ class _ManageEventSongsSheet extends StatelessWidget {
                           style: appPrimaryPillButtonStyle(context),
                           onPressed: state.isSubmitting || !state.hasSelection
                               ? null
-                              : () => cubit.submit(eventId),
+                              : () => cubit.submit(widget.eventId),
                           child: state.isSubmitting
                               ? const SizedBox(
                                   width: 20,
@@ -266,10 +322,7 @@ class _SelectableSongCard extends StatelessWidget {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              _MetaBadge(
-                                icon: Icons.piano_rounded,
-                                label: song.key,
-                              ),
+                              _MetaBadge(label: 'Tom: ${song.key}'),
                               if (song.bpm != null && song.bpm!.isNotEmpty) ...[
                                 const SizedBox(width: 8),
                                 _MetaBadge(
@@ -301,10 +354,10 @@ class _SelectableSongCard extends StatelessWidget {
 }
 
 class _MetaBadge extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
   final String label;
 
-  const _MetaBadge({required this.icon, required this.label});
+  const _MetaBadge({this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -322,8 +375,10 @@ class _MetaBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: textColor?.withValues(alpha: 0.78)),
-          const SizedBox(width: 4),
+          if (icon != null) ...[
+            Icon(icon, size: 14, color: textColor?.withValues(alpha: 0.78)),
+            const SizedBox(width: 4),
+          ],
           Text(
             label,
             style: TextStyle(

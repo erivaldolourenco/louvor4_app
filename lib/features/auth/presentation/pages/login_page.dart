@@ -10,6 +10,7 @@ import '../../../root/presentation/pages/root_page.dart';
 import '../../data/repositories/impl/auth_repository_impl.dart';
 import '../cubit/login_cubit.dart';
 import '../cubit/login_state.dart';
+import 'register_page.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -60,6 +61,31 @@ class _LoginViewState extends State<_LoginView> {
                 listenWhen: (p, c) => p.status != c.status,
                 listener: (context, state) {
                   if (state.status == LoginStatus.failure) {
+                    if (state.errorStatusCode == 409 &&
+                        (state.errorMessage?.trim().isNotEmpty ?? false)) {
+                      showDialog<void>(
+                        context: context,
+                        builder: (dialogContext) {
+                          return AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            title: const Text('Atenção'),
+                            content: Text(state.errorMessage!),
+                            actions: [
+                              FilledButton(
+                                onPressed: () =>
+                                    Navigator.of(dialogContext).pop(),
+                                style: appPrimaryPillButtonStyle(dialogContext),
+                                child: const Text('Entendi'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                      return;
+                    }
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(state.errorMessage ?? 'Erro no login'),
@@ -171,7 +197,7 @@ class _LoginViewState extends State<_LoginView> {
                       children: [
                         const Text('Ainda não tem uma conta?'),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () => openRegisterPage(context),
                           child: const Text('Criar conta'),
                         ),
                       ],

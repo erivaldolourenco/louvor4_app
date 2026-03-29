@@ -1,4 +1,5 @@
 import '../domain/entities/create_project_event_input.dart';
+import '../domain/entities/create_music_project_input.dart';
 import '../domain/entities/add_project_member_input.dart';
 import '../domain/entities/project_member_entity.dart';
 import '../domain/entities/project_skill_entity.dart';
@@ -11,6 +12,8 @@ abstract class MusicProjectsRepository {
   Future<List<MusicProjectEntity>> getUserMusicProjects();
 
   Future<MusicProjectEntity> getProjectById(String id);
+
+  Future<MusicProjectEntity> createProject(CreateMusicProjectInput input);
 
   Future<List<MusicEventDetailEntity>> getProjectEvents(String projectId);
 

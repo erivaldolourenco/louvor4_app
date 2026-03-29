@@ -121,7 +121,7 @@ class _EditProfileViewState extends State<_EditProfileView> {
                       const _FieldLabel(label: 'Email'),
                       TextFormField(
                         controller: _emailController,
-                        enabled: user != null && !state.isSubmitting,
+                        enabled: false,
                         keyboardType: TextInputType.emailAddress,
                         decoration: appFormFieldDecoration(
                           context,

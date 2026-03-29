@@ -126,7 +126,7 @@ class ManageEventParticipantsCubit extends Cubit<ManageEventParticipantsState> {
             memberId: item.member.id,
             skillId: item.selectedSkillId!,
             permissions: item.permissions
-                .map((permission) => permission.name)
+                .map((permission) => permission.apiValue)
                 .toList(),
           ),
         )

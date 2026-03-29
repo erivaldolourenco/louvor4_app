@@ -7,6 +7,8 @@ import 'package:louvor4_app/features/music_projects/domain/entities/music_projec
 import 'package:louvor4_app/features/music_projects/domain/entities/project_member_entity.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/project_skill_entity.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/update_project_member_input.dart';
+import 'package:louvor4_app/features/music_projects/domain/entities/create_music_project_input.dart';
+import 'package:louvor4_app/features/music_projects/domain/entities/update_music_project_input.dart';
 import 'package:louvor4_app/features/music_projects/presentation/cubit/project_cubit.dart';
 import 'package:louvor4_app/features/music_projects/presentation/cubit/project_state.dart';
 
@@ -87,6 +89,27 @@ class _FakeMusicProjectsRepository implements MusicProjectsRepository {
     String projectId,
     CreateProjectEventInput input,
   ) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<MusicProjectEntity> createProject(
+      CreateMusicProjectInput input) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<MusicProjectEntity> updateProject(
+      String projectId, UpdateMusicProjectInput input) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> updateProjectProfileImage({
+    required String projectId,
+    required String filePath,
+    required String fileName,
+  }) async {
     throw UnimplementedError();
   }
 }

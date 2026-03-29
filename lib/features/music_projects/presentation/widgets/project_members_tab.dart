@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
+import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
+import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../data/music_projects_repository.dart';
 import '../../domain/entities/project_member_entity.dart';
@@ -13,7 +17,7 @@ import '../../domain/entities/project_member_role.dart';
 import '../cubit/project_members_cubit.dart';
 import '../cubit/project_members_state.dart';
 
-class ProjectMembersTab extends StatelessWidget {
+class ProjectMembersTab extends StatefulWidget {
   final String projectId;
   final bool canManageMembers;
   final MusicProjectsRepository repository;
@@ -26,16 +30,40 @@ class ProjectMembersTab extends StatelessWidget {
   });
 
   @override
+  State<ProjectMembersTab> createState() => _ProjectMembersTabState();
+}
+
+class _ProjectMembersTabState extends State<ProjectMembersTab>
+    with AutomaticKeepAliveClientMixin {
+  late final ProjectMembersCubit _cubit;
+
+  @override
+  void initState() {
+    super.initState();
+    _cubit = ProjectMembersCubit(
+      repository: widget.repository,
+      projectId: widget.projectId,
+      canManageMembers: widget.canManageMembers,
+    )..load();
+  }
+
+  @override
+  void dispose() {
+    _cubit.close();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ProjectMembersCubit(
-        repository: repository,
-        projectId: projectId,
-        canManageMembers: canManageMembers,
-      )..load(),
+    super.build(context);
+    return BlocProvider.value(
+      value: _cubit,
       child: const _ProjectMembersTabView(),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }
 
 class _ProjectMembersTabView extends StatelessWidget {
@@ -174,7 +202,6 @@ class _ProjectMemberCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final titleColor = theme.textTheme.titleMedium?.color;
-    final menuColor = isDark ? const Color(0xFF111827) : Colors.white;
     final skillNames = member.skillIds
         .map(
           (skillId) => state.skills
@@ -194,51 +221,75 @@ class _ProjectMemberCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _MemberAvatar(
-                imageUrl: member.profileImage,
-                fullName: member.fullName,
-              ),
-              const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () => showUserProfileDialog(
+                    context,
+                    name: member.fullName,
+                    profileImageUrl: member.profileImage,
+                    username: member.username,
+                    email: member.email,
+                    projectPermission: member.projectRole.label,
+                    musicSkills: skillNames,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        _MemberAvatar(
+                          imageUrl: member.profileImage,
+                          fullName: member.fullName,
+                        ),
+                        const SizedBox(width: 12),
                         Expanded(
-                          child: Text(
-                            member.fullName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color: titleColor,
-                                ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      member.fullName,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w800,
+                                            color: titleColor,
+                                          ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _RoleBadge(role: member.projectRole),
+                                ],
+                              ),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: skillNames.isEmpty
+                                    ? const [
+                                        _SkillTag(
+                                          label: 'Sem funções musicais',
+                                          muted: true,
+                                        ),
+                                      ]
+                                    : skillNames
+                                          .map((name) => _SkillTag(label: name))
+                                          .toList(),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        _RoleBadge(role: member.projectRole),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: skillNames.isEmpty
-                          ? const [
-                              _SkillTag(
-                                label: 'Sem funções musicais',
-                                muted: true,
-                              ),
-                            ]
-                          : skillNames
-                                .map((name) => _SkillTag(label: name))
-                                .toList(),
-                    ),
-                  ],
+                  ),
                 ),
               ),
               if (cubit.canManageMembers) ...[
@@ -249,74 +300,53 @@ class _ProjectMemberCard extends StatelessWidget {
                         height: 24,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : PopupMenuButton<String>(
-                        color: menuColor,
-                        icon: const Icon(
-                          Icons.more_vert_rounded,
-                          color: Color(0xFF64748B),
-                        ),
-                        onSelected: (value) async {
-                          if (value == 'edit') {
-                            final success = await _showEditMemberSheet(
-                              context,
-                              member.id,
-                            );
-                            if (success == true) {
-                              AppFeedback.showSuccess(
-                                'Membro atualizado com sucesso.',
-                              );
-                            }
-                            return;
-                          }
-
-                          if (value == 'remove') {
-                            if (!context.mounted) return;
-                            final confirmed = await _confirmRemove(context);
-                            if (confirmed != true) return;
-
-                            final removed = await cubit.removeMember(member);
-                            if (!context.mounted) return;
-
-                            if (removed) {
-                              AppFeedback.showSuccess(
-                                'Membro removido com sucesso.',
-                              );
-                            } else if (cubit.state.actionErrorMessage != null) {
-                              AppFeedback.showError(
-                                cubit.state.actionErrorMessage!,
-                              );
-                            }
-                          }
-                        },
-                        itemBuilder: (_) {
-                          return [
-                            if (cubit.canEditMember(member))
-                              const PopupMenuItem<String>(
-                                value: 'edit',
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.edit_rounded, size: 18),
-                                    SizedBox(width: 8),
-                                    Text('Editar'),
-                                  ],
-                                ),
-                              ),
-                            if (cubit.canRemoveMember(member))
-                              const PopupMenuItem<String>(
-                                value: 'remove',
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.delete_outline_rounded,
-                                      size: 18,
-                                    ),
-                                    SizedBox(width: 8),
-                                    Text('Remover'),
-                                  ],
-                                ),
-                              ),
-                          ];
-                        },
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (cubit.canEditMember(member))
+                            _CircularMemberActionButton(
+                              tooltip: 'Editar membro',
+                              onPressed: () async {
+                                final success = await _openEditMemberPage(
+                                  context,
+                                  member.id,
+                                );
+                                if (success == true) {
+                                  AppFeedback.showSuccess(
+                                    'Membro atualizado com sucesso.',
+                                  );
+                                }
+                              },
+                              assetPath: 'assets/icons/settings-2.svg',
+                              iconColor: const Color(0xFF2563EB),
+                              backgroundColor: isDark
+                                  ? const Color(0xFF172554)
+                                  : const Color(0xFFEFF6FF),
+                              borderColor: isDark
+                                  ? const Color(0xFF1D4ED8)
+                                  : const Color(0xFFBFDBFE),
+                            ),
+                          if (cubit.canEditMember(member) &&
+                              cubit.canManageMembers)
+                            const SizedBox(width: 8),
+                          if (cubit.canManageMembers)
+                            _CircularMemberActionButton(
+                              tooltip: 'Remover membro',
+                              onPressed: () {
+                                AppFeedback.showInfo(
+                                  'Remover membro ainda não foi implementado.',
+                                );
+                              },
+                              assetPath: 'assets/icons/trash-2.svg',
+                              iconColor: const Color(0xFFB3261E),
+                              backgroundColor: isDark
+                                  ? const Color(0xFF2A1313)
+                                  : const Color(0xFFFFF1F2),
+                              borderColor: isDark
+                                  ? const Color(0xFF7F1D1D)
+                                  : const Color(0xFFFECDD3),
+                            ),
+                        ],
                       ),
               ],
             ],
@@ -326,43 +356,65 @@ class _ProjectMemberCard extends StatelessWidget {
     );
   }
 
-  Future<bool?> _showEditMemberSheet(BuildContext context, String memberId) {
+  Future<bool?> _openEditMemberPage(BuildContext context, String memberId) {
     final cubit = context.read<ProjectMembersCubit>();
-    return showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => BlocProvider.value(
-        value: cubit,
-        child: _EditProjectMemberSheet(memberId: memberId),
+    return Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => BlocProvider.value(
+          value: cubit,
+          child: _EditProjectMemberPage(memberId: memberId),
+        ),
       ),
     );
   }
+}
 
-  Future<bool?> _confirmRemove(BuildContext context) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Remover membro'),
-          content: Text(
-            'Deseja remover ${member.fullName} deste projeto? Essa ação pode ser desfeita adicionando o membro novamente.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancelar'),
+class _CircularMemberActionButton extends StatelessWidget {
+  final String tooltip;
+  final VoidCallback? onPressed;
+  final String assetPath;
+  final Color iconColor;
+  final Color backgroundColor;
+  final Color borderColor;
+
+  const _CircularMemberActionButton({
+    required this.tooltip,
+    required this.onPressed,
+    required this.assetPath,
+    required this.iconColor,
+    required this.backgroundColor,
+    required this.borderColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: Ink(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              shape: BoxShape.circle,
+              border: Border.all(color: borderColor),
             ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFB3261E),
+            child: Center(
+              child: SvgPicture.asset(
+                assetPath,
+                width: 18,
+                height: 18,
+                colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
               ),
-              child: const Text('Remover'),
             ),
-          ],
-        );
-      },
+          ),
+        ),
+      ),
     );
   }
 }
@@ -473,17 +525,16 @@ class _AddProjectMemberSheetState extends State<_AddProjectMemberSheet> {
   }
 }
 
-class _EditProjectMemberSheet extends StatefulWidget {
+class _EditProjectMemberPage extends StatefulWidget {
   final String memberId;
 
-  const _EditProjectMemberSheet({required this.memberId});
+  const _EditProjectMemberPage({required this.memberId});
 
   @override
-  State<_EditProjectMemberSheet> createState() =>
-      _EditProjectMemberSheetState();
+  State<_EditProjectMemberPage> createState() => _EditProjectMemberPageState();
 }
 
-class _EditProjectMemberSheetState extends State<_EditProjectMemberSheet> {
+class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
   ProjectMemberEntity? _member;
   bool _isLoading = true;
   ProjectMemberRole _selectedRole = ProjectMemberRole.member;
@@ -529,163 +580,164 @@ class _EditProjectMemberSheetState extends State<_EditProjectMemberSheet> {
         state.submission == ProjectMembersSubmission.updating &&
         state.activeMemberId == member.id;
 
-    return _MemberSheetScaffold(
-      title: 'Editar membro',
-      subtitle:
-          'Ajuste permissões e funções musicais atribuídas ao integrante.',
-      icon: Icons.manage_accounts_rounded,
-      child: _isLoading
-          ? const Padding(
-              padding: EdgeInsets.symmetric(vertical: 36),
-              child: Center(child: CircularProgressIndicator()),
-            )
+    return Scaffold(
+      appBar: const StandardSectionAppBar(
+        title: 'Editar Membro',
+        subtitle: 'Ajuste permissões e funções musicais do integrante',
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
           : member == null
-          ? Column(
-              children: [
-                const _InlineErrorMessage(
-                  message: 'Não foi possível abrir este membro.',
+          ? SafeArea(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const _InlineErrorMessage(
+                        message: 'Não foi possível abrir este membro.',
+                      ),
+                      const SizedBox(height: 18),
+                      FilledButton.icon(
+                        style: appPrimaryPillButtonStyle(context),
+                        onPressed: _loadMember,
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Tentar novamente'),
+                      ),
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 18),
-                FilledButton.icon(
-                  onPressed: _loadMember,
-                  icon: const Icon(Icons.refresh_rounded),
-                  label: const Text('Tentar novamente'),
-                ),
-              ],
+              ),
             )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _MemberHeader(member: member),
-                const SizedBox(height: 18),
-                _PermissionCard(
-                  member: member,
-                  selectedRole: _selectedRole,
-                  onRoleChanged: cubit.canChangeAdministrativeAccess(member)
-                      ? (isAdmin) {
-                          setState(() {
-                            _selectedRole = isAdmin
-                                ? ProjectMemberRole.admin
-                                : ProjectMemberRole.member;
-                          });
-                        }
-                      : null,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Funções musicais',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: Theme.of(context).textTheme.titleMedium?.color,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                if (state.skills.isEmpty)
-                  const _InlineHint(
-                    message:
-                        'Nenhuma função musical cadastrada para este projeto.',
-                  )
-                else
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: state.skills
-                        .map(
-                          (skill) => FilterChip(
-                            label: Text(skill.name),
-                            selected: _selectedSkillIds.contains(skill.id),
-                            onSelected: isSubmitting
-                                ? null
-                                : (selected) {
-                                    setState(() {
-                                      if (selected) {
-                                        _selectedSkillIds.add(skill.id);
-                                      } else {
-                                        _selectedSkillIds.remove(skill.id);
-                                      }
-                                    });
-                                  },
-                            selectedColor: const Color(0xFFDCEAFE),
-                            checkmarkColor: const Color(0xFF0166FF),
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: _selectedSkillIds.contains(skill.id)
-                                  ? const Color(0xFF0166FF)
-                                  : Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.color,
-                            ),
-                            backgroundColor:
-                                Theme.of(context).brightness == Brightness.dark
-                                ? const Color(0xFF0F172A)
-                                : Colors.white,
-                            side: BorderSide(
-                              color:
-                                  Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? const Color(0xFF334155)
-                                  : const Color(0xFFCBD5E1),
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                if (state.actionErrorMessage != null) ...[
-                  const SizedBox(height: 14),
-                  _InlineErrorMessage(message: state.actionErrorMessage!),
-                ],
-                const SizedBox(height: 22),
-                Row(
+          : SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        style: appSecondaryPillButtonStyle(context),
-                        onPressed: isSubmitting
-                            ? null
-                            : () => Navigator.of(context).maybePop(false),
-                        child: const Text('Cancelar'),
+                    _MemberHeader(member: member),
+                    const SizedBox(height: 18),
+                    _PermissionCard(
+                      member: member,
+                      selectedRole: _selectedRole,
+                      onRoleChanged: cubit.canChangeAdministrativeAccess(member)
+                          ? (isAdmin) {
+                              setState(() {
+                                _selectedRole = isAdmin
+                                    ? ProjectMemberRole.admin
+                                    : ProjectMemberRole.member;
+                              });
+                            }
+                          : null,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Funções musicais',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: Theme.of(context).textTheme.titleMedium?.color,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton(
-                        style: appPrimaryPillButtonStyle(context),
-                        onPressed: isSubmitting
-                            ? null
-                            : () async {
-                                final success = await cubit.updateMember(
-                                  member: member,
-                                  projectRole: _selectedRole,
-                                  skillIds: _selectedSkillIds.toList(),
-                                );
-                                if (!mounted) return;
-                                if (success) {
-                                  Navigator.of(this.context).pop(true);
-                                } else if (cubit.state.actionErrorMessage !=
-                                    null) {
-                                  AppFeedback.showError(
-                                    cubit.state.actionErrorMessage!,
-                                  );
-                                }
-                              },
-                        child: isSubmitting
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
+                    const SizedBox(height: 8),
+                    if (state.skills.isEmpty)
+                      const _InlineHint(
+                        message:
+                            'Nenhuma função musical cadastrada para este projeto.',
+                      )
+                    else
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: state.skills
+                            .map(
+                              (skill) => FilterChip(
+                                label: Text(skill.name),
+                                selected: _selectedSkillIds.contains(skill.id),
+                                onSelected: isSubmitting
+                                    ? null
+                                    : (selected) {
+                                        setState(() {
+                                          if (selected) {
+                                            _selectedSkillIds.add(skill.id);
+                                          } else {
+                                            _selectedSkillIds.remove(skill.id);
+                                          }
+                                        });
+                                      },
+                                selectedColor: const Color(0xFFDCEAFE),
+                                checkmarkColor: const Color(0xFF0166FF),
+                                labelStyle: TextStyle(
+                                  fontWeight: FontWeight.w700,
+                                  color: _selectedSkillIds.contains(skill.id)
+                                      ? const Color(0xFF0166FF)
+                                      : Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium?.color,
                                 ),
-                              )
-                            : const Text('Salvar alterações'),
+                                backgroundColor:
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? const Color(0xFF0F172A)
+                                    : Colors.white,
+                                side: BorderSide(
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? const Color(0xFF334155)
+                                      : const Color(0xFFCBD5E1),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                              ),
+                            )
+                            .toList(),
                       ),
+                    if (state.actionErrorMessage != null) ...[
+                      const SizedBox(height: 14),
+                      _InlineErrorMessage(message: state.actionErrorMessage!),
+                    ],
+                    const SizedBox(height: 22),
+                    FilledButton(
+                      style: appPrimaryPillButtonStyle(context),
+                      onPressed: isSubmitting
+                          ? null
+                          : () async {
+                              final success = await cubit.updateMember(
+                                member: member,
+                                projectRole: _selectedRole,
+                                skillIds: _selectedSkillIds.toList(),
+                              );
+                              if (!mounted) return;
+                              if (success) {
+                                Navigator.of(this.context).pop(true);
+                              } else if (cubit.state.actionErrorMessage !=
+                                  null) {
+                                AppFeedback.showError(
+                                  cubit.state.actionErrorMessage!,
+                                );
+                              }
+                            },
+                      child: isSubmitting
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text('Salvar alterações'),
+                    ),
+                    const SizedBox(height: 10),
+                    OutlinedButton(
+                      style: appSecondaryPillButtonStyle(context),
+                      onPressed: isSubmitting
+                          ? null
+                          : () => Navigator.of(context).pop(false),
+                      child: const Text('Cancelar'),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
     );
   }
@@ -861,7 +913,10 @@ class _MemberAvatar extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (UrlUtils.isValidNetworkUrl(imageUrl)) {
-      return CircleAvatar(radius: 26, backgroundImage: NetworkImage(imageUrl!));
+      return CircleAvatar(
+        radius: 26,
+        backgroundImage: appCachedImageProvider(imageUrl),
+      );
     }
 
     final initial = fullName.trim().isEmpty ? '?' : fullName.trim()[0];

@@ -10,6 +10,7 @@ import 'package:louvor4_app/features/events/domain/entities/project_member_entit
 import 'package:louvor4_app/features/events/domain/entities/skill_entity.dart';
 import 'package:louvor4_app/features/events/presentation/cubit/manage_event_participants_cubit.dart';
 import 'package:louvor4_app/features/events/presentation/cubit/manage_event_participants_state.dart';
+import 'package:louvor4_app/features/events/domain/entities/update_event_input_entity.dart';
 import 'package:louvor4_app/features/songs/domain/entities/song_entity.dart';
 
 class _FakeEventsRepository implements EventsRepository {
@@ -87,6 +88,16 @@ class _FakeEventsRepository implements EventsRepository {
   Future<List<SongEntity>> getUserSongs() async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> removeSongFromEvent(String eventId, String eventSongId) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> updateEvent(String eventId, UpdateEventInputEntity input) async {
+    throw UnimplementedError();
+  }
 }
 
 void main() {
@@ -118,7 +129,7 @@ void main() {
               lastName: 'Souza',
               profileImage: null,
               skillId: 's2',
-              permissions: {EventPermission.ADD_SONG},
+              permissions: {EventPermission.addSong},
             ),
           ],
           skills: const [
@@ -136,7 +147,7 @@ void main() {
         expect(cubit.state.members.first.selectedSkillId, 's2');
         expect(
           cubit.state.members.first.permissions,
-          contains(EventPermission.ADD_SONG),
+          contains(EventPermission.addSong),
         );
 
         await cubit.close();
@@ -161,7 +172,7 @@ void main() {
 
       cubit.toggleMember('m1', true);
       cubit.updateSkill('m1', 's1');
-      cubit.togglePermission('m1', EventPermission.ADD_SONG, true);
+      cubit.togglePermission('m1', EventPermission.addSong, true);
       cubit.toggleMember('m2', true);
 
       final saved = await cubit.submit('e1');

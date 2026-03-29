@@ -22,6 +22,7 @@ class _CreateSongPageState extends State<CreateSongPage> {
   final _keyController = TextEditingController();
   final _bpmController = TextEditingController();
   final _youTubeUrlController = TextEditingController();
+  final _notesController = TextEditingController();
   final _artistFocusNode = FocusNode();
   final _repo = SongsRepositoryImpl();
 
@@ -44,6 +45,7 @@ class _CreateSongPageState extends State<CreateSongPage> {
     _keyController.dispose();
     _bpmController.dispose();
     _youTubeUrlController.dispose();
+    _notesController.dispose();
     _artistFocusNode.dispose();
     super.dispose();
   }
@@ -77,6 +79,9 @@ class _CreateSongPageState extends State<CreateSongPage> {
           ? null
           : _bpmController.text.trim(),
       youTubeUrl: _youTubeUrlController.text.trim(),
+      notes: _notesController.text.trim().isEmpty
+          ? null
+          : _notesController.text.trim(),
     );
 
     try {
@@ -118,6 +123,7 @@ class _CreateSongPageState extends State<CreateSongPage> {
                   keyController: _keyController,
                   bpmController: _bpmController,
                   youTubeUrlController: _youTubeUrlController,
+                  notesController: _notesController,
                   artistFocusNode: _artistFocusNode,
                   onChanged: _onFormChanged,
                 ),

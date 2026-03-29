@@ -1,9 +1,26 @@
 enum EventPermission {
-  ADD_SONG, // pode adicionar música ao repertório
-  EDIT_SETLIST, // pode mudar ordem / tom / bpm
-  REMOVE_SONG, // pode remover música do repertório
-  MANAGE_PARTICIPANTS, // pode adicionar/remover participantes
-  EDIT_EVENT,
+  addSong, // pode adicionar música ao repertório
+  editSetlist, // pode mudar ordem / tom / bpm
+  removeSong, // pode remover música do repertório
+  manageParticipants, // pode adicionar/remover participantes
+  editEvent,
+}
+
+extension EventPermissionApiValue on EventPermission {
+  String get apiValue {
+    switch (this) {
+      case EventPermission.addSong:
+        return 'ADD_SONG';
+      case EventPermission.editSetlist:
+        return 'EDIT_SETLIST';
+      case EventPermission.removeSong:
+        return 'REMOVE_SONG';
+      case EventPermission.manageParticipants:
+        return 'MANAGE_PARTICIPANTS';
+      case EventPermission.editEvent:
+        return 'EDIT_EVENT';
+    }
+  }
 }
 
 class EventParticipant {
@@ -27,7 +44,8 @@ class EventParticipant {
 
   factory EventParticipant.fromJson(Map<String, dynamic> json) {
     final permissions = (json['permissions'] as List? ?? [])
-        .map((p) => EventPermission.values.byName(p.toString()))
+        .map(_parsePermission)
+        .whereType<EventPermission>()
         .toSet();
 
     return EventParticipant(
@@ -38,5 +56,30 @@ class EventParticipant {
       skillId: json['skillId'].toString(),
       permissions: permissions,
     );
+  }
+
+  static EventPermission? _parsePermission(dynamic value) {
+    final normalized = value?.toString().trim();
+    if (normalized == null || normalized.isEmpty) return null;
+
+    switch (normalized.toUpperCase()) {
+      case 'ADD_SONG':
+      case 'ADDSONG':
+        return EventPermission.addSong;
+      case 'EDIT_SETLIST':
+      case 'EDITSETLIST':
+        return EventPermission.editSetlist;
+      case 'REMOVE_SONG':
+      case 'REMOVESONG':
+        return EventPermission.removeSong;
+      case 'MANAGE_PARTICIPANTS':
+      case 'MANAGEPARTICIPANTS':
+        return EventPermission.manageParticipants;
+      case 'EDIT_EVENT':
+      case 'EDITEVENT':
+        return EventPermission.editEvent;
+      default:
+        return null;
+    }
   }
 }

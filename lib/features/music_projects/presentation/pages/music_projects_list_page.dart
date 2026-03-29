@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/utils/url_utils.dart';
@@ -7,7 +9,9 @@ import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/impl/music_projects_repository_impl.dart';
 import '../../domain/entities/music_project_entity.dart';
+import '../cubit/project_cubit.dart';
 import '../widgets/music_project_type_badge.dart';
+import 'create_music_project_page.dart';
 import 'music_project_overview_page.dart';
 
 class MusicProjectsListPage extends StatefulWidget {
@@ -68,10 +72,28 @@ class _MusicProjectsListPageState extends State<MusicProjectsListPage> {
     setState(() => _selectedProjectId = project.id);
   }
 
-  Future<void> _goToCreateProjectPlaceholder() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const _CreateProjectPlaceholderPage()),
+  Future<void> _goToCreateProjectPage() async {
+    final createdProject = await openCreateMusicProjectPage(
+      context,
+      repository: _repository,
     );
+    if (createdProject == null || !mounted) return;
+
+    await _syncSharedProjectState(createdProject);
+    await _loadProjects(silent: true);
+    if (!mounted) return;
+    _openProject(createdProject);
+  }
+
+  Future<void> _syncSharedProjectState(
+    MusicProjectEntity createdProject,
+  ) async {
+    try {
+      final projectCubit = context.read<ProjectCubit>();
+      projectCubit.upsertProject(createdProject);
+    } catch (_) {
+      // Esta tela também pode ser usada fora do escopo do ProjectCubit global.
+    }
   }
 
   @override
@@ -138,7 +160,7 @@ class _MusicProjectsListPageState extends State<MusicProjectsListPage> {
                 ),
               ),
             ),
-            _CreateProjectCard(onTap: _goToCreateProjectPlaceholder),
+            _CreateProjectCard(onTap: _goToCreateProjectPage),
           ],
         ),
       ),
@@ -173,13 +195,12 @@ class _ProjectSelectableCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: UrlUtils.isValidNetworkUrl(project.profileImage)
-                      ? Image.network(
-                          project.profileImage!,
+                      ? AppCachedNetworkImage(
+                          imageUrl: project.profileImage!,
                           width: 56,
                           height: 56,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              _avatarFallback(),
+                          errorWidget: _avatarFallback(context),
                         )
                       : _avatarFallback(),
                 ),
@@ -273,38 +294,6 @@ class _CreateProjectCard extends StatelessWidget {
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CreateProjectPlaceholderPage extends StatelessWidget {
-  const _CreateProjectPlaceholderPage();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Criar Projeto')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.construction_rounded,
-                size: 46,
-                color: Color(0xFF94A3B8),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Criação de projeto será implementada em breve.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge,
               ),
             ],
           ),

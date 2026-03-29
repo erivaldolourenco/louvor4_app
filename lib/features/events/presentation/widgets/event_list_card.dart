@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 
 import '../../domain/entities/event_entity.dart';
@@ -94,24 +95,23 @@ class EventListCard extends StatelessWidget {
                           child:
                               (event.projectImageUrl != null &&
                                   event.projectImageUrl!.isNotEmpty)
-                              ? Image.network(
-                                  event.projectImageUrl!,
+                              ? AppCachedNetworkImage(
+                                  imageUrl: event.projectImageUrl!,
                                   width: 70,
                                   height: 70,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      Container(
-                                        width: 70,
-                                        height: 70,
-                                        color: isDark
-                                            ? const Color(0xFF1E293B)
-                                            : const Color(0xFFEFF6FF),
-                                        child: const Icon(
-                                          Icons.music_note,
-                                          color: primaryBlue,
-                                          size: 30,
-                                        ),
-                                      ),
+                                  errorWidget: Container(
+                                    width: 70,
+                                    height: 70,
+                                    color: isDark
+                                        ? const Color(0xFF1E293B)
+                                        : const Color(0xFFEFF6FF),
+                                    child: const Icon(
+                                      Icons.music_note,
+                                      color: primaryBlue,
+                                      size: 30,
+                                    ),
+                                  ),
                                 )
                               : Container(
                                   width: 70,
@@ -187,7 +187,7 @@ class EventListCard extends StatelessWidget {
                                             backgroundColor: isDark
                                                 ? const Color(0xFF334155)
                                                 : const Color(0xFFE2E8F0),
-                                            backgroundImage: NetworkImage(
+                                            backgroundImage: appCachedImageProvider(
                                               event
                                                   .participantsProfileImages[index],
                                             ),

@@ -16,34 +16,57 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   UserDetailEntity? _currentUser;
   List<ProjectMemberEntity> _projectMembers = const [];
 
-  EventDetailCubit(
-    this._repository,
-    this._userRepository,
-  ) : super(const EventDetailState());
+  EventDetailCubit(this._repository, this._userRepository)
+    : super(const EventDetailState());
 
   Future<void> load(String eventId) async {
     emit(state.copyWith(status: EventDetailStatus.loading));
 
     try {
       final event = await _repository.getEventDetail(eventId);
-      final results = await Future.wait([
-        _repository.getEventParticipants(eventId),
-        _repository.getEventSongs(eventId),
-        _repository.getProjectSkills(event.projectId),
-        _repository.getProjectMemberRole(event.projectId),
-        _repository.getProjectMembers(event.projectId),
-        _userRepository.getUserDetail(),
-      ]);
+      final participants = await _safeLoad(
+        () => _repository.getEventParticipants(eventId),
+        fallback: const <EventParticipant>[],
+        debugLabel: 'participantes do evento',
+      );
+      final songs = await _safeLoad(
+        () => _repository.getEventSongs(eventId),
+        fallback: const <EventSong>[],
+        debugLabel: 'músicas do evento',
+      );
 
-      final participants = results[0] as List<EventParticipant>;
-      final songs = results[1] as List<EventSong>;
-      final skillsList = results[2] as List<SkillEntity>;
-      final role = (results[3] as String).toUpperCase();
-      final projectMembers = results[4] as List<ProjectMemberEntity>;
-      final currentUser = results[5] as UserDetailEntity;
+      final hasProjectId = event.projectId.trim().isNotEmpty;
+      final skillsList = hasProjectId
+          ? await _safeLoad(
+              () => _repository.getProjectSkills(event.projectId),
+              fallback: const <SkillEntity>[],
+              debugLabel: 'skills do projeto',
+            )
+          : const <SkillEntity>[];
+      final role = hasProjectId
+          ? await _safeLoad(
+              () => _repository.getProjectMemberRole(event.projectId),
+              fallback: '',
+              debugLabel: 'permissão do projeto',
+            )
+          : '';
+      final projectMembers = hasProjectId
+          ? await _safeLoad(
+              () => _repository.getProjectMembers(event.projectId),
+              fallback: const <ProjectMemberEntity>[],
+              debugLabel: 'membros do projeto',
+            )
+          : const <ProjectMemberEntity>[];
+      final currentUser = await _safeLoad(
+        () => _userRepository.getUserDetail(),
+        fallback: null,
+        debugLabel: 'usuário atual',
+      );
+
       _projectMembers = projectMembers;
       _currentUser = currentUser;
-      final isProjectAdmin = role == 'ADMIN' || role == 'OWNER';
+      final isProjectAdmin =
+          role.toUpperCase() == 'ADMIN' || role.toUpperCase() == 'OWNER';
       emit(
         state.copyWith(
           status: EventDetailStatus.success,
@@ -67,6 +90,21 @@ class EventDetailCubit extends Cubit<EventDetailState> {
           errorMessage: 'Não foi possível carregar os detalhes do evento.',
         ),
       );
+    }
+  }
+
+  Future<T> _safeLoad<T>(
+    Future<T> Function() loader, {
+    required T fallback,
+    required String debugLabel,
+  }) async {
+    try {
+      return await loader();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Falha ao carregar $debugLabel: $e');
+      }
+      return fallback;
     }
   }
 
@@ -168,7 +206,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     }).toList();
 
     return participants.any((participant) {
-      if (!participant.permissions.contains(EventPermission.ADD_SONG)) {
+      if (!participant.permissions.contains(EventPermission.addSong)) {
         return false;
       }
 

@@ -5,6 +5,7 @@ class EventSong {
   final String? key;
   final int? bpm;
   final String? youTubeUrl;
+  final String? notes;
   final String addedBy;
 
   const EventSong({
@@ -14,6 +15,7 @@ class EventSong {
     this.key,
     this.bpm,
     this.youTubeUrl,
+    this.notes,
     required this.addedBy,
   });
 
@@ -23,9 +25,16 @@ class EventSong {
       title: json['title'].toString(),
       artist: json['artist']?.toString(),
       key: json['key']?.toString(),
-      bpm: (json['bpm'] as int?),
+      bpm: _toInt(json['bpm']),
       youTubeUrl: json['youTubeUrl']?.toString(),
+      notes: json['notes']?.toString(),
       addedBy: json['addedBy'].toString(),
     );
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    return int.tryParse(value.toString());
   }
 }
