@@ -270,22 +270,11 @@ class _ProjectTabs extends StatelessWidget {
         : const Color(0xFF64748B);
 
     const tabs = [
-      (
-        assetPath: 'assets/icons/calendar-fold.svg',
-        label: 'Eventos',
-        color: Color(0xFF2563EB),
-      ),
-      (
-        assetPath: 'assets/icons/users-round.svg',
-        label: 'Membros',
-        color: Color(0xFF059669),
-      ),
-      (
-        assetPath: 'assets/icons/wrench.svg',
-        label: 'Funções',
-        color: Color(0xFFD97706),
-      ),
+      (assetPath: 'assets/icons/calendar-fold.svg', label: 'Eventos'),
+      (assetPath: 'assets/icons/users-round.svg', label: 'Membros'),
+      (assetPath: 'assets/icons/wrench.svg', label: 'Funções'),
     ];
+    const activeColor = Color(0xFF2563EB);
 
     return AnimatedBuilder(
       animation: controller.animation ?? controller,
@@ -294,7 +283,7 @@ class _ProjectTabs extends StatelessWidget {
             controller.animation?.value.round() ?? controller.index;
 
         return Container(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(2.5),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
             borderRadius: BorderRadius.circular(14),
@@ -304,20 +293,15 @@ class _ProjectTabs extends StatelessWidget {
             dividerColor: Colors.transparent,
             indicatorSize: TabBarIndicatorSize.tab,
             indicator: BoxDecoration(
-              color: indexColor(
-                activeIndex,
-                isDark: isDark,
-                fallbackDark: const Color(0xFF111827),
-                fallbackLight: Colors.white,
-              ),
-              borderRadius: BorderRadius.circular(10),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
                   color: isDark
                       ? const Color(0x26000000)
                       : const Color(0x18000000),
-                  blurRadius: isDark ? 12 : 8,
-                  offset: const Offset(0, 2),
+                  blurRadius: isDark ? 14 : 10,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
@@ -326,7 +310,7 @@ class _ProjectTabs extends StatelessWidget {
             tabs: [
               for (var index = 0; index < tabs.length; index++)
                 Tab(
-                  height: 44,
+                  height: 40,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -335,9 +319,7 @@ class _ProjectTabs extends StatelessWidget {
                         width: 18,
                         height: 18,
                         colorFilter: ColorFilter.mode(
-                          index == activeIndex
-                              ? tabs[index].color
-                              : inactiveColor,
+                          index == activeIndex ? activeColor : inactiveColor,
                           BlendMode.srcIn,
                         ),
                       ),
@@ -349,7 +331,7 @@ class _ProjectTabs extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
                             color: index == activeIndex
-                                ? tabs[index].color
+                                ? activeColor
                                 : inactiveColor,
                           ),
                         ),
@@ -362,31 +344,5 @@ class _ProjectTabs extends StatelessWidget {
         );
       },
     );
-  }
-
-  Color indexColor(
-    int index, {
-    required bool isDark,
-    required Color fallbackDark,
-    required Color fallbackLight,
-  }) {
-    const activeBackgroundsLight = [
-      Color(0xFFEFF6FF),
-      Color(0xFFECFDF5),
-      Color(0xFFFFF7ED),
-    ];
-    const activeBackgroundsDark = [
-      Color(0xFF172554),
-      Color(0xFF052E2B),
-      Color(0xFF3F2A13),
-    ];
-
-    if (index < 0 || index > 2) {
-      return isDark ? fallbackDark : fallbackLight;
-    }
-
-    return isDark
-        ? activeBackgroundsDark[index]
-        : activeBackgroundsLight[index];
   }
 }

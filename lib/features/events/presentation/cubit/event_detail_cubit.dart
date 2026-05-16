@@ -11,6 +11,9 @@ import '../../domain/entities/skill_entity.dart';
 import 'event_detail_state.dart';
 
 class EventDetailCubit extends Cubit<EventDetailState> {
+  static const Duration _cacheDuration = Duration(minutes: 10);
+  static final Map<String, _CachedEventDetailData> _cacheByEventId = {};
+
   final EventsRepository _repository;
   final UserRepository _userRepository;
   UserDetailEntity? _currentUser;
@@ -19,7 +22,15 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   EventDetailCubit(this._repository, this._userRepository)
     : super(const EventDetailState());
 
-  Future<void> load(String eventId) async {
+  Future<void> load(String eventId, {bool force = false}) async {
+    final cached = !force ? _cacheByEventId[eventId] : null;
+    if (cached != null && !cached.isExpired) {
+      _projectMembers = cached.projectMembers;
+      _currentUser = cached.currentUser;
+      emit(cached.state);
+      return;
+    }
+
     emit(state.copyWith(status: EventDetailStatus.loading));
 
     try {
@@ -67,21 +78,25 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       _currentUser = currentUser;
       final isProjectAdmin =
           role.toUpperCase() == 'ADMIN' || role.toUpperCase() == 'OWNER';
-      emit(
-        state.copyWith(
-          status: EventDetailStatus.success,
-          event: event,
-          participants: participants,
-          songs: songs,
-          skillsMap: _buildSkillsMap(skillsList),
+      final nextState = state.copyWith(
+        status: EventDetailStatus.success,
+        event: event,
+        participants: participants,
+        songs: songs,
+        skillsMap: _buildSkillsMap(skillsList),
+        isProjectAdmin: isProjectAdmin,
+        canAddSongs: _canCurrentUserAddSongs(
           isProjectAdmin: isProjectAdmin,
-          canAddSongs: _canCurrentUserAddSongs(
-            isProjectAdmin: isProjectAdmin,
-            projectMembers: projectMembers,
-            participants: participants,
-            currentUser: currentUser,
-          ),
+          projectMembers: projectMembers,
+          participants: participants,
+          currentUser: currentUser,
         ),
+      );
+      emit(nextState);
+      _cacheByEventId[eventId] = _CachedEventDetailData(
+        state: nextState,
+        currentUser: currentUser,
+        projectMembers: projectMembers,
       );
     } catch (e) {
       emit(
@@ -121,18 +136,18 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       final participants = results[0] as List<EventParticipant>;
       final skills = results[1] as List<SkillEntity>;
       final isProjectAdmin = state.isProjectAdmin;
-      emit(
-        state.copyWith(
+      final nextState = state.copyWith(
+        participants: participants,
+        skillsMap: _buildSkillsMap(skills),
+        canAddSongs: _canCurrentUserAddSongs(
+          isProjectAdmin: isProjectAdmin,
+          projectMembers: _projectMembers,
           participants: participants,
-          skillsMap: _buildSkillsMap(skills),
-          canAddSongs: _canCurrentUserAddSongs(
-            isProjectAdmin: isProjectAdmin,
-            projectMembers: _projectMembers,
-            participants: participants,
-            currentUser: _currentUser,
-          ),
+          currentUser: _currentUser,
         ),
       );
+      emit(nextState);
+      _writeCache(event.id, nextState);
     } catch (e) {
       if (kDebugMode) {
         print('Falha ao recarregar participantes: $e');
@@ -146,7 +161,9 @@ class EventDetailCubit extends Cubit<EventDetailState> {
 
     try {
       final songs = await _repository.getEventSongs(event.id);
-      emit(state.copyWith(songs: songs));
+      final nextState = state.copyWith(songs: songs);
+      emit(nextState);
+      _writeCache(event.id, nextState);
     } catch (e) {
       if (kDebugMode) {
         print('Falha ao recarregar músicas: $e');
@@ -167,13 +184,13 @@ class EventDetailCubit extends Cubit<EventDetailState> {
 
     try {
       await _repository.removeSongFromEvent(event.id, eventSongId);
-      emit(
-        state.copyWith(
-          songs: state.songs.where((song) => song.id != eventSongId).toList(),
-          clearDeletingSongId: true,
-          clearActionErrorMessage: true,
-        ),
+      final nextState = state.copyWith(
+        songs: state.songs.where((song) => song.id != eventSongId).toList(),
+        clearDeletingSongId: true,
+        clearActionErrorMessage: true,
       );
+      emit(nextState);
+      _writeCache(event.id, nextState);
       return true;
     } catch (e) {
       emit(
@@ -186,8 +203,78 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     }
   }
 
+  Future<bool> acceptParticipantInvite(String participantId) async {
+    if (participantId.trim().isEmpty) return false;
+
+    emit(state.copyWith(clearActionErrorMessage: true));
+
+    try {
+      await _repository.acceptEventParticipant(participantId);
+      await refreshParticipants();
+      emit(state.copyWith(clearActionErrorMessage: true));
+      return true;
+    } catch (e) {
+      emit(
+        state.copyWith(
+          actionErrorMessage: e.toString().replaceFirst('Exception: ', ''),
+        ),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> declineParticipantInvite(String participantId) async {
+    if (participantId.trim().isEmpty) return false;
+
+    emit(state.copyWith(clearActionErrorMessage: true));
+
+    try {
+      await _repository.declineEventParticipant(participantId);
+      await refreshParticipants();
+      emit(state.copyWith(clearActionErrorMessage: true));
+      return true;
+    } catch (e) {
+      emit(
+        state.copyWith(
+          actionErrorMessage: e.toString().replaceFirst('Exception: ', ''),
+        ),
+      );
+      return false;
+    }
+  }
+
+  bool isCurrentUserParticipant(EventParticipant participant) {
+    final currentUserId = _currentUser?.id?.trim();
+    if (currentUserId == null || currentUserId.isEmpty) {
+      return false;
+    }
+
+    if (participant.userId == currentUserId) {
+      return true;
+    }
+
+    if (participant.memberId == currentUserId) {
+      return true;
+    }
+
+    return _projectMembers.any(
+      (member) =>
+          member.userId == currentUserId &&
+          (participant.memberId == member.id ||
+              participant.memberId == member.userId),
+    );
+  }
+
   Map<String, String> _buildSkillsMap(List<SkillEntity> skills) {
     return {for (final skill in skills) skill.id: skill.name};
+  }
+
+  void _writeCache(String eventId, EventDetailState nextState) {
+    _cacheByEventId[eventId] = _CachedEventDetailData(
+      state: nextState,
+      currentUser: _currentUser,
+      projectMembers: _projectMembers,
+    );
   }
 
   bool _canCurrentUserAddSongs({
@@ -221,4 +308,20 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       );
     });
   }
+}
+
+class _CachedEventDetailData {
+  final EventDetailState state;
+  final UserDetailEntity? currentUser;
+  final List<ProjectMemberEntity> projectMembers;
+  final DateTime createdAt;
+
+  _CachedEventDetailData({
+    required this.state,
+    required this.currentUser,
+    required this.projectMembers,
+  }) : createdAt = DateTime.now();
+
+  bool get isExpired =>
+      DateTime.now().difference(createdAt) >= EventDetailCubit._cacheDuration;
 }

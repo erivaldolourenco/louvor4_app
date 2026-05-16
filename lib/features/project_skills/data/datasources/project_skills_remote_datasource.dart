@@ -80,6 +80,21 @@ class ProjectSkillsRemoteDataSource {
     }
   }
 
+  Future<void> updateProjectSkill(
+    String projectId,
+    String skillId,
+    AddProjectSkillRequestModel request,
+  ) async {
+    try {
+      await _dio.put(
+        '/music-project/$projectId/skills/$skillId',
+        data: request.toJson(),
+      );
+    } on DioException catch (e) {
+      throw Exception(_extractApiMessage(e));
+    }
+  }
+
   Future<void> deleteProjectSkill(String skillId) async {
     try {
       await _dio.delete('/skills/$skillId');

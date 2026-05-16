@@ -16,6 +16,7 @@ class EventMusicCard extends StatelessWidget {
   final bool canRemove;
   final bool isRemoving;
   final Future<bool> Function()? onRemove;
+  final bool isMedley;
 
   const EventMusicCard({
     super.key,
@@ -29,6 +30,7 @@ class EventMusicCard extends StatelessWidget {
     this.canRemove = false,
     this.isRemoving = false,
     this.onRemove,
+    this.isMedley = false,
   });
 
   Future<void> _launchYoutube() async {
@@ -52,21 +54,40 @@ class EventMusicCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       child: Row(
         children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF0F172A) : Colors.grey[200],
-              borderRadius: BorderRadius.circular(12),
-              image: DecorationImage(
-                image: youtubeUrl != null && youtubeUrl!.isNotEmpty
-                    ? NetworkImage(YoutubeUtils.getThumbnail(youtubeUrl!))
-                    : const AssetImage('assets/images/default-cover.png')
-                          as ImageProvider,
-                fit: BoxFit.cover,
+          if (isMedley)
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? const Color(0xFF3F2A13)
+                    : const Color(0xFFFFF6E5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.queue_music_rounded,
+                  color: Color(0xFFF59E0B),
+                  size: 30,
+                ),
+              ),
+            )
+          else
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F172A) : Colors.grey[200],
+                borderRadius: BorderRadius.circular(12),
+                image: DecorationImage(
+                  image: youtubeUrl != null && youtubeUrl!.isNotEmpty
+                      ? NetworkImage(YoutubeUtils.getThumbnail(youtubeUrl!))
+                      : const AssetImage('assets/images/default-cover.png')
+                            as ImageProvider,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -89,16 +110,29 @@ class EventMusicCard extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _MetaChip(
-                      label: 'Tom: ${musicKey.isEmpty ? "-" : musicKey}',
-                    ),
-                    if (bpm != null) _MetaChip(label: '$bpm BPM'),
+                    if (isMedley)
+                      _MetaChip(
+                        label: 'Medley',
+                        backgroundColor: isDark
+                            ? const Color(0xFF3F2A13)
+                            : const Color(0xFFFFF6E5),
+                        textColor: const Color(0xFFF59E0B),
+                        borderColor: isDark
+                            ? const Color(0xFF78350F)
+                            : const Color(0xFFFDE68A),
+                      )
+                    else ...[
+                      _MetaChip(
+                        label: 'Tom: ${musicKey.isEmpty ? "-" : musicKey}',
+                      ),
+                      if (bpm != null) _MetaChip(label: '$bpm BPM'),
+                    ],
                   ],
                 ),
               ],
             ),
           ),
-          if (youtubeUrl != null && youtubeUrl!.isNotEmpty)
+          if (!isMedley && youtubeUrl != null && youtubeUrl!.isNotEmpty)
             _CircularActionButton(
               onPressed: _launchYoutube,
               assetPath: 'assets/icons/youtube.svg',
@@ -206,8 +240,16 @@ class _CircularActionButton extends StatelessWidget {
 
 class _MetaChip extends StatelessWidget {
   final String label;
+  final Color? backgroundColor;
+  final Color? textColor;
+  final Color? borderColor;
 
-  const _MetaChip({required this.label});
+  const _MetaChip({
+    required this.label,
+    this.backgroundColor,
+    this.textColor,
+    this.borderColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -220,16 +262,18 @@ class _MetaChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF3F4F6),
+        color: backgroundColor ??
+            (isDark ? const Color(0xFF0F172A) : const Color(0xFFF3F4F6)),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE5E7EB),
+          color: borderColor ??
+              (isDark ? const Color(0xFF334155) : const Color(0xFFE5E7EB)),
         ),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: subtitleColor,
+          color: textColor ?? subtitleColor,
           fontSize: 12,
           fontWeight: FontWeight.w800,
           letterSpacing: 0.2,

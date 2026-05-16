@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/song_details_sheet.dart';
 import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 import 'package:louvor4_app/core/ui/widgets/header_project_event.dart';
@@ -10,11 +11,16 @@ import 'package:louvor4_app/features/user_profile/data/user_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/utils/formatters.dart';
+import '../../data/event_program_repository.dart';
 import '../../data/events_repository.dart';
+import '../../data/impl/event_program_repository_impl.dart';
 import '../../data/impl/events_repository_impl.dart';
 import '../cubit/event_detail_cubit.dart';
 import '../cubit/event_detail_state.dart';
+import '../cubit/event_program_cubit.dart';
+import '../../domain/entities/event_participant_entity.dart';
 import '../widgets/event_participant_card.dart';
+import '../widgets/event_program_tab.dart';
 import '../widgets/manage_event_participants_sheet.dart';
 import '../widgets/manage_event_songs_sheet.dart';
 import 'edit_event_page.dart';
@@ -32,12 +38,25 @@ class EventDetailPage extends StatelessWidget {
           create: (_) => EventsRepositoryImpl(),
         ),
         RepositoryProvider<UserRepository>(create: (_) => UserRepositoryImpl()),
+        RepositoryProvider<EventProgramRepository>(
+          create: (_) => EventProgramRepositoryImpl(),
+        ),
       ],
-      child: BlocProvider(
-        create: (ctx) => EventDetailCubit(
-          ctx.read<EventsRepository>(),
-          ctx.read<UserRepository>(),
-        )..load(eventId),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (ctx) => EventDetailCubit(
+              ctx.read<EventsRepository>(),
+              ctx.read<UserRepository>(),
+            )..load(eventId),
+          ),
+          BlocProvider(
+            create: (ctx) => EventProgramCubit(
+              ctx.read<EventProgramRepository>(),
+              eventId: eventId,
+            ),
+          ),
+        ],
         child: _EventDetailView(eventId: eventId),
       ),
     );
@@ -56,15 +75,25 @@ class _EventDetailView extends StatefulWidget {
 class _EventDetailViewState extends State<_EventDetailView>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  bool _programLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(_handleTabChange);
+  }
+
+  void _handleTabChange() {
+    if (_tabController.index == 2 && !_programLoaded && mounted) {
+      _programLoaded = true;
+      context.read<EventProgramCubit>().loadProgram();
+    }
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
     super.dispose();
   }
@@ -145,44 +174,16 @@ class _EventDetailViewState extends State<_EventDetailView>
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
-                    child: Column(
-                      children: [
-                        Text(
-                          event.title,
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: titleColor,
-                          ),
-                        ),
-                        if (event.description != null &&
-                            event.description!.trim().isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            event.description!,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: mutedColor,
-                              fontSize: 14,
-                              height: 1.4,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-                    child: Center(
-                      child: Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _EventInfoHighlightItem(
+                    padding: const EdgeInsets.fromLTRB(16, 34, 16, 0),
+                    child: Transform.translate(
+                      offset: const Offset(0, -34),
+                      child: _EventHeroCard(
+                        title: event.title,
+                        description: event.description,
+                        titleColor: titleColor,
+                        mutedColor: mutedColor,
+                        items: [
+                          _EventInfoItemData(
                             assetPath: 'assets/icons/calendar.svg',
                             text: formatDate(event.date),
                             backgroundColor: isDark
@@ -190,7 +191,7 @@ class _EventDetailViewState extends State<_EventDetailView>
                                 : const Color(0xFFEAF2FF),
                             iconColor: const Color(0xFF2563EB),
                           ),
-                          _EventInfoHighlightItem(
+                          _EventInfoItemData(
                             assetPath: 'assets/icons/alarm-clock.svg',
                             text: formatTime(event.time),
                             backgroundColor: isDark
@@ -198,7 +199,7 @@ class _EventDetailViewState extends State<_EventDetailView>
                                 : const Color(0xFFFFF6E5),
                             iconColor: const Color(0xFFF59E0B),
                           ),
-                          _EventInfoHighlightItem(
+                          _EventInfoItemData(
                             assetPath: 'assets/icons/map-pinned.svg',
                             text: event.location?.trim().isNotEmpty == true
                                 ? event.location!
@@ -218,12 +219,8 @@ class _EventDetailViewState extends State<_EventDetailView>
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-                    child: _EventDetailTabs(
-                      controller: _tabController,
-                      participantsCount: state.participants.length,
-                      songsCount: state.songs.length,
-                    ),
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+                    child: _EventDetailTabs(controller: _tabController),
                   ),
                 ),
               ];
@@ -241,6 +238,10 @@ class _EventDetailViewState extends State<_EventDetailView>
                   mutedColor: mutedColor,
                   onAddSongs: () => _onAddSongs(state),
                   onRemoveSong: _onRemoveSong,
+                ),
+                EventProgramTab(
+                  isAdmin: state.isProjectAdmin,
+                  mutedColor: mutedColor,
                 ),
               ],
             ),
@@ -365,7 +366,7 @@ class _EventDetailViewState extends State<_EventDetailView>
     );
     if (updated != true || !mounted) return;
 
-    await context.read<EventDetailCubit>().load(widget.eventId);
+    await context.read<EventDetailCubit>().load(widget.eventId, force: true);
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -382,14 +383,8 @@ enum _EventHeaderAction { edit, delete }
 
 class _EventDetailTabs extends StatelessWidget {
   final TabController controller;
-  final int participantsCount;
-  final int songsCount;
 
-  const _EventDetailTabs({
-    required this.controller,
-    required this.participantsCount,
-    required this.songsCount,
-  });
+  const _EventDetailTabs({required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -403,7 +398,7 @@ class _EventDetailTabs extends StatelessWidget {
             controller.animation?.value.round() ?? controller.index;
 
         return Container(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(2.5),
           decoration: BoxDecoration(
             color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
             borderRadius: BorderRadius.circular(14),
@@ -426,15 +421,11 @@ class _EventDetailTabs extends StatelessWidget {
             splashFactory: NoSplash.splashFactory,
             overlayColor: WidgetStateProperty.all(Colors.transparent),
             tabs: [
+              _EventDetailTabLabel(label: 'Equipe', selected: tabIndex == 0),
+              _EventDetailTabLabel(label: 'Músicas', selected: tabIndex == 1),
               _EventDetailTabLabel(
-                label: 'Equipe',
-                count: participantsCount,
-                selected: tabIndex == 0,
-              ),
-              _EventDetailTabLabel(
-                label: 'Músicas',
-                count: songsCount,
-                selected: tabIndex == 1,
+                label: 'Programação',
+                selected: tabIndex == 2,
               ),
             ],
           ),
@@ -444,15 +435,19 @@ class _EventDetailTabs extends StatelessWidget {
   }
 }
 
-class _EventDetailTabLabel extends StatelessWidget {
-  final String label;
-  final int count;
-  final bool selected;
+class _EventHeroCard extends StatelessWidget {
+  final String title;
+  final String? description;
+  final Color? titleColor;
+  final Color? mutedColor;
+  final List<_EventInfoItemData> items;
 
-  const _EventDetailTabLabel({
-    required this.label,
-    required this.count,
-    required this.selected,
+  const _EventHeroCard({
+    required this.title,
+    required this.description,
+    required this.titleColor,
+    required this.mutedColor,
+    required this.items,
   });
 
   @override
@@ -460,42 +455,78 @@ class _EventDetailTabLabel extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Tab(
-      height: 48,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 15,
-              color: selected
-                  ? theme.colorScheme.primary
-                  : (isDark
-                        ? const Color(0xFF94A3B8)
-                        : const Color(0xFF64748B)),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              '$count',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: isDark
-                    ? const Color(0xFF60A5FA)
-                    : const Color(0xFF1D4ED8),
-              ),
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF111827) : Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(
+            color: isDark ? const Color(0x33000000) : const Color(0x140F172A),
+            blurRadius: isDark ? 24 : 22,
+            offset: const Offset(0, 10),
           ),
         ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(22, 26, 22, 18),
+        child: Column(
+          children: [
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: titleColor,
+                height: 1.05,
+              ),
+            ),
+            if (description != null && description!.trim().isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Text(
+                description!,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: mutedColor,
+                  fontSize: 16,
+                  height: 1.4,
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+            const SizedBox(height: 14),
+            _EventInfoHighlightsRow(items: items),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EventDetailTabLabel extends StatelessWidget {
+  final String label;
+  final bool selected;
+
+  const _EventDetailTabLabel({required this.label, required this.selected});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Tab(
+      height: 40,
+      child: Text(
+        label,
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+          color: selected
+              ? theme.colorScheme.primary
+              : (isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B)),
+        ),
       ),
     );
   }
@@ -512,8 +543,36 @@ class _ParticipantsTab extends StatelessWidget {
     required this.onManageSchedule,
   });
 
+  Future<bool> _handleParticipantInviteAction(
+    BuildContext context, {
+    required bool accept,
+    required String participantId,
+  }) async {
+    final cubit = context.read<EventDetailCubit>();
+    final success = accept
+        ? await cubit.acceptParticipantInvite(participantId)
+        : await cubit.declineParticipantInvite(participantId);
+
+    if (success) {
+      AppFeedback.showSuccess(
+        accept ? 'Participação aceita com sucesso.' : 'Participação recusada.',
+      );
+      return true;
+    }
+
+    AppFeedback.showError(
+      cubit.state.actionErrorMessage ??
+          (accept
+              ? 'Não foi possível aceitar a participação.'
+              : 'Não foi possível recusar a participação.'),
+    );
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<EventDetailCubit>();
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 2, 16, 36),
       children: [
@@ -561,18 +620,40 @@ class _ParticipantsTab extends StatelessWidget {
             subtitle: 'Nenhum integrante foi vinculado a este evento.',
           )
         else
-          ...state.participants.map(
-            (participant) => EventParticipantCard(
+          ...state.participants.map((participant) {
+            final canRespondToInvite =
+                participant.status == EventParticipantStatus.pending &&
+                participant.id.trim().isNotEmpty &&
+                cubit.isCurrentUserParticipant(participant);
+
+            return EventParticipantCard(
               name: participant.fullName,
               skill: state.skillsMap[participant.skillId] ?? '',
+              status: participant.status,
               profileImage: participant.profileImage,
               onTap: () => showUserProfileDialog(
                 context,
                 name: participant.fullName,
                 profileImageUrl: participant.profileImage,
+                eventSkill: state.skillsMap[participant.skillId] ?? '',
+                eventStatus: participant.status,
+                onAcceptInvite: canRespondToInvite
+                    ? () => _handleParticipantInviteAction(
+                        context,
+                        accept: true,
+                        participantId: participant.id,
+                      )
+                    : null,
+                onDeclineInvite: canRespondToInvite
+                    ? () => _handleParticipantInviteAction(
+                        context,
+                        accept: false,
+                        participantId: participant.id,
+                      )
+                    : null,
               ),
-            ),
-          ),
+            );
+          }),
       ],
     );
   }
@@ -684,14 +765,19 @@ class _SongsTab extends StatelessWidget {
                 (song) => EventMusicCard(
                   eventSongId: song.id,
                   title: song.title,
-                  artist: song.artist ?? 'Desconhecido',
+                  artist: song.isMedley
+                      ? (song.artist ?? 'Medley')
+                      : (song.artist ?? 'Desconhecido'),
                   musicKey: song.key ?? '',
                   bpm: song.bpm,
                   youtubeUrl: song.youTubeUrl,
+                  isMedley: song.isMedley,
                   onTap: () => showSongDetailsModal(
                     context,
                     title: song.title,
-                    artist: song.artist ?? 'Desconhecido',
+                    artist: song.isMedley
+                        ? (song.artist ?? '')
+                        : (song.artist ?? 'Desconhecido'),
                     musicKey: song.key,
                     bpm: song.bpm?.toString(),
                     youTubeUrl: song.youTubeUrl ?? '',
@@ -730,37 +816,48 @@ class _EventInfoHighlightItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final titleColor = Theme.of(context).textTheme.titleMedium?.color;
+    final isLocationAction = onTap != null;
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: backgroundColor.withValues(alpha: 0.6),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: backgroundColor, width: 1.5),
-        ),
-        child: Row(
+      borderRadius: BorderRadius.circular(18),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SvgPicture.asset(
-              assetPath,
-              width: 16,
-              height: 16,
-              colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-            ),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                text,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: titleColor,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  assetPath,
+                  width: 16,
+                  height: 16,
+                  colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
                 ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: titleColor,
+                fontWeight: FontWeight.w800,
+                fontSize: 13,
+                height: 1.2,
+                decoration: isLocationAction
+                    ? TextDecoration.underline
+                    : TextDecoration.none,
+                decorationStyle: TextDecorationStyle.dotted,
+                decorationColor: titleColor?.withValues(alpha: 0.55),
               ),
             ),
           ],
@@ -768,6 +865,48 @@ class _EventInfoHighlightItem extends StatelessWidget {
       ),
     );
   }
+}
+
+class _EventInfoHighlightsRow extends StatelessWidget {
+  final List<_EventInfoItemData> items;
+
+  const _EventInfoHighlightsRow({required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: items
+          .map(
+            (item) => Expanded(
+              child: _EventInfoHighlightItem(
+                assetPath: item.assetPath,
+                text: item.text,
+                backgroundColor: item.backgroundColor,
+                iconColor: item.iconColor,
+                onTap: item.onTap,
+              ),
+            ),
+          )
+          .toList(growable: false),
+    );
+  }
+}
+
+class _EventInfoItemData {
+  final String assetPath;
+  final String text;
+  final Color backgroundColor;
+  final Color iconColor;
+  final VoidCallback? onTap;
+
+  const _EventInfoItemData({
+    required this.assetPath,
+    required this.text,
+    required this.backgroundColor,
+    required this.iconColor,
+    this.onTap,
+  });
 }
 
 class _DetailLoadingState extends StatelessWidget {

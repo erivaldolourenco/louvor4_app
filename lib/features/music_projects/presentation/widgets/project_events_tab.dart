@@ -279,7 +279,7 @@ class _ProjectEventCard extends StatelessWidget {
                           const Icon(
                             Icons.schedule_rounded,
                             size: 15,
-                            color: Color(0xFFF59E0B),
+                            color: Color(0xFF6B7280),
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -287,14 +287,14 @@ class _ProjectEventCard extends StatelessWidget {
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   fontWeight: FontWeight.w700,
-                                  color: const Color(0xFFF59E0B),
+                                  color: const Color(0xFF6B7280),
                                 ),
                           ),
                           const SizedBox(width: 10),
                           const Icon(
                             Icons.place_outlined,
                             size: 15,
-                            color: Color(0xFF10B981),
+                            color: Color(0xFF6B7280),
                           ),
                           const SizedBox(width: 4),
                           Expanded(
@@ -303,7 +303,7 @@ class _ProjectEventCard extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: const Color(0xFF10B981)),
+                                  ?.copyWith(color: const Color(0xFF6B7280)),
                             ),
                           ),
                         ],

@@ -10,6 +10,9 @@ import 'package:louvor4_app/features/events/domain/entities/project_member_entit
 import 'package:louvor4_app/features/events/domain/entities/skill_entity.dart';
 import 'package:louvor4_app/features/events/presentation/cubit/manage_event_songs_cubit.dart';
 import 'package:louvor4_app/features/events/presentation/cubit/manage_event_songs_state.dart';
+import 'package:louvor4_app/features/medleys/data/medley_repository.dart';
+import 'package:louvor4_app/features/medleys/domain/entities/create_medley_input_entity.dart';
+import 'package:louvor4_app/features/medleys/domain/entities/medley_entity.dart';
 import 'package:louvor4_app/features/songs/domain/entities/song_entity.dart';
 
 class _FakeEventsRepository implements EventsRepository {
@@ -89,6 +92,42 @@ class _FakeEventsRepository implements EventsRepository {
   Future<void> updateEvent(String eventId, dynamic input) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> acceptEventParticipant(String participantId) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> declineEventParticipant(String participantId) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<({List<EventEntity> events, bool hasMore})> getPastEvents(
+    int page, {
+    int size = 10,
+  }) async => (events: const <EventEntity>[], hasMore: false);
+}
+
+class _FakeMedleyRepository implements MedleyRepository {
+  @override
+  Future<List<MedleyEntity>> getUserMedleys() async => const [];
+
+  @override
+  Future<MedleyEntity> createMedley(CreateMedleyInputEntity input) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<MedleyEntity> updateMedley(String id, CreateMedleyInputEntity input) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> deleteMedley(String id) async {
+    throw UnimplementedError();
+  }
 }
 
 void main() {
@@ -115,7 +154,7 @@ void main() {
         ],
       );
 
-      final cubit = ManageEventSongsCubit(repo);
+      final cubit = ManageEventSongsCubit(repo, _FakeMedleyRepository());
 
       await cubit.load();
       expect(cubit.state.status, ManageEventSongsStatus.loaded);
@@ -128,7 +167,7 @@ void main() {
 
       expect(saved, isTrue);
       expect(cubit.state.status, ManageEventSongsStatus.success);
-      expect(repo.savedSongs.map((song) => song.songId), ['s1', 's2']);
+      expect(repo.savedSongs.map((song) => song.itemId), ['s1', 's2']);
 
       await cubit.close();
     });

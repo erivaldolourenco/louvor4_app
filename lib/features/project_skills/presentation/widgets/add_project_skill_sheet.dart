@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/utils/skill_icon.dart';
+import '../../domain/entities/project_skill_entity.dart';
 import '../state/project_skills_cubit.dart';
 import '../state/project_skills_state.dart';
 
 class AddProjectSkillSheet extends StatefulWidget {
-  const AddProjectSkillSheet({super.key});
+  final ProjectSkillEntity? skill;
+
+  const AddProjectSkillSheet({super.key, this.skill});
+
+  bool get isEditing => skill != null;
 
   @override
   State<AddProjectSkillSheet> createState() => _AddProjectSkillSheetState();
@@ -15,7 +22,15 @@ class AddProjectSkillSheet extends StatefulWidget {
 
 class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  late final TextEditingController _nameController;
+  String? _selectedIconKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.skill?.name ?? '');
+    _selectedIconKey = widget.skill?.iconKey;
+  }
 
   @override
   void dispose() {
@@ -28,12 +43,13 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
     final cubit = context.read<ProjectSkillsCubit>();
     final state = context.watch<ProjectSkillsCubit>().state;
     final isSubmitting = state.submission == ProjectSkillsSubmission.creating;
+    final isEditing = widget.isEditing;
 
     return AppFormSheet(
-      title: 'Nova função',
-      subtitle:
-          'Cadastre uma nova função musical disponível para uso nas escalas.',
-      icon: Icons.music_note_rounded,
+      title: isEditing ? 'Editar função' : 'Nova função',
+      subtitle: isEditing
+          ? 'Altere o nome ou o ícone da função.'
+          : 'Cadastre uma nova função musical disponível para uso nas escalas.',
       child: Form(
         key: _formKey,
         child: Column(
@@ -55,6 +71,23 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
                 return null;
               },
             ),
+            const SizedBox(height: 20),
+            const _FieldLabel(label: 'Ícone'),
+            _IconPickerGrid(
+              selectedKey: _selectedIconKey,
+              onSelect: (key) => setState(() => _selectedIconKey = key),
+              enabled: !isSubmitting,
+            ),
+            if (_selectedIconKey == null && state.actionErrorMessage == null) ...[
+              const SizedBox(height: 6),
+              Text(
+                'Selecione um ícone para a função.',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                  fontSize: 12,
+                ),
+              ),
+            ],
             if (state.actionErrorMessage != null) ...[
               const SizedBox(height: 12),
               _InlineError(message: state.actionErrorMessage!),
@@ -78,12 +111,26 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
                     onPressed: isSubmitting
                         ? null
                         : () async {
-                            if (!_formKey.currentState!.validate()) {
+                            if (!_formKey.currentState!.validate()) return;
+                            if (_selectedIconKey == null) {
+                              setState(() {});
                               return;
                             }
-                            final success = await cubit.createSkill(
-                              _nameController.text,
-                            );
+
+                            final bool success;
+                            if (isEditing) {
+                              success = await cubit.updateSkill(
+                                widget.skill!,
+                                _nameController.text,
+                                iconKey: _selectedIconKey,
+                              );
+                            } else {
+                              success = await cubit.createSkill(
+                                _nameController.text,
+                                iconKey: _selectedIconKey,
+                              );
+                            }
+
                             if (!mounted) return;
                             if (success) {
                               Navigator.of(this.context).pop(true);
@@ -102,7 +149,7 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('Adicionar função'),
+                        : Text(isEditing ? 'Salvar alterações' : 'Adicionar função'),
                   ),
                 ),
               ],
@@ -110,6 +157,99 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _IconPickerGrid extends StatelessWidget {
+  final String? selectedKey;
+  final ValueChanged<String> onSelect;
+  final bool enabled;
+
+  const _IconPickerGrid({
+    required this.selectedKey,
+    required this.onSelect,
+    required this.enabled,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final icons = skillIconLabels.entries.toList();
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: icons.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        childAspectRatio: 0.9,
+      ),
+      itemBuilder: (context, index) {
+        final key = icons[index].key;
+        final label = icons[index].value;
+        final isSelected = selectedKey == key;
+
+        return GestureDetector(
+          onTap: enabled ? () => onSelect(key) : null,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? (isDark
+                        ? const Color(0xFF172554)
+                        : const Color(0xFFEFF6FF))
+                  : (isDark
+                        ? const Color(0xFF1E293B)
+                        : const Color(0xFFF8FAFC)),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected
+                    ? const Color(0xFF2563EB)
+                    : (isDark
+                          ? const Color(0xFF334155)
+                          : const Color(0xFFE2E8F0)),
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset(
+                  skillIconAsset(key),
+                  width: 32,
+                  height: 32,
+                  colorFilter: ColorFilter.mode(
+                    isSelected
+                        ? const Color(0xFF2563EB)
+                        : (isDark
+                              ? const Color(0xFF94A3B8)
+                              : const Color(0xFF64748B)),
+                    BlendMode.srcIn,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected
+                        ? const Color(0xFF2563EB)
+                        : (isDark
+                              ? const Color(0xFF94A3B8)
+                              : const Color(0xFF64748B)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

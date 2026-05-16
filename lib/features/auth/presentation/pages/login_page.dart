@@ -13,6 +13,8 @@ import '../cubit/login_state.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatelessWidget {
+  static const routeName = '/login';
+
   const LoginPage({super.key});
 
   @override
@@ -102,9 +104,9 @@ class _LoginViewState extends State<_LoginView> {
                     unawaited(PushNotificationService.instance.initialize());
                     unawaited(PushNotificationService.instance.syncTokenNow());
 
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const RootPage()),
-                    );
+                    Navigator.of(
+                      context,
+                    ).pushReplacementNamed(RootPage.routeName);
                   }
                 },
                 child: Column(

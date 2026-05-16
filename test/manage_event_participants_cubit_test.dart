@@ -62,6 +62,12 @@ class _FakeEventsRepository implements EventsRepository {
   }
 
   @override
+  Future<({List<EventEntity> events, bool hasMore})> getPastEvents(
+    int page, {
+    int size = 10,
+  }) async => (events: const <EventEntity>[], hasMore: false);
+
+  @override
   Future<String> getProjectMemberRole(String projectId) async {
     throw UnimplementedError();
   }
@@ -96,6 +102,16 @@ class _FakeEventsRepository implements EventsRepository {
 
   @override
   Future<void> updateEvent(String eventId, UpdateEventInputEntity input) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> acceptEventParticipant(String participantId) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> declineEventParticipant(String participantId) async {
     throw UnimplementedError();
   }
 }

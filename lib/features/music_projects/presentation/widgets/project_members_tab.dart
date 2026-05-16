@@ -445,7 +445,6 @@ class _AddProjectMemberSheetState extends State<_AddProjectMemberSheet> {
     return _MemberSheetScaffold(
       title: 'Adicionar membro',
       subtitle: 'Informe o username do integrante para convidá-lo ao projeto.',
-      icon: Icons.group_add_rounded,
       child: Form(
         key: _formKey,
         child: Column(
@@ -746,24 +745,17 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
 class _MemberSheetScaffold extends StatelessWidget {
   final String title;
   final String subtitle;
-  final IconData icon;
   final Widget child;
 
   const _MemberSheetScaffold({
     required this.title,
     required this.subtitle,
-    required this.icon,
     required this.child,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AppFormSheet(
-      title: title,
-      subtitle: subtitle,
-      icon: icon,
-      child: child,
-    );
+    return AppFormSheet(title: title, subtitle: subtitle, child: child);
   }
 }
 

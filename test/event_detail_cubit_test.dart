@@ -44,6 +44,8 @@ class _FakeEventsRepository implements EventsRepository {
   int participantsCalls = 0;
   int skillsCalls = 0;
   String? removedSongId;
+  String? acceptedParticipantId;
+  String? declinedParticipantId;
 
   @override
   Future<EventDetailEntity> getEventDetail(String eventId) async => event;
@@ -76,6 +78,12 @@ class _FakeEventsRepository implements EventsRepository {
 
   @override
   Future<List<EventEntity>> getEvents() async => throw UnimplementedError();
+
+  @override
+  Future<({List<EventEntity> events, bool hasMore})> getPastEvents(
+    int page, {
+    int size = 10,
+  }) async => (events: const <EventEntity>[], hasMore: false);
 
   @override
   Future<ProjectMemberEntity> getProjectMember(
@@ -114,6 +122,16 @@ class _FakeEventsRepository implements EventsRepository {
   @override
   Future<void> updateEvent(String eventId, UpdateEventInputEntity input) async {
     throw UnimplementedError();
+  }
+
+  @override
+  Future<void> acceptEventParticipant(String participantId) async {
+    acceptedParticipantId = participantId;
+  }
+
+  @override
+  Future<void> declineEventParticipant(String participantId) async {
+    declinedParticipantId = participantId;
   }
 }
 
@@ -360,5 +378,98 @@ void main() {
         await cubit.close();
       },
     );
+
+    test('aceita participação pendente e recarrega participantes', () async {
+      final repo = _FakeEventsRepository(
+        event: EventDetailEntity(
+          id: 'e1',
+          projectId: 'p1',
+          title: 'Culto',
+          date: DateTime(2026, 3, 11),
+          time: '19:00',
+          projectTitle: 'Louvor',
+          participantsCount: 1,
+          repertoireCount: 0,
+        ),
+        initialParticipants: const [
+          EventParticipant(
+            id: 'ep1',
+            memberId: 'm1',
+            firstName: 'Ana',
+            skillId: 's1',
+            status: EventParticipantStatus.pending,
+            permissions: {},
+          ),
+        ],
+        refreshedParticipants: const [
+          EventParticipant(
+            id: 'ep1',
+            memberId: 'm1',
+            firstName: 'Ana',
+            skillId: 's1',
+            status: EventParticipantStatus.accepted,
+            permissions: {},
+          ),
+        ],
+        initialSkills: const [SkillEntity(id: 's1', name: 'Vocal')],
+        refreshedSkills: const [SkillEntity(id: 's1', name: 'Vocal')],
+      );
+
+      final cubit = EventDetailCubit(repo, _FakeUserRepository());
+
+      await cubit.load('e1');
+      final result = await cubit.acceptParticipantInvite('ep1');
+
+      expect(result, isTrue);
+      expect(repo.acceptedParticipantId, 'ep1');
+      expect(
+        cubit.state.participants.single.status,
+        EventParticipantStatus.accepted,
+      );
+
+      await cubit.close();
+    });
+
+    test('reconhece participante atual pelo userId do participante', () async {
+      final repo = _FakeEventsRepository(
+        event: EventDetailEntity(
+          id: 'e1',
+          projectId: 'p1',
+          title: 'Culto',
+          date: DateTime(2026, 3, 11),
+          time: '19:00',
+          projectTitle: 'Louvor',
+          participantsCount: 1,
+          repertoireCount: 0,
+        ),
+        role: 'member',
+        projectMembers: const [],
+        initialParticipants: const [
+          EventParticipant(
+            id: 'ep1',
+            memberId: 'member-x',
+            userId: 'u1',
+            firstName: 'Ana',
+            skillId: 's1',
+            status: EventParticipantStatus.pending,
+            permissions: {},
+          ),
+        ],
+        refreshedParticipants: const [],
+        initialSkills: const [SkillEntity(id: 's1', name: 'Vocal')],
+        refreshedSkills: const [],
+      );
+
+      final cubit = EventDetailCubit(repo, _FakeUserRepository());
+
+      await cubit.load('e1');
+
+      expect(
+        cubit.isCurrentUserParticipant(cubit.state.participants.single),
+        isTrue,
+      );
+
+      await cubit.close();
+    });
   });
 }

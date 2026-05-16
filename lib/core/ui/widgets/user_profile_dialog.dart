@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:louvor4_app/features/events/domain/entities/event_participant_entity.dart';
 
 import 'app_cached_network_image.dart';
 import 'app_card_surface.dart';
@@ -11,6 +12,10 @@ Future<void> showUserProfileDialog(
   String? email,
   String? projectPermission,
   List<String>? musicSkills,
+  String? eventSkill,
+  EventParticipantStatus? eventStatus,
+  Future<bool> Function()? onAcceptInvite,
+  Future<bool> Function()? onDeclineInvite,
 }) {
   return showDialog<void>(
     context: context,
@@ -22,17 +27,25 @@ Future<void> showUserProfileDialog(
       email: email,
       projectPermission: projectPermission,
       musicSkills: musicSkills,
+      eventSkill: eventSkill,
+      eventStatus: eventStatus,
+      onAcceptInvite: onAcceptInvite,
+      onDeclineInvite: onDeclineInvite,
     ),
   );
 }
 
-class UserProfileDialog extends StatelessWidget {
+class UserProfileDialog extends StatefulWidget {
   final String name;
   final String? profileImageUrl;
   final String? username;
   final String? email;
   final String? projectPermission;
   final List<String>? musicSkills;
+  final String? eventSkill;
+  final EventParticipantStatus? eventStatus;
+  final Future<bool> Function()? onAcceptInvite;
+  final Future<bool> Function()? onDeclineInvite;
 
   const UserProfileDialog({
     super.key,
@@ -42,7 +55,19 @@ class UserProfileDialog extends StatelessWidget {
     this.email,
     this.projectPermission,
     this.musicSkills,
+    this.eventSkill,
+    this.eventStatus,
+    this.onAcceptInvite,
+    this.onDeclineInvite,
   });
+
+  @override
+  State<UserProfileDialog> createState() => _UserProfileDialogState();
+}
+
+class _UserProfileDialogState extends State<UserProfileDialog> {
+  bool _isAccepting = false;
+  bool _isDeclining = false;
 
   @override
   Widget build(BuildContext context) {
@@ -53,16 +78,25 @@ class UserProfileDialog extends StatelessWidget {
       alpha: 0.74,
     );
     final hasImage =
-        profileImageUrl != null && profileImageUrl!.trim().isNotEmpty;
-    final initial = name.trim().isEmpty ? '?' : name.trim()[0].toUpperCase();
-    final normalizedUsername = _normalizedValue(username);
-    final normalizedEmail = _normalizedValue(email);
-    final normalizedPermission = _normalizedValue(projectPermission);
-    final normalizedSkills = (musicSkills ?? const <String>[])
+        widget.profileImageUrl != null &&
+        widget.profileImageUrl!.trim().isNotEmpty;
+    final initial = widget.name.trim().isEmpty
+        ? '?'
+        : widget.name.trim()[0].toUpperCase();
+    final normalizedUsername = _normalizedValue(widget.username);
+    final normalizedEmail = _normalizedValue(widget.email);
+    final normalizedPermission = _normalizedValue(widget.projectPermission);
+    final normalizedEventSkill = _normalizedValue(widget.eventSkill);
+    final normalizedSkills = (widget.musicSkills ?? const <String>[])
         .map((skill) => skill.trim())
         .where((skill) => skill.isNotEmpty)
         .toList();
     final infoColor = theme.textTheme.bodyLarge?.color;
+    final eventStatus = widget.eventStatus;
+    final showInviteActions =
+        eventStatus == EventParticipantStatus.pending &&
+        widget.onAcceptInvite != null &&
+        widget.onDeclineInvite != null;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -91,7 +125,7 @@ class UserProfileDialog extends StatelessWidget {
                           child: hasImage
                               ? Image(
                                   image: appCachedImageProvider(
-                                    profileImageUrl,
+                                    widget.profileImageUrl,
                                   )!,
                                   fit: BoxFit.cover,
                                 )
@@ -128,7 +162,7 @@ class UserProfileDialog extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  name,
+                  widget.name,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w800,
@@ -158,6 +192,54 @@ class UserProfileDialog extends StatelessWidget {
                     ),
                   ),
                 ],
+                if (normalizedEventSkill != null) ...[
+                  const SizedBox(height: 18),
+                  _ProfileSectionTitle(label: 'Função neste evento'),
+                  const SizedBox(height: 12),
+                  _ProfileInfoPill(value: normalizedEventSkill),
+                ],
+                if (eventStatus != null) ...[
+                  const SizedBox(height: 18),
+                  _ProfileSectionTitle(label: 'Status do convite'),
+                  const SizedBox(height: 12),
+                  if (showInviteActions)
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: _isBusy ? null : _handleDecline,
+                            child: _isDeclining
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text('Recusar'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: _isBusy ? null : _handleAccept,
+                            child: _isAccepting
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Aceitar'),
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    _ProfileStatusPill(status: eventStatus),
+                ],
                 if (normalizedPermission != null) ...[
                   const SizedBox(height: 18),
                   _ProfileSectionTitle(label: 'Permissões de acesso'),
@@ -182,6 +264,34 @@ class UserProfileDialog extends StatelessWidget {
   static String? _normalizedValue(String? value) {
     final normalized = value?.trim() ?? '';
     return normalized.isEmpty ? null : normalized;
+  }
+
+  bool get _isBusy => _isAccepting || _isDeclining;
+
+  Future<void> _handleAccept() async {
+    final callback = widget.onAcceptInvite;
+    if (callback == null) return;
+
+    setState(() => _isAccepting = true);
+    final success = await callback();
+    if (!mounted) return;
+    setState(() => _isAccepting = false);
+    if (success) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  Future<void> _handleDecline() async {
+    final callback = widget.onDeclineInvite;
+    if (callback == null) return;
+
+    setState(() => _isDeclining = true);
+    final success = await callback();
+    if (!mounted) return;
+    setState(() => _isDeclining = false);
+    if (success) {
+      Navigator.of(context).pop();
+    }
   }
 }
 
@@ -233,6 +343,101 @@ class _ProfilePermissionPill extends StatelessWidget {
           value,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: const Color(0xFF0166FF),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileInfoPill extends StatelessWidget {
+  final String value;
+
+  const _ProfileInfoPill({required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: isDark ? const Color(0xFF334155) : const Color(0xFFD9DEE8),
+          ),
+        ),
+        child: Text(
+          value,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProfileStatusPill extends StatelessWidget {
+  final EventParticipantStatus status;
+
+  const _ProfileStatusPill({required this.status});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    late final Color backgroundColor;
+    late final Color foregroundColor;
+
+    switch (status) {
+      case EventParticipantStatus.accepted:
+        backgroundColor = isDark
+            ? const Color(0xFF123227)
+            : const Color(0xFFDCFCE7);
+        foregroundColor = isDark
+            ? const Color(0xFF86EFAC)
+            : const Color(0xFF166534);
+      case EventParticipantStatus.pending:
+        backgroundColor = isDark
+            ? const Color(0xFF3F2A13)
+            : const Color(0xFFFEF3C7);
+        foregroundColor = isDark
+            ? const Color(0xFFFCD34D)
+            : const Color(0xFF92400E);
+      case EventParticipantStatus.declined:
+        backgroundColor = isDark
+            ? const Color(0xFF3F1114)
+            : const Color(0xFFFEE2E2);
+        foregroundColor = isDark
+            ? const Color(0xFFFCA5A5)
+            : const Color(0xFF991B1B);
+      case EventParticipantStatus.unknown:
+        backgroundColor = isDark
+            ? const Color(0xFF1E293B)
+            : const Color(0xFFE2E8F0);
+        foregroundColor = isDark
+            ? const Color(0xFFCBD5E1)
+            : const Color(0xFF475569);
+    }
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          status.label,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: foregroundColor,
             fontWeight: FontWeight.w700,
           ),
         ),

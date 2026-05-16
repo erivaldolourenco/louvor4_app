@@ -5,12 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'core/navigation/app_route_observer.dart';
 import 'core/notifications/push_notification_service.dart';
 import 'core/storage/token_storage.dart';
 import 'core/theme/app_theme_controller.dart';
 import 'core/ui/app_feedback.dart';
 import 'features/auth/presentation/pages/login_page.dart';
+import 'features/notifications/presentation/pages/avisos_page.dart';
 import 'features/root/presentation/pages/root_page.dart';
+import 'features/user_profile/apresentation/pages/profile_page.dart';
+import 'features/user_profile/apresentation/pages/user_unavailability_page.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -105,6 +109,16 @@ class Louvor4App extends StatelessWidget {
             ),
 
             scaffoldBackgroundColor: Colors.white,
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.white,
+              foregroundColor: textGrey,
+              elevation: 0,
+            ),
+            bottomSheetTheme: const BottomSheetThemeData(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.white,
+            ),
             filledButtonTheme: FilledButtonThemeData(
               style: FilledButton.styleFrom(
                 backgroundColor: primaryBlue,
@@ -147,6 +161,15 @@ class Louvor4App extends StatelessWidget {
               color: primaryBlue,
             ),
           ),
+          routes: {
+            LoginPage.routeName: (_) => const LoginPage(),
+            RootPage.routeName: (_) => const RootPage(),
+            ProfilePage.routeName: (_) => const ProfilePage(),
+            AvisosPage.routeName: (_) => const StandaloneAvisosPage(),
+            UserUnavailabilityPage.routeName: (_) =>
+                const UserUnavailabilityPage(),
+          },
+          navigatorObservers: [appRouteObserver],
           home: isLoggedIn ? const RootPage() : const LoginPage(),
         );
       },

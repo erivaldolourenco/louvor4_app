@@ -9,7 +9,14 @@ abstract class ProjectSkillsRepository {
 
   Future<List<ProjectSkillEntity>> getProjectSkills(String projectId);
 
-  Future<void> addProjectSkill(String projectId, String name);
+  Future<void> addProjectSkill(String projectId, String name, {String? iconKey});
+
+  Future<void> updateProjectSkill(
+    String projectId,
+    String skillId,
+    String name, {
+    String? iconKey,
+  });
 
   Future<void> deleteProjectSkill(String skillId);
 }

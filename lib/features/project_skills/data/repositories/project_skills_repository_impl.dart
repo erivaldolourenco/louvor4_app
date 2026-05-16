@@ -13,10 +13,24 @@ class ProjectSkillsRepositoryImpl implements ProjectSkillsRepository {
           remoteDataSource ?? ProjectSkillsRemoteDataSource();
 
   @override
-  Future<void> addProjectSkill(String projectId, String name) {
+  Future<void> addProjectSkill(String projectId, String name, {String? iconKey}) {
     return _remoteDataSource.addProjectSkill(
       projectId,
-      AddProjectSkillRequestModel(name: name),
+      AddProjectSkillRequestModel(name: name, iconKey: iconKey),
+    );
+  }
+
+  @override
+  Future<void> updateProjectSkill(
+    String projectId,
+    String skillId,
+    String name, {
+    String? iconKey,
+  }) {
+    return _remoteDataSource.updateProjectSkill(
+      projectId,
+      skillId,
+      AddProjectSkillRequestModel(name: name, iconKey: iconKey),
     );
   }
 

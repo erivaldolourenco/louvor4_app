@@ -6,6 +6,7 @@ import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
+import '../../../../core/utils/skill_icon.dart';
 import '../../data/repositories/project_skills_repository.dart';
 import '../../data/repositories/project_skills_repository_impl.dart';
 import '../../domain/entities/project_role.dart';
@@ -163,6 +164,7 @@ class _ProjectSkillsView extends StatelessWidget {
       AppFeedback.showSuccess('Função adicionada com sucesso.');
     }
   }
+
 }
 
 class _SkillsEmptyState extends StatelessWidget {
@@ -218,9 +220,16 @@ class _ProjectSkillCard extends StatelessWidget {
                       : const Color(0xFFEFF6FF),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(
-                  Icons.music_note_rounded,
-                  color: Color(0xFF0166FF),
+                child: Center(
+                  child: SvgPicture.asset(
+                    skillIconAsset(skill.iconKey),
+                    width: 26,
+                    height: 26,
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xFF2563EB),
+                      BlendMode.srcIn,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -235,30 +244,65 @@ class _ProjectSkillCard extends StatelessWidget {
               ),
               if (state.canManageSkills) ...[
                 const SizedBox(width: 10),
-                isDeleting
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : _CircularSkillActionButton(
-                        tooltip: 'Excluir função',
-                        onPressed: () => _onDeleteSkill(context, cubit, skill),
-                        assetPath: 'assets/icons/trash-2.svg',
-                        iconColor: const Color(0xFFB3261E),
-                        backgroundColor: isDark
-                            ? const Color(0xFF2A1313)
-                            : const Color(0xFFFFF1F2),
-                        borderColor: isDark
-                            ? const Color(0xFF7F1D1D)
-                            : const Color(0xFFFECDD3),
-                      ),
+                if (isDeleting)
+                  const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                else ...[
+                  _CircularSkillActionButton(
+                    tooltip: 'Editar função',
+                    onPressed: () => _showEditSkillSheet(context, cubit, skill),
+                    assetPath: 'assets/icons/wrench.svg',
+                    iconColor: const Color(0xFF0166FF),
+                    backgroundColor: isDark
+                        ? const Color(0xFF172554)
+                        : const Color(0xFFEFF6FF),
+                    borderColor: isDark
+                        ? const Color(0xFF1E3A8A)
+                        : const Color(0xFFBFDBFE),
+                  ),
+                  const SizedBox(width: 6),
+                  _CircularSkillActionButton(
+                    tooltip: 'Excluir função',
+                    onPressed: () => _onDeleteSkill(context, cubit, skill),
+                    assetPath: 'assets/icons/trash-2.svg',
+                    iconColor: const Color(0xFFB3261E),
+                    backgroundColor: isDark
+                        ? const Color(0xFF2A1313)
+                        : const Color(0xFFFFF1F2),
+                    borderColor: isDark
+                        ? const Color(0xFF7F1D1D)
+                        : const Color(0xFFFECDD3),
+                  ),
+                ],
               ],
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _showEditSkillSheet(
+    BuildContext context,
+    ProjectSkillsCubit cubit,
+    ProjectSkillEntity skill,
+  ) async {
+    final success = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: cubit,
+        child: AddProjectSkillSheet(skill: skill),
+      ),
+    );
+
+    if (success == true && context.mounted) {
+      AppFeedback.showSuccess('Função atualizada com sucesso.');
+    }
   }
 
   Future<void> _onDeleteSkill(

@@ -6,6 +6,23 @@ enum EventPermission {
   editEvent,
 }
 
+enum EventParticipantStatus { pending, accepted, declined, unknown }
+
+extension EventParticipantStatusPresentation on EventParticipantStatus {
+  String get label {
+    switch (this) {
+      case EventParticipantStatus.pending:
+        return 'Pendente';
+      case EventParticipantStatus.accepted:
+        return 'Aceito';
+      case EventParticipantStatus.declined:
+        return 'Recusado';
+      case EventParticipantStatus.unknown:
+        return 'Sem status';
+    }
+  }
+}
+
 extension EventPermissionApiValue on EventPermission {
   String get apiValue {
     switch (this) {
@@ -24,38 +41,129 @@ extension EventPermissionApiValue on EventPermission {
 }
 
 class EventParticipant {
+  final String id;
   final String memberId;
+  final String? userId;
   final String firstName;
   final String? lastName;
   final String? profileImage;
   final String skillId;
+  final EventParticipantStatus status;
   final Set<EventPermission> permissions;
 
   const EventParticipant({
+    this.id = '',
     required this.memberId,
+    this.userId,
     required this.firstName,
     this.lastName,
     this.profileImage,
     required this.skillId,
+    this.status = EventParticipantStatus.accepted,
     required this.permissions,
   });
 
   String get fullName => '$firstName ${lastName ?? ''}'.trim();
 
   factory EventParticipant.fromJson(Map<String, dynamic> json) {
+    final user = _asMap(json['user']);
+    final member = _asMap(json['member']);
+    final memberUser = _asMap(member?['user']);
+    final skill = _asMap(json['skill']);
     final permissions = (json['permissions'] as List? ?? [])
         .map(_parsePermission)
         .whereType<EventPermission>()
         .toSet();
 
     return EventParticipant(
-      memberId: json['memberId'].toString(),
-      firstName: json['firstName'].toString(),
-      lastName: json['lastName']?.toString(),
-      profileImage: json['profileImage']?.toString(),
-      skillId: json['skillId'].toString(),
+      id: _firstNonEmpty([
+        json['eventParticipantId'],
+        json['participantId'],
+        json['id'],
+      ]),
+      memberId: _firstNonEmpty([
+        json['memberId'],
+        json['projectMemberId'],
+        member?['memberId'],
+        member?['id'],
+        json['id'],
+      ]),
+      userId: _firstNullable([
+        json['userId'],
+        user?['id'],
+        member?['userId'],
+        memberUser?['id'],
+      ]),
+      firstName: _firstNonEmpty([
+        json['firstName'],
+        member?['firstName'],
+        user?['firstName'],
+        memberUser?['firstName'],
+      ]),
+      lastName: _firstNullable([
+        json['lastName'],
+        member?['lastName'],
+        user?['lastName'],
+        memberUser?['lastName'],
+      ]),
+      profileImage: _firstNullable([
+        json['profileImage'],
+        json['imageUrl'],
+        member?['profileImage'],
+        member?['imageUrl'],
+        user?['profileImage'],
+        memberUser?['profileImage'],
+      ]),
+      skillId: _firstNonEmpty([
+        json['skillId'],
+        json['projectSkillId'],
+        skill == null ? null : skill['id'],
+      ]),
+      status: _parseStatus(json['status']),
       permissions: permissions,
     );
+  }
+
+  static String? _readNullableString(dynamic value) {
+    final text = value?.toString().trim();
+    if (text == null || text.isEmpty) return null;
+    return text;
+  }
+
+  static String _firstNonEmpty(List<dynamic> values) {
+    for (final value in values) {
+      final normalized = _readNullableString(value);
+      if (normalized != null) return normalized;
+    }
+    return '';
+  }
+
+  static String? _firstNullable(List<dynamic> values) {
+    for (final value in values) {
+      final normalized = _readNullableString(value);
+      if (normalized != null) return normalized;
+    }
+    return null;
+  }
+
+  static Map<String, dynamic>? _asMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+    return null;
+  }
+
+  static EventParticipantStatus _parseStatus(dynamic value) {
+    final normalized = value?.toString().trim().toUpperCase();
+    switch (normalized) {
+      case 'PENDING':
+        return EventParticipantStatus.pending;
+      case 'ACCEPTED':
+        return EventParticipantStatus.accepted;
+      case 'DECLINED':
+        return EventParticipantStatus.declined;
+      default:
+        return EventParticipantStatus.unknown;
+    }
   }
 
   static EventPermission? _parsePermission(dynamic value) {

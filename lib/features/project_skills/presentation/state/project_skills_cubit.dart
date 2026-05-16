@@ -76,7 +76,7 @@ class ProjectSkillsCubit extends Cubit<ProjectSkillsState> {
     }
   }
 
-  Future<bool> createSkill(String name) async {
+  Future<bool> createSkill(String name, {String? iconKey}) async {
     if (!state.canManageSkills) {
       emit(
         state.copyWith(
@@ -103,7 +103,66 @@ class ProjectSkillsCubit extends Cubit<ProjectSkillsState> {
     );
 
     try {
-      await _repository.addProjectSkill(projectId, normalizedName);
+      await _repository.addProjectSkill(
+        projectId,
+        normalizedName,
+        iconKey: iconKey,
+      );
+      await _reloadSkills();
+      emit(
+        state.copyWith(
+          submission: ProjectSkillsSubmission.idle,
+          clearActionErrorMessage: true,
+        ),
+      );
+      return true;
+    } catch (e) {
+      emit(
+        state.copyWith(
+          submission: ProjectSkillsSubmission.idle,
+          actionErrorMessage: _extractMessage(e),
+        ),
+      );
+      return false;
+    }
+  }
+
+  Future<bool> updateSkill(
+    ProjectSkillEntity skill,
+    String name, {
+    String? iconKey,
+  }) async {
+    if (!state.canManageSkills) {
+      emit(
+        state.copyWith(
+          actionErrorMessage: 'Apenas administradores podem editar funções.',
+        ),
+      );
+      return false;
+    }
+
+    final normalizedName = name.trim();
+    if (normalizedName.isEmpty) {
+      emit(
+        state.copyWith(actionErrorMessage: 'Informe o nome da função.'),
+      );
+      return false;
+    }
+
+    emit(
+      state.copyWith(
+        submission: ProjectSkillsSubmission.creating,
+        clearActionErrorMessage: true,
+      ),
+    );
+
+    try {
+      await _repository.updateProjectSkill(
+        projectId,
+        skill.id,
+        normalizedName,
+        iconKey: iconKey,
+      );
       await _reloadSkills();
       emit(
         state.copyWith(

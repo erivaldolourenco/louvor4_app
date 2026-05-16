@@ -2,99 +2,327 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
-import 'package:louvor4_app/core/ui/widgets/standard_section_app_bar.dart';
+import 'package:louvor4_app/features/root/presentation/widgets/root_home_header.dart';
+import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 
-import '../../data/impl/events_repository_impl.dart';
 import '../../domain/entities/event_entity.dart';
 import '../cubit/events_cubit.dart';
 import '../cubit/events_state.dart';
 import '../widgets/event_list_card.dart';
 
+Map<DateTime, List<EventEntity>> _groupEventsByDate(
+  List<EventEntity> events,
+) {
+  final grouped = <DateTime, List<EventEntity>>{};
+  for (final event in events) {
+    final dayKey = DateUtils.dateOnly(event.date);
+    grouped.putIfAbsent(dayKey, () => []).add(event);
+  }
+  return grouped;
+}
+
 class EventsListPage extends StatelessWidget {
-  const EventsListPage({super.key});
+  final VoidCallback onOpenDrawer;
+  final UserDetailEntity? user;
+  final bool isLoadingUser;
+
+  const EventsListPage({
+    super.key,
+    required this.onOpenDrawer,
+    required this.user,
+    required this.isLoadingUser,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider(
-      create: (_) => EventsRepositoryImpl(),
-      child: BlocProvider(
-        create: (ctx) => EventsCubit(ctx.read<EventsRepositoryImpl>())..load(),
-        child: const _EventsListView(),
-      ),
+    return _EventsListView(
+      onOpenDrawer: onOpenDrawer,
+      user: user,
+      isLoadingUser: isLoadingUser,
     );
   }
 }
 
-class _EventsListView extends StatelessWidget {
-  const _EventsListView();
+class _EventsListView extends StatefulWidget {
+  final VoidCallback onOpenDrawer;
+  final UserDetailEntity? user;
+  final bool isLoadingUser;
 
-  Map<DateTime, List<EventEntity>> _groupEventsByDate(
-    List<EventEntity> events,
-  ) {
-    final sortedEvents = [...events]..sort((a, b) => a.date.compareTo(b.date));
-    final grouped = <DateTime, List<EventEntity>>{};
+  const _EventsListView({
+    required this.onOpenDrawer,
+    required this.user,
+    required this.isLoadingUser,
+  });
 
-    for (final event in sortedEvents) {
-      final dayKey = DateUtils.dateOnly(event.date);
-      grouped.putIfAbsent(dayKey, () => []).add(event);
+  @override
+  State<_EventsListView> createState() => _EventsListViewState();
+}
+
+class _EventsListViewState extends State<_EventsListView>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+  final ScrollController _pastScrollController = ScrollController();
+  bool _pastLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabChange);
+    _pastScrollController.addListener(_handlePastScroll);
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_handleTabChange);
+    _tabController.dispose();
+    _pastScrollController.removeListener(_handlePastScroll);
+    _pastScrollController.dispose();
+    super.dispose();
+  }
+
+  void _handleTabChange() {
+    if (_tabController.indexIsChanging) return;
+    if (_tabController.index == 1 && !_pastLoaded) {
+      _pastLoaded = true;
+      context.read<EventsCubit>().loadPastEvents();
     }
+  }
 
-    return grouped;
+  void _handlePastScroll() {
+    final pos = _pastScrollController.position;
+    if (pos.pixels >= pos.maxScrollExtent - 300) {
+      context.read<EventsCubit>().loadMorePastEvents();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const StandardSectionAppBar(
-        title: 'Meus Eventos',
-        subtitle: 'Acompanhe suas escalas e apresentações',
+      appBar: RootHomeHeader(
+        onAvatarTap: widget.onOpenDrawer,
+        user: widget.user,
+        isLoadingUser: widget.isLoadingUser,
       ),
-      body: BlocBuilder<EventsCubit, EventsState>(
-        builder: (context, state) {
-          if (state.status == EventsStatus.loading) {
-            return const _EventsLoadingState();
-          }
-          if (state.status == EventsStatus.failure) {
-            return _EventsErrorState(
-              message: state.errorMessage ?? 'Erro ao carregar eventos',
-              onRetry: () => context.read<EventsCubit>().load(),
-            );
-          }
-          if (state.events.isEmpty) {
-            return const _EventsEmptyState();
-          }
-
-          final groupedEvents = _groupEventsByDate(state.events);
-          final sections = groupedEvents.entries.toList()
-            ..sort((a, b) => a.key.compareTo(b.key));
-
-          return RefreshIndicator(
-            onRefresh: () => context.read<EventsCubit>().load(),
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      body: Column(
+        children: [
+          _HomeTabBar(controller: _tabController),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
               children: [
-                for (final section in sections) ...[
-                  EventDateHeader(date: section.key),
-                  const SizedBox(height: 10),
-                  ...List.generate(section.value.length, (index) {
-                    final event = section.value[index];
-                    return EventTimelineItemWrapper(
-                      child: EventListCard(
-                        event: event,
-                        isFirstInGroup: index == 0,
-                        isLastInGroup: index == section.value.length - 1,
-                        showTimelineRail: false,
-                        bottomSpacing: 0,
-                      ),
-                    );
-                  }),
-                  const SizedBox(height: 18),
-                ],
+                _UpcomingTab(),
+                _PastTab(scrollController: _pastScrollController),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HomeTabBar extends StatelessWidget {
+  final TabController controller;
+
+  const _HomeTabBar({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const logoBlue = Color(0xFF0166FF);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : Colors.white,
+        border: Border(
+          bottom: BorderSide(
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+          ),
+        ),
+      ),
+      child: TabBar(
+        controller: controller,
+        dividerColor: Colors.transparent,
+        indicatorSize: TabBarIndicatorSize.tab,
+        indicator: const UnderlineTabIndicator(
+          borderSide: BorderSide(color: logoBlue, width: 3),
+          borderRadius: BorderRadius.all(Radius.circular(999)),
+        ),
+        splashFactory: NoSplash.splashFactory,
+        overlayColor: WidgetStateProperty.all(Colors.transparent),
+        labelStyle: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 15,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 15,
+        ),
+        labelColor: logoBlue,
+        unselectedLabelColor: isDark
+            ? const Color(0xFF475569)
+            : const Color(0xFF94A3B8),
+        tabs: const [
+          Tab(height: 46, text: 'Próximos'),
+          Tab(height: 46, text: 'Passados'),
+        ],
+      ),
+    );
+  }
+}
+
+class _UpcomingTab extends StatelessWidget {
+  const _UpcomingTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<EventsCubit, EventsState>(
+      buildWhen: (prev, curr) =>
+          prev.status != curr.status || prev.events != curr.events,
+      builder: (context, state) {
+        if (state.status == EventsStatus.loading) {
+          return const _EventsLoadingState();
+        }
+        if (state.status == EventsStatus.failure) {
+          return _EventsErrorState(
+            message: state.errorMessage ?? 'Erro ao carregar eventos',
+            onRetry: () => context.read<EventsCubit>().load(),
           );
-        },
+        }
+        if (state.events.isEmpty) {
+          return const _EventsEmptyState();
+        }
+
+        final groupedEvents = _groupEventsByDate(state.events);
+        final sections = groupedEvents.entries.toList()
+          ..sort((a, b) => a.key.compareTo(b.key));
+
+        return RefreshIndicator(
+          onRefresh: () => context.read<EventsCubit>().load(),
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            children: [
+              for (final section in sections) ...[
+                EventDateHeader(date: section.key),
+                const SizedBox(height: 10),
+                ...List.generate(section.value.length, (index) {
+                  final event = section.value[index];
+                  return EventTimelineItemWrapper(
+                    child: EventListCard(
+                      event: event,
+                      isFirstInGroup: index == 0,
+                      isLastInGroup: index == section.value.length - 1,
+                      showTimelineRail: false,
+                      bottomSpacing: 0,
+                    ),
+                  );
+                }),
+                const SizedBox(height: 18),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PastTab extends StatelessWidget {
+  final ScrollController scrollController;
+
+  const _PastTab({required this.scrollController});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<EventsCubit, EventsState>(
+      buildWhen: (prev, curr) =>
+          prev.pastEventsStatus != curr.pastEventsStatus ||
+          prev.pastEvents != curr.pastEvents ||
+          prev.pastEventsHasMore != curr.pastEventsHasMore,
+      builder: (context, state) {
+        if (state.pastEventsStatus == PastEventsStatus.initial ||
+            state.pastEventsStatus == PastEventsStatus.loading) {
+          return const _EventsLoadingState();
+        }
+        if (state.pastEventsStatus == PastEventsStatus.failure &&
+            state.pastEvents.isEmpty) {
+          return _EventsErrorState(
+            message: 'Erro ao carregar eventos passados',
+            onRetry: () => context.read<EventsCubit>().loadPastEvents(),
+          );
+        }
+        if (state.pastEvents.isEmpty) {
+          return const _PastEventsEmptyState();
+        }
+
+        final grouped = _groupEventsByDate(state.pastEvents);
+        final sections = grouped.entries.toList()
+          ..sort((a, b) => b.key.compareTo(a.key));
+
+        return RefreshIndicator(
+          onRefresh: () => context.read<EventsCubit>().loadPastEvents(),
+          child: ListView(
+            controller: scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            children: [
+              for (final section in sections) ...[
+                EventDateHeader(date: section.key),
+                const SizedBox(height: 10),
+                ...List.generate(section.value.length, (index) {
+                  final event = section.value[index];
+                  return EventTimelineItemWrapper(
+                    child: EventListCard(
+                      event: event,
+                      isFirstInGroup: index == 0,
+                      isLastInGroup: index == section.value.length - 1,
+                      showTimelineRail: false,
+                      bottomSpacing: 0,
+                    ),
+                  );
+                }),
+                const SizedBox(height: 18),
+              ],
+              if (state.pastEventsStatus == PastEventsStatus.loadingMore)
+                const _LoadMoreIndicator(),
+              if (!state.pastEventsHasMore && state.pastEvents.isNotEmpty)
+                const _NoMoreEventsIndicator(),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _LoadMoreIndicator extends StatelessWidget {
+  const _LoadMoreIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 20),
+      child: Center(child: CircularProgressIndicator()),
+    );
+  }
+}
+
+class _NoMoreEventsIndicator extends StatelessWidget {
+  const _NoMoreEventsIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Center(
+        child: Text(
+          'Não há mais eventos',
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: const Color(0xFF94A3B8),
+          ),
+        ),
       ),
     );
   }
@@ -351,6 +579,47 @@ class _EventsEmptyState extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               'Quando houver novas escalas, elas aparecerão aqui.',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: isDark
+                    ? const Color(0xFF94A3B8)
+                    : const Color(0xFF64748B),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PastEventsEmptyState extends StatelessWidget {
+  const _PastEventsEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.history_rounded,
+              size: 48,
+              color: Color(0xFF94A3B8),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Nenhum evento passado',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Seus eventos anteriores aparecerão aqui.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: isDark

@@ -14,6 +14,11 @@ import '../domain/entities/update_event_input_entity.dart';
 abstract class EventsRepository {
   Future<List<EventEntity>> getEvents();
 
+  Future<({List<EventEntity> events, bool hasMore})> getPastEvents(
+    int page, {
+    int size = 10,
+  });
+
   Future<EventDetailEntity> getEventDetail(String eventId);
 
   Future<List<EventParticipant>> getEventParticipants(String eventId);
@@ -46,4 +51,8 @@ abstract class EventsRepository {
   Future<void> removeSongFromEvent(String eventId, String eventSongId);
 
   Future<void> updateEvent(String eventId, UpdateEventInputEntity input);
+
+  Future<void> acceptEventParticipant(String participantId);
+
+  Future<void> declineEventParticipant(String participantId);
 }

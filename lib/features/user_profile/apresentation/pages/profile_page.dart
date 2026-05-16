@@ -17,6 +17,8 @@ import '../cubit/user_cubit.dart';
 import '../cubit/user_state.dart';
 
 class ProfilePage extends StatelessWidget {
+  static const routeName = '/perfil';
+
   const ProfilePage({super.key});
 
   @override
@@ -26,6 +28,7 @@ class ProfilePage extends StatelessWidget {
       child: BlocProvider(
         create: (context) => UserCubit(context.read<UserRepository>())..load(),
         child: Scaffold(
+          appBar: AppBar(title: const Text('Perfil')),
           body: BlocBuilder<UserCubit, UserState>(
             builder: (context, state) {
               if (state.status == UserStatus.loading) {
@@ -247,8 +250,8 @@ class ProfilePage extends StatelessWidget {
               onPressed: () async {
                 await AuthService.instance.logout(ApiClient.dio);
                 if (context.mounted) {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    LoginPage.routeName,
                     (route) => false,
                   );
                 }

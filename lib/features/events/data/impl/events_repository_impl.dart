@@ -28,6 +28,34 @@ class EventsRepositoryImpl implements EventsRepository {
   }
 
   @override
+  Future<({List<EventEntity> events, bool hasMore})> getPastEvents(
+    int page, {
+    int size = 10,
+  }) async {
+    try {
+      final response = await _dio.get(
+        '/users/events/past',
+        queryParameters: {'page': page, 'size': size},
+      );
+      final data = Map<String, dynamic>.from(response.data as Map);
+      final list = (data['content'] as List)
+          .map(
+            (e) => EventEntity.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
+          .toList();
+      final isLast = data['last'] as bool? ?? true;
+      return (events: list, hasMore: !isLast);
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível carregar eventos passados.',
+        ),
+      );
+    }
+  }
+
+  @override
   Future<EventDetailEntity> getEventDetail(String eventId) async {
     final response = await _dio.get('/events/$eventId');
     return EventDetailEntity.fromJson(
@@ -48,7 +76,7 @@ class EventsRepositoryImpl implements EventsRepository {
 
   @override
   Future<List<EventSong>> getEventSongs(String eventId) async {
-    final response = await _dio.get('/events/$eventId/songs');
+    final response = await _dio.get('/events/$eventId/setlist');
     final list = response.data as List;
     return list
         .map((e) => EventSong.fromJson(Map<String, dynamic>.from(e as Map)))
@@ -166,7 +194,7 @@ class EventsRepositoryImpl implements EventsRepository {
   @override
   Future<void> removeSongFromEvent(String eventId, String eventSongId) async {
     try {
-      await _dio.delete('/events/$eventId/songs/$eventSongId');
+      await _dio.delete('/events/$eventId/setlist/$eventSongId');
     } on DioException catch (e) {
       throw Exception(
         _extractApiErrorMessage(e, fallback: 'Erro ao remover música'),
@@ -183,6 +211,34 @@ class EventsRepositoryImpl implements EventsRepository {
         _extractApiErrorMessage(
           e,
           fallback: 'Não foi possível atualizar o evento. Tente novamente.',
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<void> acceptEventParticipant(String participantId) async {
+    try {
+      await _dio.patch('/events/participants/$participantId/accept');
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível aceitar a participação.',
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<void> declineEventParticipant(String participantId) async {
+    try {
+      await _dio.patch('/events/participants/$participantId/decline');
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível recusar a participação.',
         ),
       );
     }

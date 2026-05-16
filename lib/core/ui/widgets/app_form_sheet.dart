@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 class AppFormSheet extends StatelessWidget {
   final String title;
   final String subtitle;
-  final IconData icon;
+  final IconData? icon;
   final Widget child;
 
   const AppFormSheet({
     super.key,
     required this.title,
     required this.subtitle,
-    required this.icon,
+    this.icon,
     required this.child,
   });
 
@@ -81,31 +81,32 @@ class AppFormSheet extends StatelessWidget {
               ),
             ),
           ),
-          Positioned(
-            top: -8,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                width: 84,
-                height: 84,
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0F172A) : Colors.white,
-                  borderRadius: BorderRadius.circular(28),
-                  boxShadow: [
-                    BoxShadow(
-                      color: isDark
-                          ? const Color(0x22000000)
-                          : const Color(0x12000000),
-                      blurRadius: isDark ? 22 : 18,
-                      offset: Offset(0, 6),
-                    ),
-                  ],
+          if (icon != null)
+            Positioned(
+              top: -8,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  width: 84,
+                  height: 84,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF0F172A) : Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDark
+                            ? const Color(0x22000000)
+                            : const Color(0x12000000),
+                        blurRadius: isDark ? 22 : 18,
+                        offset: Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Icon(icon, size: 38, color: const Color(0xFF0166FF)),
                 ),
-                child: Icon(icon, size: 38, color: const Color(0xFF0166FF)),
               ),
             ),
-          ),
         ],
       ),
     );
