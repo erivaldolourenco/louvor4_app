@@ -252,7 +252,6 @@ class _MedleyFormSheetState extends State<_MedleyFormSheet> {
         subtitle: _isEditing
             ? 'Altere as músicas e informações do medley.'
             : 'Monte uma sequência de músicas para usar nas escalas.',
-        icon: Icons.queue_music_rounded,
         child: Form(
           key: _formKey,
           child: Column(
@@ -334,18 +333,7 @@ class _MedleyFormSheetState extends State<_MedleyFormSheet> {
 
               // Add song button
               OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.input),
-                  ),
-                  side: BorderSide(
-                    color: isDark
-                        ? AppColors.borderSubtleDark
-                        : const Color(0xFFD6E4FF),
-                  ),
-                  foregroundColor: AppColors.primary,
-                ),
+                style: appSecondaryPillButtonStyle(context),
                 onPressed: isActioning ? null : _addSong,
                 icon: const Icon(Icons.add_rounded),
                 label: const Text('Adicionar Música'),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
@@ -326,7 +327,7 @@ class _ProjectSkillCard extends StatelessWidget {
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFB3261E),
+                backgroundColor: AppColors.danger,
               ),
               child: const Text('Excluir'),
             ),

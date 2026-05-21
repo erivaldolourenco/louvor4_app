@@ -53,19 +53,7 @@ class EventProgramTab extends StatelessWidget {
               if (isAdmin)
                 FilledButton(
                   onPressed: () => _showTextItemDialog(context),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 22,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.card),
-                    ),
-                    elevation: 6,
-                    shadowColor: AppColors.primaryShadow,
-                  ),
+                  style: appPrimaryPillButtonStyle(context),
                   child: const Text(
                     'Adicionar',
                     style: TextStyle(fontWeight: FontWeight.w700),
@@ -489,9 +477,7 @@ class _EmptyProgramState extends StatelessWidget {
               onPressed: onAdd,
               icon: const Icon(Icons.add_rounded, size: 18),
               label: const Text('Adicionar item de texto'),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-              ),
+              style: appPrimaryPillButtonStyle(context),
             ),
           ],
         ],

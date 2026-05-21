@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
+import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../data/event_program_repository.dart';
 import '../../data/events_repository.dart';
@@ -594,19 +595,7 @@ class _ParticipantsTab extends StatelessWidget {
             if (state.isProjectAdmin)
               FilledButton(
                 onPressed: onManageSchedule,
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 22,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.card),
-                  ),
-                  elevation: 6,
-                  shadowColor: AppColors.primaryShadow,
-                ),
+                style: appPrimaryPillButtonStyle(context),
                 child: const Text(
                   'Gerenciar Escala',
                   style: TextStyle(fontWeight: FontWeight.w700),
@@ -723,19 +712,7 @@ class _SongsTab extends StatelessWidget {
             ),
             FilledButton(
               onPressed: onAddSongs,
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 22,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.card),
-                ),
-                elevation: 6,
-                shadowColor: AppColors.primaryShadow,
-              ),
+              style: appPrimaryPillButtonStyle(context),
               child: const Text(
                 'Nova Música',
                 style: TextStyle(fontWeight: FontWeight.w700),
