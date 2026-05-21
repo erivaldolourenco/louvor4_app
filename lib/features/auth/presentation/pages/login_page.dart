@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/notifications/push_notification_service.dart';
 import '../../../root/presentation/pages/root_page.dart';
@@ -70,7 +71,7 @@ class _LoginViewState extends State<_LoginView> {
                         builder: (dialogContext) {
                           return AlertDialog(
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(AppRadius.cardLarge),
                             ),
                             title: const Text('Atenção'),
                             content: Text(state.errorMessage!),

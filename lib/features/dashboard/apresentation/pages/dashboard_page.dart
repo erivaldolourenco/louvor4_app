@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../events/data/impl/events_repository_impl.dart';
 import '../../../events/presentation/cubit/events_cubit.dart';
@@ -111,12 +113,12 @@ class _DashboardEventCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(14),
+              color: AppColors.primarySubtleLight,
+              borderRadius: BorderRadius.circular(AppRadius.input),
             ),
             child: const Icon(
               Icons.calendar_month_rounded,
-              color: Color(0xFF0166FF),
+              color: AppColors.primaryBright,
             ),
           ),
           const SizedBox(width: 14),
@@ -130,7 +132,7 @@ class _DashboardEventCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: const Color(0xFF0F172A),
+                    color: AppColors.scaffoldDark,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -139,7 +141,7 @@ class _DashboardEventCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFF64748B),
+                    color: AppColors.textMutedLight,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -163,13 +165,13 @@ class _DashboardEventCard extends StatelessWidget {
               _MetricBadge(
                 icon: Icons.groups_2_rounded,
                 value: participantsCount.toString(),
-                color: const Color(0xFF0166FF),
+                color: AppColors.primaryBright,
               ),
               const SizedBox(height: 8),
               _MetricBadge(
                 icon: Icons.music_note_rounded,
                 value: repertoireCount.toString(),
-                color: const Color(0xFFF59E0B),
+                color: AppColors.warning,
               ),
             ],
           ),
@@ -190,13 +192,13 @@ class _InfoChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: const Color(0xFF64748B)),
+        Icon(icon, size: 16, color: AppColors.textMutedLight),
         const SizedBox(width: 4),
         Text(
           label,
           style: Theme.of(
             context,
-          ).textTheme.bodySmall?.copyWith(color: const Color(0xFF64748B)),
+          ).textTheme.bodySmall?.copyWith(color: AppColors.textMutedLight),
         ),
       ],
     );
