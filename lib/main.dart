@@ -8,6 +8,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'core/navigation/app_route_observer.dart';
 import 'core/notifications/push_notification_service.dart';
 import 'core/storage/token_storage.dart';
+import 'core/theme/app_theme.dart';
 import 'core/theme/app_theme_controller.dart';
 import 'core/ui/app_feedback.dart';
 import 'features/auth/presentation/pages/login_page.dart';
@@ -64,9 +65,6 @@ class Louvor4App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryBlue = Color(0xFF0166FF);
-    const textGrey = Color(0xFF4D4D4D);
-
     return AnimatedBuilder(
       animation: AppThemeController.instance,
       builder: (context, _) {
@@ -82,85 +80,8 @@ class Louvor4App extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           themeMode: AppThemeController.instance.themeMode,
-          theme: ThemeData(
-            useMaterial3: true,
-            fontFamily: 'Outfit',
-
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: primaryBlue,
-              primary: primaryBlue,
-              onPrimary: Colors.white,
-            ),
-
-            textTheme: const TextTheme(
-              displayLarge: TextStyle(color: textGrey),
-              displayMedium: TextStyle(color: textGrey),
-              displaySmall: TextStyle(color: textGrey),
-              headlineLarge: TextStyle(color: textGrey),
-              headlineMedium: TextStyle(color: textGrey),
-              headlineSmall: TextStyle(color: textGrey),
-              titleLarge: TextStyle(color: textGrey),
-              titleMedium: TextStyle(color: textGrey),
-              titleSmall: TextStyle(color: textGrey),
-              bodyLarge: TextStyle(color: textGrey),
-              bodyMedium: TextStyle(color: textGrey),
-              bodySmall: TextStyle(color: textGrey),
-              labelLarge: TextStyle(color: textGrey),
-            ),
-
-            scaffoldBackgroundColor: Colors.white,
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Colors.white,
-              surfaceTintColor: Colors.white,
-              foregroundColor: textGrey,
-              elevation: 0,
-            ),
-            bottomSheetTheme: const BottomSheetThemeData(
-              backgroundColor: Colors.white,
-              surfaceTintColor: Colors.white,
-            ),
-            filledButtonTheme: FilledButtonThemeData(
-              style: FilledButton.styleFrom(
-                backgroundColor: primaryBlue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-
-            progressIndicatorTheme: const ProgressIndicatorThemeData(
-              color: primaryBlue,
-            ),
-          ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            fontFamily: 'Outfit',
-            brightness: Brightness.dark,
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: primaryBlue,
-              brightness: Brightness.dark,
-              primary: primaryBlue,
-            ),
-            scaffoldBackgroundColor: const Color(0xFF0F172A),
-            appBarTheme: const AppBarTheme(
-              backgroundColor: Color(0xFF111827),
-              foregroundColor: Colors.white,
-            ),
-            cardColor: const Color(0xFF111827),
-            filledButtonTheme: FilledButtonThemeData(
-              style: FilledButton.styleFrom(
-                backgroundColor: primaryBlue,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            progressIndicatorTheme: const ProgressIndicatorThemeData(
-              color: primaryBlue,
-            ),
-          ),
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
           routes: {
             LoginPage.routeName: (_) => const LoginPage(),
             RootPage.routeName: (_) => const RootPage(),

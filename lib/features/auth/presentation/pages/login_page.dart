@@ -226,10 +226,10 @@ class _FieldLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF111827),
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );
