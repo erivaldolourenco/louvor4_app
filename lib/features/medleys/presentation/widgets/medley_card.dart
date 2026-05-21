@@ -105,21 +105,20 @@ class MedleyCard extends StatelessWidget {
                             ),
                           ),
                         )
-                      : Column(
-                          children: medley.items.map((item) {
-                            final isLast = item == medley.items.last;
-                            return Column(
-                              children: [
-                                _SongItemCard(item: item, isDark: isDark),
-                                if (!isLast)
-                                  Divider(
-                                    height: 1,
-                                    thickness: 1,
-                                    color: dividerColor,
-                                  ),
+                      : Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                          child: Column(
+                            children: [
+                              for (int i = 0; i < medley.items.length; i++) ...[
+                                _SongItemCard(
+                                  item: medley.items[i],
+                                  isDark: isDark,
+                                ),
+                                if (i < medley.items.length - 1)
+                                  const SizedBox(height: 8),
                               ],
-                            );
-                          }).toList(),
+                            ],
+                          ),
                         ),
 
                   Divider(height: 1, thickness: 1, color: dividerColor),
@@ -185,131 +184,158 @@ class _SongItemCard extends StatelessWidget {
     final hasYouTube = item.youTubeUrl != null && item.youTubeUrl!.isNotEmpty;
     final mutedColor =
         isDark ? AppColors.textMutedDark : AppColors.textMutedLight;
+    final dividerColor =
+        isDark ? AppColors.borderSubtleDark : AppColors.borderLight;
     final thumbnailUrl = YoutubeUtils.getThumbnail(item.youTubeUrl);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceSubtleLight,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Thumbnail com badge de sequência
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  thumbnailUrl,
-                  width: 64,
-                  height: 64,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? AppColors.surfaceElevatedDark
-                          : AppColors.primarySubtleLight,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.music_note_rounded,
-                      color: AppColors.primaryBright,
-                      size: 28,
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 4,
-                left: 4,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 5,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryBright,
-                    borderRadius: BorderRadius.circular(AppRadius.badge),
-                  ),
-                  child: Text(
-                    '${item.sequence}',
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(width: 12),
-          // Info
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+          // ── Seção 1: Thumbnail + info ──────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  item.songTitle ?? '—',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                if (item.songArtist != null &&
-                    item.songArtist!.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    item.songArtist!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: mutedColor,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 5),
-                Row(
+                Stack(
                   children: [
-                    if (item.key != null && item.key!.isNotEmpty)
-                      _ItemBadge(label: 'Tom: ${item.key!}'),
-                  ],
-                ),
-                if (hasNotes) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.notes_rounded, size: 12, color: mutedColor),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          item.notes!,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: mutedColor,
-                            height: 1.4,
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        thumbnailUrl,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColors.surfaceDark
+                                : AppColors.primarySubtleLight,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.music_note_rounded,
+                            color: AppColors.primaryBright,
+                            size: 26,
                           ),
                         ),
                       ),
+                    ),
+                    Positioned(
+                      top: 4,
+                      left: 4,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryBright,
+                          borderRadius: BorderRadius.circular(AppRadius.badge),
+                        ),
+                        child: Text(
+                          '${item.sequence}',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        item.songTitle ?? '—',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      if (item.songArtist != null &&
+                          item.songArtist!.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          item.songArtist!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: mutedColor,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                      if (item.key != null && item.key!.isNotEmpty) ...[
+                        const SizedBox(height: 5),
+                        _ItemBadge(label: 'Tom: ${item.key!}'),
+                      ],
                     ],
                   ),
-                ],
+                ),
               ],
             ),
           ),
+
+          // ── Seção 2: Notas ─────────────────────────────────────────────
+          if (hasNotes) ...[
+            Divider(height: 1, thickness: 1, color: dividerColor),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(Icons.notes_rounded, size: 13, color: mutedColor),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      item.notes!,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: mutedColor,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
+          // ── Seção 3: Ações ─────────────────────────────────────────────
           if (hasYouTube) ...[
-            const SizedBox(width: 8),
-            AppCircularActionButton(
-              onPressed: _openYouTube,
-              assetPath: 'assets/icons/youtube.svg',
-              iconColor: const Color(0xFFDC2626),
-              backgroundColor: const Color(0xFFFEF2F2),
-              borderColor: const Color(0xFFFECACA),
+            Divider(height: 1, thickness: 1, color: dividerColor),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  AppCircularActionButton(
+                    onPressed: _openYouTube,
+                    assetPath: 'assets/icons/youtube.svg',
+                    iconColor: const Color(0xFFDC2626),
+                    backgroundColor: const Color(0xFFFEF2F2),
+                    borderColor: const Color(0xFFFECACA),
+                  ),
+                ],
+              ),
             ),
           ],
         ],
