@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/header_project_event.dart';
 import '../../data/impl/music_projects_repository_impl.dart';
@@ -138,7 +140,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
               const Icon(
                 Icons.cloud_off_rounded,
                 size: 46,
-                color: Color(0xFF64748B),
+                color: AppColors.textMutedLight,
               ),
               const SizedBox(height: 10),
               Text(
@@ -167,7 +169,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
             actions: [
               if (_isAdmin)
                 PopupMenuButton<String>(
-                  color: isDark ? const Color(0xFF111827) : Colors.white,
+                  color: isDark ? AppColors.surfaceDark : Colors.white,
                   icon: const Icon(
                     Icons.more_vert_rounded,
                     color: Colors.white,
@@ -266,15 +268,15 @@ class _ProjectTabs extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final inactiveColor = isDark
-        ? const Color(0xFF94A3B8)
-        : const Color(0xFF64748B);
+        ? AppColors.textMutedDark
+        : AppColors.textMutedLight;
 
     const tabs = [
       (assetPath: 'assets/icons/calendar-fold.svg', label: 'Eventos'),
       (assetPath: 'assets/icons/users-round.svg', label: 'Membros'),
       (assetPath: 'assets/icons/wrench.svg', label: 'Funções'),
     ];
-    const activeColor = Color(0xFF2563EB);
+    const activeColor = AppColors.primary;
 
     return AnimatedBuilder(
       animation: controller.animation ?? controller,
@@ -285,8 +287,8 @@ class _ProjectTabs extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(2.5),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-            borderRadius: BorderRadius.circular(14),
+            color: isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight,
+            borderRadius: BorderRadius.circular(AppRadius.input),
           ),
           child: TabBar(
             controller: controller,
@@ -294,11 +296,11 @@ class _ProjectTabs extends StatelessWidget {
             indicatorSize: TabBarIndicatorSize.tab,
             indicator: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppRadius.input),
               boxShadow: [
                 BoxShadow(
                   color: isDark
-                      ? const Color(0x26000000)
+                      ? AppColors.shadowDark
                       : const Color(0x18000000),
                   blurRadius: isDark ? 14 : 10,
                   offset: const Offset(0, 4),

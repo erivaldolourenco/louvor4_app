@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_radius.dart';
+
 class EventDateInfo extends StatelessWidget {
   final DateTime date;
 
@@ -53,15 +56,15 @@ class EventDateInfo extends StatelessWidget {
           height: 42,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: const Color(0xFFEFF6FF),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFBFDBFE)),
+            color: AppColors.primarySubtleLight,
+            borderRadius: BorderRadius.circular(AppRadius.input),
+            border: Border.all(color: AppColors.primaryBorderLight),
           ),
           child: Text(
             date.day.toString(),
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w800,
-              color: const Color(0xFF1E3A8A),
+              color: AppColors.primaryBorderDark,
               height: 1,
             ),
           ),
@@ -72,21 +75,21 @@ class EventDateInfo extends StatelessWidget {
             '${getMonthName(date.month)} • ${getWeekDay(date)}',
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF334155),
+              color: AppColors.borderSubtleDark,
             ),
           ),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(999),
+            color: AppColors.surfaceSubtleLight,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
           child: Text(
             getRelativeTime(date),
             style: theme.textTheme.labelMedium?.copyWith(
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF475569),
+              color: AppColors.textSubtleDark,
             ),
           ),
         ),

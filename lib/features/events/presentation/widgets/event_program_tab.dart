@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
@@ -52,17 +54,17 @@ class EventProgramTab extends StatelessWidget {
                 FilledButton(
                   onPressed: () => _showTextItemDialog(context),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 22,
                       vertical: 12,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(AppRadius.card),
                     ),
                     elevation: 6,
-                    shadowColor: const Color(0x662563EB),
+                    shadowColor: AppColors.primaryShadow,
                   ),
                   child: const Text(
                     'Adicionar',
@@ -189,7 +191,7 @@ class EventProgramTab extends StatelessWidget {
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFB3261E),
+              backgroundColor: AppColors.danger,
             ),
             child: const Text('Remover'),
           ),
@@ -238,16 +240,16 @@ class _ProgramItemCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
-          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE5EDF6),
+          color: isDark ? AppColors.borderDark : const Color(0xFFE5EDF6),
         ),
         boxShadow: [
           BoxShadow(
             color: isDark
                 ? Colors.black.withValues(alpha: 0.15)
-                : const Color(0xFF0166FF).withValues(alpha: 0.04),
+                : AppColors.primaryBright.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -266,19 +268,19 @@ class _ProgramItemCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isMusic
                     ? (isDark
-                          ? const Color(0xFF172554)
-                          : const Color(0xFFEFF6FF))
+                          ? AppColors.primarySubtleDark
+                          : AppColors.primarySubtleLight)
                     : (isDark
                           ? const Color(0xFF1E1B3A)
                           : const Color(0xFFF5F3FF)),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadius.input),
               ),
               child: Icon(
                 isMusic
                     ? Icons.music_note_rounded
                     : Icons.text_fields_rounded,
                 color: isMusic
-                    ? const Color(0xFF2563EB)
+                    ? AppColors.primary
                     : const Color(0xFF7C3AED),
                 size: 20,
               ),
@@ -302,8 +304,8 @@ class _ProgramItemCard extends StatelessWidget {
                       music!.songArtist,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: isDark
-                            ? const Color(0xFF94A3B8)
-                            : const Color(0xFF64748B),
+                            ? AppColors.textMutedDark
+                            : AppColors.textMutedLight,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -314,8 +316,8 @@ class _ProgramItemCard extends StatelessWidget {
                       text.description!,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: isDark
-                            ? const Color(0xFF94A3B8)
-                            : const Color(0xFF64748B),
+                            ? AppColors.textMutedDark
+                            : AppColors.textMutedLight,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -331,18 +333,18 @@ class _ProgramItemCard extends StatelessWidget {
                   children: [
                     _SmallIconButton(
                       icon: Icons.edit_outlined,
-                      color: const Color(0xFF0166FF),
+                      color: AppColors.primaryBright,
                       bgColor: isDark
-                          ? const Color(0xFF172554)
-                          : const Color(0xFFEFF6FF),
+                          ? AppColors.primarySubtleDark
+                          : AppColors.primarySubtleLight,
                       onPressed: onEdit,
                     ),
                     _SmallIconButton(
                       icon: Icons.delete_outline_rounded,
-                      color: const Color(0xFFEF4444),
+                      color: AppColors.dangerBright,
                       bgColor: isDark
-                          ? const Color(0xFF3F1114)
-                          : const Color(0xFFFEE2E2),
+                          ? AppColors.dangerSubtleDark
+                          : AppColors.dangerSubtleLight,
                       onPressed: onDelete,
                     ),
                   ],
@@ -357,8 +359,8 @@ class _ProgramItemCard extends StatelessWidget {
                     Icons.drag_handle_rounded,
                     size: 22,
                     color: isDark
-                        ? const Color(0xFF475569)
-                        : const Color(0xFF94A3B8),
+                        ? AppColors.textSubtleDark
+                        : AppColors.textMutedDark,
                   ),
                 ),
               ),
@@ -382,10 +384,10 @@ class _PositionBadge extends StatelessWidget {
       width: 28,
       height: 28,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(8),
+        color: isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceSubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.badge),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
         ),
       ),
       child: Center(
@@ -395,8 +397,8 @@ class _PositionBadge extends StatelessWidget {
             fontSize: 12,
             fontWeight: FontWeight.w800,
             color: isDark
-                ? const Color(0xFF94A3B8)
-                : const Color(0xFF475569),
+                ? AppColors.textMutedDark
+                : AppColors.textSubtleDark,
           ),
         ),
       ),
@@ -421,9 +423,9 @@ class _SmallIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: bgColor ?? Colors.transparent,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppRadius.badge),
       child: InkWell(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.badge),
         onTap: onPressed,
         child: SizedBox(
           width: 32,
@@ -461,10 +463,10 @@ class _EmptyProgramState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 18),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
-          color: isDark ? const Color(0xFF243041) : const Color(0xFFE2E8F0),
+          color: isDark ? AppColors.borderStrongDark : AppColors.borderLight,
         ),
       ),
       child: Column(
@@ -488,7 +490,7 @@ class _EmptyProgramState extends StatelessWidget {
               icon: const Icon(Icons.add_rounded, size: 18),
               label: const Text('Adicionar item de texto'),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
+                backgroundColor: AppColors.primary,
               ),
             ),
           ],

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/features/events/presentation/pages/event_detail_page.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
@@ -213,9 +215,9 @@ class _ProjectEventCard extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(AppRadius.cardLarge),
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -241,7 +243,7 @@ class _ProjectEventCard extends StatelessWidget {
                         style: const TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 14,
-                          color: Color(0xFF0166FF),
+                          color: AppColors.primaryBright,
                         ),
                       ),
                       Text(
@@ -279,7 +281,7 @@ class _ProjectEventCard extends StatelessWidget {
                           const Icon(
                             Icons.schedule_rounded,
                             size: 15,
-                            color: Color(0xFF6B7280),
+                            color: AppColors.textSubtleLight,
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -287,14 +289,14 @@ class _ProjectEventCard extends StatelessWidget {
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF6B7280),
+                                  color: AppColors.textSubtleLight,
                                 ),
                           ),
                           const SizedBox(width: 10),
                           const Icon(
                             Icons.place_outlined,
                             size: 15,
-                            color: Color(0xFF6B7280),
+                            color: AppColors.textSubtleLight,
                           ),
                           const SizedBox(width: 4),
                           Expanded(
@@ -303,7 +305,7 @@ class _ProjectEventCard extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: const Color(0xFF6B7280)),
+                                  ?.copyWith(color: AppColors.textSubtleLight),
                             ),
                           ),
                         ],
@@ -324,7 +326,7 @@ class _ProjectEventCard extends StatelessWidget {
                           width: 18,
                           height: 18,
                           colorFilter: const ColorFilter.mode(
-                            Color(0xFF2563EB),
+                            AppColors.primary,
                             BlendMode.srcIn,
                           ),
                         ),
@@ -334,7 +336,7 @@ class _ProjectEventCard extends StatelessWidget {
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 14,
-                            color: Color(0xFF2563EB),
+                            color: AppColors.primary,
                           ),
                         ),
                       ],

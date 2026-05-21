@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
 import 'app_cached_network_image.dart';
 import '../../utils/url_utils.dart';
 
@@ -23,7 +24,7 @@ class HeaderProjectEvent extends StatelessWidget {
       expandedHeight: 86,
       pinned: true,
       stretch: true,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: AppColors.scaffoldDark,
       foregroundColor: Colors.white,
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -45,19 +46,12 @@ class HeaderProjectEvent extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             if (UrlUtils.isValidNetworkUrl(backgroundImageUrl))
-              AppCachedNetworkImage(
-                imageUrl: backgroundImageUrl!,
-                fit: BoxFit.cover,
-              )
+              AppCachedNetworkImage(imageUrl: backgroundImageUrl!, fit: BoxFit.cover)
             else
               Container(
-                color: const Color(0xFF0F172A),
+                color: AppColors.scaffoldDark,
                 child: const Center(
-                  child: Icon(
-                    Icons.multitrack_audio_rounded,
-                    color: Colors.white70,
-                    size: 58,
-                  ),
+                  child: Icon(Icons.multitrack_audio_rounded, color: Colors.white70, size: 58),
                 ),
               ),
             const DecoratedBox(

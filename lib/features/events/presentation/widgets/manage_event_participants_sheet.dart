@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/utils/url_utils.dart';
@@ -56,8 +58,8 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
       builder: (context, scrollController) {
         return DecoratedBox(
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF111827) : const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            color: isDark ? AppColors.surfaceDark : AppColors.surfaceElevatedLight,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
           ),
           child: SafeArea(
             top: false,
@@ -84,9 +86,9 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                           height: 5,
                           decoration: BoxDecoration(
                             color: isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFCBD5E1),
-                            borderRadius: BorderRadius.circular(999),
+                                ? AppColors.borderSubtleDark
+                                : AppColors.borderSubtleLight,
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
                           ),
                         ),
                         Padding(
@@ -129,21 +131,21 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? const Color(0xFF3F1114)
-                                    : const Color(0xFFFEE2E2),
-                                borderRadius: BorderRadius.circular(16),
+                                    ? AppColors.dangerSubtleDark
+                                    : AppColors.dangerSubtleLight,
+                                borderRadius: BorderRadius.circular(AppRadius.card),
                                 border: Border.all(
                                   color: isDark
-                                      ? const Color(0xFF7F1D1D)
-                                      : const Color(0xFFFCA5A5),
+                                      ? AppColors.dangerBorderDark
+                                      : AppColors.dangerBorderLight,
                                 ),
                               ),
                               child: Text(
                                 state.errorMessage!,
                                 style: TextStyle(
                                   color: isDark
-                                      ? const Color(0xFFFCA5A5)
-                                      : const Color(0xFF991B1B),
+                                      ? AppColors.dangerTextDark
+                                      : AppColors.dangerTextLight,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -193,13 +195,13 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                           padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? const Color(0xFF0F172A)
+                                ? AppColors.scaffoldDark
                                 : Colors.white,
                             border: Border(
                               top: BorderSide(
                                 color: isDark
-                                    ? const Color(0xFF334155)
-                                    : const Color(0xFFE2E8F0),
+                                    ? AppColors.borderSubtleDark
+                                    : AppColors.borderLight,
                               ),
                             ),
                           ),
@@ -273,12 +275,12 @@ class _SelectableMemberCard extends StatelessWidget {
       duration: const Duration(milliseconds: 180),
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
         border: Border.all(
           color: item.isSelected
               ? _primaryColor
-              : (isDark ? const Color(0xFF243041) : const Color(0xFFE2E8F0)),
+              : (isDark ? AppColors.borderStrongDark : AppColors.borderLight),
           width: item.isSelected ? 1.4 : 1,
         ),
         boxShadow: [
@@ -344,8 +346,8 @@ class _SelectableMemberCard extends StatelessWidget {
                     Divider(
                       height: 1,
                       color: isDark
-                          ? const Color(0xFF334155)
-                          : const Color(0xFFE2E8F0),
+                          ? AppColors.borderSubtleDark
+                          : AppColors.borderLight,
                     ),
                     const SizedBox(height: 14),
                     Text(
@@ -430,21 +432,21 @@ class _SkillOptionButton extends StatelessWidget {
     return Material(
       color: isSelected
           ? _primaryColor
-          : (isDark ? const Color(0xFF0F172A) : Colors.white),
-      borderRadius: BorderRadius.circular(999),
+          : (isDark ? AppColors.scaffoldDark : Colors.white),
+      borderRadius: BorderRadius.circular(AppRadius.pill),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 160),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(AppRadius.pill),
             border: Border.all(
               color: isSelected
                   ? _primaryColor
                   : (isDark
-                        ? const Color(0xFF334155)
+                        ? AppColors.borderSubtleDark
                         : const Color(0xFFD7DCE5)),
             ),
             boxShadow: isSelected
@@ -484,14 +486,14 @@ class _MemberAvatar extends StatelessWidget {
     return CircleAvatar(
       radius: 24,
       backgroundColor: isDark
-          ? const Color(0xFF1E293B)
-          : const Color(0xFFE2E8F0),
+          ? AppColors.surfaceElevatedDark
+          : AppColors.borderLight,
       backgroundImage: hasImage ? appCachedImageProvider(imageUrl) : null,
       child: hasImage
           ? null
           : Icon(
               Icons.person_rounded,
-              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+              color: isDark ? AppColors.textMutedDark : AppColors.textSubtleDark,
             ),
     );
   }

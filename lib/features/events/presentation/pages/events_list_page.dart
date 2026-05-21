@@ -5,6 +5,8 @@ import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 import 'package:louvor4_app/features/root/presentation/widgets/root_home_header.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_radius.dart';
 import '../../domain/entities/event_entity.dart';
 import '../cubit/events_cubit.dart';
 import '../cubit/events_state.dart';
@@ -130,14 +132,12 @@ class _HomeTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const logoBlue = Color(0xFF0166FF);
-
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A) : Colors.white,
+        color: isDark ? AppColors.scaffoldDark : Colors.white,
         border: Border(
           bottom: BorderSide(
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+            color: isDark ? AppColors.borderDark : AppColors.borderLight,
           ),
         ),
       ),
@@ -146,8 +146,8 @@ class _HomeTabBar extends StatelessWidget {
         dividerColor: Colors.transparent,
         indicatorSize: TabBarIndicatorSize.tab,
         indicator: const UnderlineTabIndicator(
-          borderSide: BorderSide(color: logoBlue, width: 3),
-          borderRadius: BorderRadius.all(Radius.circular(999)),
+          borderSide: BorderSide(color: AppColors.primaryBright, width: 3),
+          borderRadius: BorderRadius.all(Radius.circular(AppRadius.pill)),
         ),
         splashFactory: NoSplash.splashFactory,
         overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -159,10 +159,10 @@ class _HomeTabBar extends StatelessWidget {
           fontWeight: FontWeight.w500,
           fontSize: 15,
         ),
-        labelColor: logoBlue,
+        labelColor: AppColors.primaryBright,
         unselectedLabelColor: isDark
-            ? const Color(0xFF475569)
-            : const Color(0xFF94A3B8),
+            ? AppColors.textSubtleDark
+            : AppColors.textMutedDark,
         tabs: const [
           Tab(height: 46, text: 'Próximos'),
           Tab(height: 46, text: 'Passados'),
@@ -320,7 +320,7 @@ class _NoMoreEventsIndicator extends StatelessWidget {
         child: Text(
           'Não há mais eventos',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: const Color(0xFF94A3B8),
+            color: AppColors.textMutedDark,
           ),
         ),
       ),
@@ -336,9 +336,9 @@ class _EventsLoadingState extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final lineColor = isDark
-        ? const Color(0xFF1E293B)
+        ? AppColors.surfaceElevatedDark
         : const Color(0xFFE5EDF6);
-    final cardFill = isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC);
+    final cardFill = isDark ? AppColors.scaffoldDark : AppColors.surfaceElevatedLight;
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -356,7 +356,7 @@ class _EventsLoadingState extends StatelessWidget {
                       height: 20,
                       decoration: BoxDecoration(
                         color: lineColor,
-                        borderRadius: BorderRadius.circular(999),
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
                       ),
                     ),
                     const Spacer(),
@@ -365,7 +365,7 @@ class _EventsLoadingState extends StatelessWidget {
                       height: 16,
                       decoration: BoxDecoration(
                         color: lineColor,
-                        borderRadius: BorderRadius.circular(999),
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
                       ),
                     ),
                   ],
@@ -411,7 +411,7 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
                   height: 10,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Color(0xFF0166FF),
+                    color: AppColors.primaryBright,
                   ),
                 ),
                 Expanded(child: Container(width: 2, color: lineColor)),
@@ -432,7 +432,7 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
                       height: 70,
                       decoration: BoxDecoration(
                         color: lineColor,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppRadius.input),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -446,7 +446,7 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
                             height: 16,
                             decoration: BoxDecoration(
                               color: lineColor,
-                              borderRadius: BorderRadius.circular(999),
+                              borderRadius: BorderRadius.circular(AppRadius.pill),
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -455,7 +455,7 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
                             height: 13,
                             decoration: BoxDecoration(
                               color: lineColor,
-                              borderRadius: BorderRadius.circular(999),
+                              borderRadius: BorderRadius.circular(AppRadius.pill),
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -472,11 +472,11 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: isDark
-                                          ? const Color(0xFF334155)
+                                          ? AppColors.surfaceSubtleDark
                                           : const Color(0xFFDCE6F1),
                                       border: Border.all(
                                         color: isDark
-                                            ? const Color(0xFF111827)
+                                            ? AppColors.surfaceDark
                                             : Colors.white,
                                         width: 1.5,
                                       ),
@@ -495,7 +495,7 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
                       height: 18,
                       decoration: BoxDecoration(
                         color: lineColor,
-                        borderRadius: BorderRadius.circular(999),
+                        borderRadius: BorderRadius.circular(AppRadius.pill),
                       ),
                     ),
                   ],
@@ -527,7 +527,7 @@ class _EventsErrorState extends StatelessWidget {
             const Icon(
               Icons.cloud_off_rounded,
               size: 48,
-              color: Color(0xFF64748B),
+              color: AppColors.textMutedLight,
             ),
             const SizedBox(height: 10),
             Text(
@@ -535,8 +535,8 @@ class _EventsErrorState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: isDark
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF475569),
+                    ? AppColors.textMutedDark
+                    : AppColors.textSubtleDark,
               ),
             ),
             const SizedBox(height: 14),
@@ -567,7 +567,7 @@ class _EventsEmptyState extends StatelessWidget {
             const Icon(
               Icons.event_busy_rounded,
               size: 48,
-              color: Color(0xFF94A3B8),
+              color: AppColors.textMutedDark,
             ),
             const SizedBox(height: 10),
             Text(
@@ -582,8 +582,8 @@ class _EventsEmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: isDark
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF64748B),
+                    ? AppColors.textMutedDark
+                    : AppColors.textMutedLight,
               ),
             ),
           ],
@@ -608,7 +608,7 @@ class _PastEventsEmptyState extends StatelessWidget {
             const Icon(
               Icons.history_rounded,
               size: 48,
-              color: Color(0xFF94A3B8),
+              color: AppColors.textMutedDark,
             ),
             const SizedBox(height: 10),
             Text(
@@ -623,8 +623,8 @@ class _PastEventsEmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: isDark
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF64748B),
+                    ? AppColors.textMutedDark
+                    : AppColors.textMutedLight,
               ),
             ),
           ],
@@ -692,7 +692,7 @@ class EventDateHeader extends StatelessWidget {
               fontWeight: FontWeight.w600,
               fontSize: 22,
               height: 1,
-              color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF475569),
+              color: isDark ? AppColors.borderLight : AppColors.textSubtleDark,
             ),
           ),
         ),
@@ -702,7 +702,7 @@ class EventDateHeader extends StatelessWidget {
             '${_getMonthName(date.month)} • ${_getWeekDay(date)}',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
-              color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF475569),
+              color: isDark ? AppColors.borderLight : AppColors.textSubtleDark,
             ),
           ),
         ),
@@ -711,7 +711,7 @@ class EventDateHeader extends StatelessWidget {
           _getRelativeTime(date),
           style: theme.textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w600,
-            color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+            color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
           ),
         ),
       ],
@@ -755,8 +755,8 @@ class EventTimelineColumn extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: isDark
-                      ? const Color(0xFF475569)
-                      : const Color(0xFFDCE3EC),
+                      ? AppColors.textSubtleDark
+                      : AppColors.borderStrongLight,
                 ),
               ),
             ),

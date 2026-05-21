@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/features/root/presentation/widgets/root_user_avatar.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_radius.dart';
 
 class RootNavigationDrawer extends StatelessWidget {
   final UserDetailEntity? user;
@@ -22,11 +24,11 @@ class RootNavigationDrawer extends StatelessWidget {
     final theme = Theme.of(context);
     final username = _buildUsername();
     final drawerBackground = theme.brightness == Brightness.dark
-        ? const Color(0xFF111827)
+        ? AppColors.surfaceDark
         : Colors.white;
     final secondaryTextColor = theme.brightness == Brightness.dark
-        ? const Color(0xFF94A3B8)
-        : const Color(0xFF64748B);
+        ? AppColors.textMutedDark
+        : AppColors.textMutedLight;
 
     return Drawer(
       backgroundColor: drawerBackground,
@@ -130,7 +132,7 @@ class _DrawerEntry extends StatelessWidget {
           fontWeight: FontWeight.w600,
         ),
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.card)),
       onTap: onTap,
     );
   }

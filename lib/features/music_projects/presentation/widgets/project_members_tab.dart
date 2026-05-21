@@ -4,6 +4,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
@@ -215,7 +217,7 @@ class _ProjectMemberCard extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(AppRadius.cardLarge),
       child: Ink(
         decoration: appCardDecoration(context),
         child: Padding(
@@ -225,7 +227,7 @@ class _ProjectMemberCard extends StatelessWidget {
             children: [
               Expanded(
                 child: InkWell(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppRadius.card),
                   onTap: () => showUserProfileDialog(
                     context,
                     name: member.fullName,
@@ -318,13 +320,13 @@ class _ProjectMemberCard extends StatelessWidget {
                                 }
                               },
                               assetPath: 'assets/icons/settings-2.svg',
-                              iconColor: const Color(0xFF2563EB),
+                              iconColor: AppColors.primary,
                               backgroundColor: isDark
-                                  ? const Color(0xFF172554)
-                                  : const Color(0xFFEFF6FF),
+                                  ? AppColors.primarySubtleDark
+                                  : AppColors.primarySubtleLight,
                               borderColor: isDark
-                                  ? const Color(0xFF1D4ED8)
-                                  : const Color(0xFFBFDBFE),
+                                  ? AppColors.primaryDark
+                                  : AppColors.primaryBorderLight,
                             ),
                           if (cubit.canEditMember(member) &&
                               cubit.canManageMembers)
@@ -338,12 +340,12 @@ class _ProjectMemberCard extends StatelessWidget {
                                 );
                               },
                               assetPath: 'assets/icons/trash-2.svg',
-                              iconColor: const Color(0xFFB3261E),
+                              iconColor: AppColors.danger,
                               backgroundColor: isDark
                                   ? const Color(0xFF2A1313)
                                   : const Color(0xFFFFF1F2),
                               borderColor: isDark
-                                  ? const Color(0xFF7F1D1D)
+                                  ? AppColors.dangerBorderDark
                                   : const Color(0xFFFECDD3),
                             ),
                         ],
@@ -677,17 +679,17 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
                                 backgroundColor:
                                     Theme.of(context).brightness ==
                                         Brightness.dark
-                                    ? const Color(0xFF0F172A)
+                                    ? AppColors.scaffoldDark
                                     : Colors.white,
                                 side: BorderSide(
                                   color:
                                       Theme.of(context).brightness ==
                                           Brightness.dark
-                                      ? const Color(0xFF334155)
-                                      : const Color(0xFFCBD5E1),
+                                      ? AppColors.borderSubtleDark
+                                      : AppColors.borderSubtleLight,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(999),
+                                  borderRadius: BorderRadius.circular(AppRadius.pill),
                                 ),
                               ),
                             )
@@ -817,7 +819,7 @@ class _MemberHeader extends StatelessWidget {
                 Text(
                   '@${member.username}',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: const Color(0xFF2563EB),
+                    color: AppColors.primary,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -915,12 +917,12 @@ class _MemberAvatar extends StatelessWidget {
     return CircleAvatar(
       radius: 26,
       backgroundColor: isDark
-          ? const Color(0xFF172554)
-          : const Color(0xFFEFF6FF),
+          ? AppColors.primarySubtleDark
+          : AppColors.primarySubtleLight,
       child: Text(
         initial.toUpperCase(),
         style: const TextStyle(
-          color: Color(0xFF0166FF),
+          color: AppColors.primaryBright,
           fontWeight: FontWeight.w800,
           fontSize: 18,
         ),
@@ -943,12 +945,12 @@ class _RoleBadge extends StatelessWidget {
         isDark ? const Color(0xFFF59E0B) : const Color(0xFFC2410C),
       ),
       ProjectMemberRole.admin => (
-        isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF),
-        isDark ? const Color(0xFF60A5FA) : const Color(0xFF1D4ED8),
+        isDark ? AppColors.primarySubtleDark : AppColors.primarySubtleLight,
+        isDark ? const Color(0xFF60A5FA) : AppColors.primaryDark,
       ),
       ProjectMemberRole.member => (
-        isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-        isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+        isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceSubtleLight,
+        isDark ? AppColors.borderSubtleLight : AppColors.textSubtleDark,
       ),
     };
 
@@ -956,7 +958,7 @@ class _RoleBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(
         role.label,
@@ -984,19 +986,19 @@ class _SkillTag extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: muted
-            ? (isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC))
-            : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
-        borderRadius: BorderRadius.circular(999),
+            ? (isDark ? AppColors.scaffoldDark : AppColors.surfaceElevatedLight)
+            : (isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceSubtleLight),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
         ),
       ),
       child: Text(
         label,
         style: TextStyle(
           color: muted
-              ? (isDark ? const Color(0xFF94A3B8) : const Color(0xFF94A3B8))
-              : (isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155)),
+              ? AppColors.textMutedDark
+              : (isDark ? AppColors.borderLight : AppColors.borderSubtleDark),
           fontWeight: FontWeight.w700,
           fontSize: 12,
         ),
@@ -1060,16 +1062,16 @@ class _InlineErrorMessage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF3F1114) : const Color(0xFFFEE2E2),
-        borderRadius: BorderRadius.circular(14),
+        color: isDark ? AppColors.dangerSubtleDark : AppColors.dangerSubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5),
+          color: isDark ? AppColors.dangerBorderDark : AppColors.dangerBorderLight,
         ),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
+          color: isDark ? AppColors.dangerTextDark : AppColors.dangerTextLight,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -1090,16 +1092,16 @@ class _InlineHint extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(14),
+        color: isDark ? AppColors.scaffoldDark : AppColors.surfaceElevatedLight,
+        borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
         ),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+          color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
           fontWeight: FontWeight.w600,
         ),
       ),

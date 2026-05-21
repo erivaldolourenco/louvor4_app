@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../cubit/project_cubit.dart';
 import '../cubit/project_state.dart';
 import '../widgets/project_selector_bottom_sheet.dart';
@@ -53,7 +54,7 @@ class _EmptyProjectSelection extends StatelessWidget {
               const Icon(
                 Icons.folder_open_rounded,
                 size: 54,
-                color: Color(0xFF94A3B8),
+                color: AppColors.textMutedDark,
               ),
               const SizedBox(height: 10),
               Text(

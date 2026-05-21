@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_radius.dart';
 
 class RootBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
@@ -18,15 +20,15 @@ class RootBottomNavigationBar extends StatelessWidget {
     final theme = Theme.of(context);
     final activeColor = theme.colorScheme.primary;
     final inactiveColor = theme.brightness == Brightness.dark
-        ? const Color(0xFF94A3B8)
-        : const Color(0xFF4D4D4D);
+        ? AppColors.textMutedDark
+        : AppColors.textPrimaryLight;
 
     return Container(
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
             color: theme.brightness == Brightness.dark
-                ? const Color(0xFF243041)
+                ? AppColors.borderStrongDark
                 : Colors.grey.shade200,
             width: 1,
           ),
@@ -39,7 +41,7 @@ class RootBottomNavigationBar extends StatelessWidget {
         backgroundColor:
             theme.bottomNavigationBarTheme.backgroundColor ??
             (theme.brightness == Brightness.dark
-                ? const Color(0xFF111827)
+                ? AppColors.surfaceDark
                 : Colors.white),
         elevation: 0,
         selectedItemColor: activeColor,
@@ -165,7 +167,7 @@ class RootBottomNavigationBar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 4),
             decoration: BoxDecoration(
               color: const Color(0xFFE11D48),
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: BorderRadius.circular(AppRadius.pill),
               border: Border.all(color: borderColor, width: 1.5),
             ),
             child: Center(

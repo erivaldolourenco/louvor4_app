@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/utils/skill_icon.dart';
@@ -200,18 +202,18 @@ class _IconPickerGrid extends StatelessWidget {
             decoration: BoxDecoration(
               color: isSelected
                   ? (isDark
-                        ? const Color(0xFF172554)
-                        : const Color(0xFFEFF6FF))
+                        ? AppColors.primarySubtleDark
+                        : AppColors.primarySubtleLight)
                   : (isDark
-                        ? const Color(0xFF1E293B)
-                        : const Color(0xFFF8FAFC)),
-              borderRadius: BorderRadius.circular(12),
+                        ? AppColors.surfaceElevatedDark
+                        : AppColors.surfaceElevatedLight),
+              borderRadius: BorderRadius.circular(AppRadius.input),
               border: Border.all(
                 color: isSelected
-                    ? const Color(0xFF2563EB)
+                    ? AppColors.primary
                     : (isDark
-                          ? const Color(0xFF334155)
-                          : const Color(0xFFE2E8F0)),
+                          ? AppColors.borderSubtleDark
+                          : AppColors.borderLight),
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -224,10 +226,10 @@ class _IconPickerGrid extends StatelessWidget {
                   height: 32,
                   colorFilter: ColorFilter.mode(
                     isSelected
-                        ? const Color(0xFF2563EB)
+                        ? AppColors.primary
                         : (isDark
-                              ? const Color(0xFF94A3B8)
-                              : const Color(0xFF64748B)),
+                              ? AppColors.textMutedDark
+                              : AppColors.textMutedLight),
                     BlendMode.srcIn,
                   ),
                 ),
@@ -239,10 +241,10 @@ class _IconPickerGrid extends StatelessWidget {
                     fontSize: 11,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: isSelected
-                        ? const Color(0xFF2563EB)
+                        ? AppColors.primary
                         : (isDark
-                              ? const Color(0xFF94A3B8)
-                              : const Color(0xFF64748B)),
+                              ? AppColors.textMutedDark
+                              : AppColors.textMutedLight),
                   ),
                 ),
               ],
@@ -287,16 +289,16 @@ class _InlineError extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF3F1114) : const Color(0xFFFEE2E2),
-        borderRadius: BorderRadius.circular(14),
+        color: isDark ? AppColors.dangerSubtleDark : AppColors.dangerSubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5),
+          color: isDark ? AppColors.dangerBorderDark : AppColors.dangerBorderLight,
         ),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
+          color: isDark ? AppColors.dangerTextDark : AppColors.dangerTextLight,
           fontWeight: FontWeight.w600,
         ),
       ),

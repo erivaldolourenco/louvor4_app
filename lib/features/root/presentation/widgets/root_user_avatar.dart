@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
+import '../../../../../core/theme/app_colors.dart';
 
 class RootUserAvatar extends StatelessWidget {
   final UserDetailEntity? user;
@@ -20,7 +21,7 @@ class RootUserAvatar extends StatelessWidget {
     final profileImage = user?.profileImage?.trim();
     final hasProfileImage = profileImage != null && profileImage.isNotEmpty;
     final backgroundColor = theme.brightness == Brightness.dark
-        ? const Color(0xFF172554)
+        ? AppColors.primarySubtleDark
         : const Color(0xFFE8F0FF);
 
     if (isLoading) {
@@ -45,7 +46,7 @@ class RootUserAvatar extends StatelessWidget {
           ? Text(
               _buildInitial(),
               style: TextStyle(
-                color: const Color(0xFF0166FF),
+                color: AppColors.primaryBright,
                 fontSize: radius * 0.9,
                 fontWeight: FontWeight.w800,
               ),

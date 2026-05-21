@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
@@ -185,7 +187,7 @@ class _SongsContentState extends State<_SongsContent>
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFB3261E),
+              backgroundColor: AppColors.danger,
             ),
             onPressed: () async {
               Navigator.of(ctx).pop();
@@ -304,9 +306,9 @@ class _SongsContentState extends State<_SongsContent>
             builder: (context) {
               final isDark = Theme.of(context).brightness == Brightness.dark;
               final borderColor = isDark
-                  ? const Color(0xFF243041)
-                  : const Color(0xFFDCE3EC);
-              final fillColor = isDark ? const Color(0xFF111827) : Colors.white;
+                  ? AppColors.borderStrongDark
+                  : AppColors.borderStrongLight;
+              final fillColor = isDark ? AppColors.surfaceDark : Colors.white;
 
               return TextField(
                 controller: _searchController,
@@ -330,17 +332,17 @@ class _SongsContentState extends State<_SongsContent>
                     horizontal: 16,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadius.card),
                     borderSide: BorderSide(color: borderColor),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadius.card),
                     borderSide: BorderSide(color: borderColor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadius.card),
                     borderSide: const BorderSide(
-                      color: Color(0xFF0166FF),
+                      color: AppColors.primaryBright,
                       width: 1.4,
                     ),
                   ),
@@ -474,7 +476,7 @@ class _SongsTabBar extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      color: isDark ? const Color(0xFF0F172A) : Colors.white,
+      color: isDark ? AppColors.scaffoldDark : Colors.white,
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: AnimatedBuilder(
         animation: controller.animation ?? controller,
@@ -486,16 +488,16 @@ class _SongsTabBar extends StatelessWidget {
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               color: isDark
-                  ? const Color(0xFF1E293B)
-                  : const Color(0xFFE2E8F0),
-              borderRadius: BorderRadius.circular(14),
+                  ? AppColors.surfaceElevatedDark
+                  : AppColors.borderLight,
+              borderRadius: BorderRadius.circular(AppRadius.input),
             ),
             child: TabBar(
               controller: controller,
               dividerColor: Colors.transparent,
               indicatorSize: TabBarIndicatorSize.tab,
               indicator: BoxDecoration(
-                color: isDark ? const Color(0xFF111827) : Colors.white,
+                color: isDark ? AppColors.surfaceDark : Colors.white,
                 borderRadius: BorderRadius.circular(11),
                 boxShadow: [
                   BoxShadow(
@@ -520,9 +522,9 @@ class _SongsTabBar extends StatelessWidget {
                       fontSize: 14,
                       color: tabIndex == 0
                           ? (isDark
-                                ? const Color(0xFFF8FAFC)
-                                : const Color(0xFF0F172A))
-                          : const Color(0xFF64748B),
+                                ? AppColors.surfaceElevatedLight
+                                : AppColors.scaffoldDark)
+                          : AppColors.textMutedLight,
                     ),
                   ),
                 ),
@@ -536,9 +538,9 @@ class _SongsTabBar extends StatelessWidget {
                       fontSize: 14,
                       color: tabIndex == 1
                           ? (isDark
-                                ? const Color(0xFFF8FAFC)
-                                : const Color(0xFF0F172A))
-                          : const Color(0xFF64748B),
+                                ? AppColors.surfaceElevatedLight
+                                : AppColors.scaffoldDark)
+                          : AppColors.textMutedLight,
                     ),
                   ),
                 ),
@@ -572,7 +574,7 @@ class _MedleysEmpty extends StatelessWidget {
             const Icon(
               Icons.queue_music_rounded,
               size: 56,
-              color: Color(0xFF94A3B8),
+              color: AppColors.textMutedDark,
             ),
             const SizedBox(height: 12),
             Text(
@@ -587,8 +589,8 @@ class _MedleysEmpty extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: isDark
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF64748B),
+                    ? AppColors.textMutedDark
+                    : AppColors.textMutedLight,
               ),
             ),
             const SizedBox(height: 20),
@@ -678,7 +680,7 @@ class _SongCard extends StatelessWidget {
                             ?.copyWith(
                               fontStyle: FontStyle.italic,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF94A3B8),
+                              color: AppColors.textMutedDark,
                             ),
                       ),
                       const SizedBox(height: 8),
@@ -713,14 +715,14 @@ class _SongCard extends StatelessWidget {
                       onPressed: onEdit,
                       assetPath: 'assets/icons/file-music.svg',
                       iconColor: onEdit != null
-                          ? const Color(0xFF2563EB)
-                          : const Color(0xFF94A3B8),
+                          ? AppColors.primary
+                          : AppColors.textMutedDark,
                       backgroundColor: onEdit != null
-                          ? const Color(0xFFEFF6FF)
-                          : const Color(0xFFF8FAFC),
+                          ? AppColors.primarySubtleLight
+                          : AppColors.surfaceElevatedLight,
                       borderColor: onEdit != null
-                          ? const Color(0xFFBFDBFE)
-                          : const Color(0xFFE2E8F0),
+                          ? AppColors.primaryBorderLight
+                          : AppColors.borderLight,
                     ),
                   ],
                 ),
@@ -789,15 +791,15 @@ class _MetaBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.surfaceSubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.borderLight),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 14, color: const Color(0xFF64748B)),
+            Icon(icon, size: 14, color: AppColors.textMutedLight),
             const SizedBox(width: 4),
           ],
           Text(
@@ -805,7 +807,7 @@ class _MetaBadge extends StatelessWidget {
             style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF475569),
+              color: AppColors.textSubtleDark,
             ),
           ),
         ],

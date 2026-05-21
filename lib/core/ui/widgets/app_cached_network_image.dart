@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../theme/app_colors.dart';
 import '../../utils/url_utils.dart';
 
 ImageProvider<Object>? appCachedImageProvider(String? imageUrl) {
@@ -28,6 +29,9 @@ class AppCachedNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final placeholderColor = isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight;
+
     return CachedNetworkImage(
       imageUrl: imageUrl,
       fit: fit,
@@ -35,25 +39,14 @@ class AppCachedNetworkImage extends StatelessWidget {
       height: height,
       placeholder: (_, _) =>
           placeholder ??
-          Container(
-            width: width,
-            height: height,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? const Color(0xFF1E293B)
-                : const Color(0xFFE2E8F0),
-          ),
+          Container(width: width, height: height, color: placeholderColor),
       errorWidget: (_, _, _) =>
           errorWidget ??
           Container(
             width: width,
             height: height,
-            color: Theme.of(context).brightness == Brightness.dark
-                ? const Color(0xFF1E293B)
-                : const Color(0xFFE2E8F0),
-            child: const Icon(
-              Icons.broken_image_outlined,
-              color: Color(0xFF94A3B8),
-            ),
+            color: placeholderColor,
+            child: Icon(Icons.broken_image_outlined, color: AppColors.textMutedDark),
           ),
     );
   }

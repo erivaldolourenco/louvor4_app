@@ -3,6 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/utils/youtube_utils.dart';
 
 class EventMusicCard extends StatelessWidget {
@@ -60,14 +62,14 @@ class EventMusicCard extends StatelessWidget {
               height: 60,
               decoration: BoxDecoration(
                 color: isDark
-                    ? const Color(0xFF3F2A13)
-                    : const Color(0xFFFFF6E5),
-                borderRadius: BorderRadius.circular(12),
+                    ? AppColors.warningSubtleDark
+                    : AppColors.warningSubtleLight,
+                borderRadius: BorderRadius.circular(AppRadius.input),
               ),
               child: const Center(
                 child: Icon(
                   Icons.queue_music_rounded,
-                  color: Color(0xFFF59E0B),
+                  color: AppColors.warning,
                   size: 30,
                 ),
               ),
@@ -77,8 +79,8 @@ class EventMusicCard extends StatelessWidget {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0F172A) : Colors.grey[200],
-                borderRadius: BorderRadius.circular(12),
+                color: isDark ? AppColors.scaffoldDark : Colors.grey[200],
+                borderRadius: BorderRadius.circular(AppRadius.input),
                 image: DecorationImage(
                   image: youtubeUrl != null && youtubeUrl!.isNotEmpty
                       ? NetworkImage(YoutubeUtils.getThumbnail(youtubeUrl!))
@@ -114,9 +116,9 @@ class EventMusicCard extends StatelessWidget {
                       _MetaChip(
                         label: 'Medley',
                         backgroundColor: isDark
-                            ? const Color(0xFF3F2A13)
-                            : const Color(0xFFFFF6E5),
-                        textColor: const Color(0xFFF59E0B),
+                            ? AppColors.warningSubtleDark
+                            : AppColors.warningSubtleLight,
+                        textColor: AppColors.warning,
                         borderColor: isDark
                             ? const Color(0xFF78350F)
                             : const Color(0xFFFDE68A),
@@ -137,9 +139,9 @@ class EventMusicCard extends StatelessWidget {
               onPressed: _launchYoutube,
               assetPath: 'assets/icons/youtube.svg',
               iconColor: const Color(0xFFDC2626),
-              backgroundColor: isDark ? const Color(0xFF111827) : Colors.white,
+              backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
               borderColor: isDark
-                  ? const Color(0xFF7F1D1D)
+                  ? AppColors.dangerBorderDark
                   : const Color(0xFFFECDD3),
             ),
           if (canRemove && isRemoving)
@@ -163,8 +165,8 @@ class EventMusicCard extends StatelessWidget {
         background: Container(
           margin: const EdgeInsets.only(right: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFFB3261E),
-            borderRadius: BorderRadius.circular(20),
+            color: AppColors.danger,
+            borderRadius: BorderRadius.circular(AppRadius.cardLarge),
           ),
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -182,10 +184,10 @@ class EventMusicCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.cardLarge),
           child: cardContent,
         ),
       ),
@@ -263,11 +265,11 @@ class _MetaChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: backgroundColor ??
-            (isDark ? const Color(0xFF0F172A) : const Color(0xFFF3F4F6)),
+            (isDark ? AppColors.scaffoldDark : const Color(0xFFF3F4F6)),
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
           color: borderColor ??
-              (isDark ? const Color(0xFF334155) : const Color(0xFFE5E7EB)),
+              (isDark ? AppColors.borderSubtleDark : const Color(0xFFE5E7EB)),
         ),
       ),
       child: Text(

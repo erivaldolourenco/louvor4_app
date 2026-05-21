@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../features/songs/domain/entities/song_entity.dart';
 import '../../domain/entities/create_medley_input_entity.dart';
@@ -217,7 +219,7 @@ class _MedleyFormSheetState extends State<_MedleyFormSheet> {
           content: Text(
             _isEditing ? 'Medley atualizado com sucesso.' : 'Medley criado com sucesso.',
           ),
-          backgroundColor: const Color(0xFF2E7D32),
+          backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -226,7 +228,7 @@ class _MedleyFormSheetState extends State<_MedleyFormSheet> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(error),
-          backgroundColor: const Color(0xFFB3261E),
+          backgroundColor: AppColors.danger,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -308,7 +310,7 @@ class _MedleyFormSheetState extends State<_MedleyFormSheet> {
                     '${_draftItems.length} ${_draftItems.length == 1 ? 'música' : 'músicas'}',
                     style: const TextStyle(
                       fontSize: 13,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textMutedLight,
                     ),
                   ),
                 ],
@@ -335,14 +337,14 @@ class _MedleyFormSheetState extends State<_MedleyFormSheet> {
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(AppRadius.input),
                   ),
                   side: BorderSide(
                     color: isDark
-                        ? const Color(0xFF334155)
+                        ? AppColors.borderSubtleDark
                         : const Color(0xFFD6E4FF),
                   ),
-                  foregroundColor: const Color(0xFF2563EB),
+                  foregroundColor: AppColors.primary,
                 ),
                 onPressed: isActioning ? null : _addSong,
                 icon: const Icon(Icons.add_rounded),
@@ -399,10 +401,10 @@ class _DraftItemTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(14),
+        color: isDark ? AppColors.scaffoldDark : AppColors.surfaceElevatedLight,
+        borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+          color: isDark ? AppColors.borderDark : AppColors.borderLight,
         ),
       ),
       child: Row(
@@ -412,9 +414,9 @@ class _DraftItemTile extends StatelessWidget {
             height: 28,
             decoration: BoxDecoration(
               color: isDark
-                  ? const Color(0xFF172554)
-                  : const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(8),
+                  ? AppColors.primarySubtleDark
+                  : AppColors.primarySubtleLight,
+              borderRadius: BorderRadius.circular(AppRadius.badge),
             ),
             child: Center(
               child: Text(
@@ -422,7 +424,7 @@ class _DraftItemTile extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF2563EB),
+                  color: AppColors.primary,
                 ),
               ),
             ),
@@ -457,13 +459,13 @@ class _DraftItemTile extends StatelessWidget {
           IconButton(
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.edit_outlined, size: 18),
-            color: const Color(0xFF64748B),
+            color: AppColors.textMutedLight,
             onPressed: onEdit,
           ),
           IconButton(
             visualDensity: VisualDensity.compact,
             icon: const Icon(Icons.delete_outline_rounded, size: 18),
-            color: const Color(0xFFEF4444),
+            color: AppColors.dangerBright,
             onPressed: onRemove,
           ),
         ],
@@ -482,14 +484,14 @@ class _MiniTag extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(99),
+        color: AppColors.surfaceSubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(
         label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontSize: 11, color: Color(0xFF475569)),
+        style: const TextStyle(fontSize: 11, color: AppColors.textSubtleDark),
       ),
     );
   }
@@ -562,8 +564,8 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sheetColor = isDark ? const Color(0xFF111827) : Colors.white;
-    final borderColor = isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0);
+    final sheetColor = isDark ? AppColors.surfaceDark : Colors.white;
+    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
 
     final filtered = widget.songs.where((s) {
       final q = _query.toLowerCase();
@@ -574,7 +576,7 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
     return Container(
       decoration: BoxDecoration(
         color: sheetColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.bottomSheet)),
       ),
       child: Column(
         children: [
@@ -585,8 +587,8 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF334155) : const Color(0xFFDCE3EC),
-                borderRadius: BorderRadius.circular(99),
+                color: isDark ? AppColors.borderSubtleDark : AppColors.borderStrongLight,
+                borderRadius: BorderRadius.circular(AppRadius.pill),
               ),
             ),
           ),
@@ -627,20 +629,20 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
                     : null,
                 filled: true,
                 fillColor: isDark
-                    ? const Color(0xFF0F172A)
-                    : const Color(0xFFF1F5F9),
+                    ? AppColors.scaffoldDark
+                    : AppColors.surfaceSubtleLight,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: BorderSide(color: borderColor),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: BorderSide(color: borderColor),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: const BorderSide(
-                    color: Color(0xFF0166FF),
+                    color: AppColors.primaryBright,
                     width: 1.4,
                   ),
                 ),
@@ -657,7 +659,7 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
                 ? Center(
                     child: Text(
                       _query.isEmpty ? 'Nenhuma música no catálogo.' : 'Nenhuma música encontrada.',
-                      style: const TextStyle(color: Color(0xFF94A3B8)),
+                      style: const TextStyle(color: AppColors.textMutedDark),
                     ),
                   )
                 : ListView.separated(
@@ -666,8 +668,8 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
                     separatorBuilder: (_, _) => Divider(
                       height: 1,
                       color: isDark
-                          ? const Color(0xFF1E293B)
-                          : const Color(0xFFF1F5F9),
+                          ? AppColors.surfaceElevatedDark
+                          : AppColors.surfaceSubtleLight,
                     ),
                     itemBuilder: (ctx, i) {
                       final song = filtered[i];
@@ -681,13 +683,13 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
                           height: 42,
                           decoration: BoxDecoration(
                             color: isDark
-                                ? const Color(0xFF1E293B)
-                                : const Color(0xFFF1F5F9),
+                                ? AppColors.surfaceElevatedDark
+                                : AppColors.surfaceSubtleLight,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Icon(
                             Icons.music_note_rounded,
-                            color: Color(0xFF64748B),
+                            color: AppColors.textMutedLight,
                             size: 20,
                           ),
                         ),
@@ -709,16 +711,16 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
                           ),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? const Color(0xFF172554)
-                                : const Color(0xFFEFF6FF),
-                            borderRadius: BorderRadius.circular(8),
+                                ? AppColors.primarySubtleDark
+                                : AppColors.primarySubtleLight,
+                            borderRadius: BorderRadius.circular(AppRadius.badge),
                           ),
                           child: Text(
                             song.key,
                             style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: Color(0xFF2563EB),
+                              color: AppColors.primary,
                             ),
                           ),
                         ),
@@ -797,8 +799,8 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AlertDialog(
-      backgroundColor: isDark ? const Color(0xFF111827) : Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.cardLarge)),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -812,7 +814,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
             widget.songTitle,
             style: const TextStyle(
               fontSize: 13,
-              color: Color(0xFF64748B),
+              color: AppColors.textMutedLight,
               fontWeight: FontWeight.w500,
             ),
             maxLines: 1,
@@ -841,34 +843,34 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                 hintText: 'Ex: C, D#, Ebm, Am',
                 filled: true,
                 fillColor: isDark
-                    ? const Color(0xFF0F172A)
-                    : const Color(0xFFF8FAFC),
+                    ? AppColors.scaffoldDark
+                    : AppColors.surfaceElevatedLight,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: BorderSide(
                     color: isDark
-                        ? const Color(0xFF334155)
-                        : const Color(0xFFE2E8F0),
+                        ? AppColors.borderSubtleDark
+                        : AppColors.borderLight,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: BorderSide(
                     color: isDark
-                        ? const Color(0xFF334155)
-                        : const Color(0xFFE2E8F0),
+                        ? AppColors.borderSubtleDark
+                        : AppColors.borderLight,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: const BorderSide(
-                    color: Color(0xFF0166FF),
+                    color: AppColors.primaryBright,
                     width: 1.4,
                   ),
                 ),
                 errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFEF4444)),
+                  borderRadius: BorderRadius.circular(AppRadius.input),
+                  borderSide: const BorderSide(color: AppColors.dangerBright),
                 ),
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -896,28 +898,28 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                 hintText: 'Ex: Entrar no refrão...',
                 filled: true,
                 fillColor: isDark
-                    ? const Color(0xFF0F172A)
-                    : const Color(0xFFF8FAFC),
+                    ? AppColors.scaffoldDark
+                    : AppColors.surfaceElevatedLight,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: BorderSide(
                     color: isDark
-                        ? const Color(0xFF334155)
-                        : const Color(0xFFE2E8F0),
+                        ? AppColors.borderSubtleDark
+                        : AppColors.borderLight,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: BorderSide(
                     color: isDark
-                        ? const Color(0xFF334155)
-                        : const Color(0xFFE2E8F0),
+                        ? AppColors.borderSubtleDark
+                        : AppColors.borderLight,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: const BorderSide(
-                    color: Color(0xFF0166FF),
+                    color: AppColors.primaryBright,
                     width: 1.4,
                   ),
                 ),

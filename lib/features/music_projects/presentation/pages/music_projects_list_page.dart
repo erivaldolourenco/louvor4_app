@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
@@ -133,7 +135,7 @@ class _MusicProjectsListPageState extends State<MusicProjectsListPage> {
       width: double.infinity,
       decoration: BoxDecoration(
         color: theme.scaffoldBackgroundColor,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.bottomSheet)),
       ),
       child: RefreshIndicator(
         onRefresh: _loadProjects,
@@ -182,18 +184,18 @@ class _ProjectSelectableCard extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppRadius.card),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         onTap: onTap,
         child: Ink(
-          decoration: appCardDecoration(context, radius: 16),
+          decoration: appCardDecoration(context, radius: AppRadius.card),
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppRadius.input),
                   child: UrlUtils.isValidNetworkUrl(project.profileImage)
                       ? AppCachedNetworkImage(
                           imageUrl: project.profileImage!,
@@ -241,10 +243,10 @@ class _ProjectSelectableCard extends StatelessWidget {
     return Container(
       width: 56,
       height: 56,
-      color: isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF),
+      color: isDark ? AppColors.primarySubtleDark : AppColors.primarySubtleLight,
       child: const Icon(
         Icons.multitrack_audio_rounded,
-        color: Color(0xFF0166FF),
+        color: AppColors.primaryBright,
         size: 24,
       ),
     );
@@ -263,16 +265,16 @@ class _CreateProjectCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         onTap: onTap,
         child: Ink(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
           decoration: appCardDecoration(
             context,
-            radius: 16,
+            radius: AppRadius.card,
             borderColor: isDark
                 ? const Color(0xFF3B82F6)
-                : const Color(0xFF94A3B8),
+                : AppColors.textMutedDark,
             color: Theme.of(context).cardColor,
           ),
           child: Row(
@@ -282,11 +284,11 @@ class _CreateProjectCard extends StatelessWidget {
                 height: 34,
                 decoration: BoxDecoration(
                   color: isDark
-                      ? const Color(0xFF172554)
-                      : const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(999),
+                      ? AppColors.primarySubtleDark
+                      : AppColors.primarySubtleLight,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
-                child: const Icon(Icons.add_rounded, color: Color(0xFF0166FF)),
+                child: const Icon(Icons.add_rounded, color: AppColors.primaryBright),
               ),
               const SizedBox(width: 10),
               Text(

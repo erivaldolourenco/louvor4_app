@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_radius.dart';
 import '../../domain/entities/medley_entity.dart';
 
 class MedleyCard extends StatelessWidget {
@@ -22,16 +24,16 @@ class MedleyCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
         border: Border.all(
-          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE5EDF6),
+          color: isDark ? AppColors.borderDark : const Color(0xFFE5EDF6),
         ),
         boxShadow: [
           BoxShadow(
             color: isDark
                 ? Colors.black.withValues(alpha: 0.18)
-                : const Color(0xFF0166FF).withValues(alpha: 0.04),
+                : AppColors.primaryBright.withValues(alpha: 0.04),
             blurRadius: 14,
             offset: const Offset(0, 4),
           ),
@@ -47,13 +49,13 @@ class MedleyCard extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: isDark
-                    ? const Color(0xFF172554)
-                    : const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(14),
+                    ? AppColors.primarySubtleDark
+                    : AppColors.primarySubtleLight,
+                borderRadius: BorderRadius.circular(AppRadius.input),
               ),
               child: const Icon(
                 Icons.queue_music_rounded,
-                color: Color(0xFF2563EB),
+                color: AppColors.primary,
                 size: 24,
               ),
             ),
@@ -79,8 +81,8 @@ class MedleyCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: isDark
-                            ? const Color(0xFF94A3B8)
-                            : const Color(0xFF64748B),
+                            ? AppColors.textMutedDark
+                            : AppColors.textMutedLight,
                       ),
                     ),
                   ],
@@ -95,19 +97,19 @@ class MedleyCard extends StatelessWidget {
               children: [
                 _ActionButton(
                   icon: Icons.edit_outlined,
-                  color: const Color(0xFF0166FF),
+                  color: AppColors.primaryBright,
                   bgColor: isDark
-                      ? const Color(0xFF172554)
-                      : const Color(0xFFEFF6FF),
+                      ? AppColors.primarySubtleDark
+                      : AppColors.primarySubtleLight,
                   onPressed: onEdit,
                 ),
                 const SizedBox(height: 6),
                 _ActionButton(
                   icon: Icons.delete_outline_rounded,
-                  color: const Color(0xFFEF4444),
+                  color: AppColors.dangerBright,
                   bgColor: isDark
-                      ? const Color(0xFF3F1114)
-                      : const Color(0xFFFEE2E2),
+                      ? AppColors.dangerSubtleDark
+                      : AppColors.dangerSubtleLight,
                   onPressed: onDelete,
                 ),
               ],
@@ -130,10 +132,10 @@ class _ItemCountBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(99),
+        color: isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceSubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
         ),
       ),
       child: Text(
@@ -141,7 +143,7 @@ class _ItemCountBadge extends StatelessWidget {
         style: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF64748B),
+          color: AppColors.textMutedLight,
         ),
       ),
     );

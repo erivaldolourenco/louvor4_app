@@ -4,6 +4,8 @@ import 'package:louvor4_app/features/medleys/data/impl/medley_repository_impl.da
 import 'package:louvor4_app/features/medleys/domain/entities/medley_entity.dart';
 import 'package:louvor4_app/features/songs/domain/entities/song_entity.dart';
 
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/utils/youtube_utils.dart';
@@ -84,8 +86,8 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
         bottom: MediaQuery.of(context).viewInsets.bottom + 16,
       ),
       child: Material(
-        color: isDark ? const Color(0xFF111827) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
         child: SafeArea(
           top: false,
           child: ConstrainedBox(
@@ -113,9 +115,9 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                           height: 5,
                           decoration: BoxDecoration(
                             color: isDark
-                                ? const Color(0xFF334155)
-                                : const Color(0xFFCBD5E1),
-                            borderRadius: BorderRadius.circular(999),
+                                ? AppColors.borderSubtleDark
+                                : AppColors.borderSubtleLight,
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
                           ),
                         ),
                       ),
@@ -241,16 +243,16 @@ class _SheetTabBar extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(2.5),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-            borderRadius: BorderRadius.circular(14),
+            color: isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight,
+            borderRadius: BorderRadius.circular(AppRadius.input),
           ),
           child: TabBar(
             controller: controller,
             dividerColor: Colors.transparent,
             indicatorSize: TabBarIndicatorSize.tab,
             indicator: BoxDecoration(
-              color: isDark ? const Color(0xFF111827) : Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              color: isDark ? AppColors.surfaceDark : Colors.white,
+              borderRadius: BorderRadius.circular(AppRadius.input),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.05),
@@ -295,7 +297,7 @@ class _TabLabel extends StatelessWidget {
           fontSize: 15,
           color: selected
               ? theme.colorScheme.primary
-              : (isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+              : (isDark ? AppColors.textMutedDark : AppColors.textMutedLight),
         ),
       ),
     );
@@ -354,7 +356,7 @@ class _SongsTab extends StatelessWidget {
                   horizontal: 16,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppRadius.card),
                   borderSide: BorderSide.none,
                 ),
               ),
@@ -461,24 +463,24 @@ class _SelectableMedleyCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         child: Material(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.card),
           child: InkWell(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadius.card),
             onTap: enabled ? onTap : null,
             child: Ink(
               decoration: BoxDecoration(
                 color: isSelected
                     ? (isDark
-                          ? const Color(0xFF172554)
-                          : const Color(0xFFEFF6FF))
-                    : (isDark ? const Color(0xFF111827) : Colors.white),
-                borderRadius: BorderRadius.circular(16),
+                          ? AppColors.primarySubtleDark
+                          : AppColors.primarySubtleLight)
+                    : (isDark ? AppColors.surfaceDark : Colors.white),
+                borderRadius: BorderRadius.circular(AppRadius.card),
                 border: Border.all(
                   color: isSelected
-                      ? const Color(0xFF2563EB)
+                      ? AppColors.primary
                       : (isDark
-                            ? const Color(0xFF243041)
-                            : const Color(0xFFE2E8F0)),
+                            ? AppColors.borderStrongDark
+                            : AppColors.borderLight),
                   width: isSelected ? 1.6 : 1,
                 ),
               ),
@@ -491,14 +493,14 @@ class _SelectableMedleyCard extends StatelessWidget {
                       height: 44,
                       decoration: BoxDecoration(
                         color: isDark
-                            ? const Color(0xFF1E293B)
-                            : const Color(0xFFF1F5F9),
-                        borderRadius: BorderRadius.circular(12),
+                            ? AppColors.surfaceElevatedDark
+                            : AppColors.surfaceSubtleLight,
+                        borderRadius: BorderRadius.circular(AppRadius.input),
                       ),
                       child: Icon(
                         Icons.queue_music_rounded,
                         color: isSelected
-                            ? const Color(0xFF2563EB)
+                            ? AppColors.primary
                             : subtitleColor,
                       ),
                     ),
@@ -537,13 +539,13 @@ class _SelectableMedleyCard extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? const Color(0xFF0F172A)
-                                  : const Color(0xFFF8FAFC),
-                              borderRadius: BorderRadius.circular(999),
+                                  ? AppColors.scaffoldDark
+                                  : AppColors.surfaceElevatedLight,
+                              borderRadius: BorderRadius.circular(AppRadius.pill),
                               border: Border.all(
                                 color: isDark
-                                    ? const Color(0xFF334155)
-                                    : const Color(0xFFE2E8F0),
+                                    ? AppColors.borderSubtleDark
+                                    : AppColors.borderLight,
                               ),
                             ),
                             child: Text(
@@ -606,24 +608,24 @@ class _SelectableSongCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         child: Material(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.card),
           child: InkWell(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadius.card),
             onTap: enabled ? onTap : null,
             child: Ink(
               decoration: BoxDecoration(
                 color: isSelected
                     ? (isDark
-                          ? const Color(0xFF172554)
-                          : const Color(0xFFEFF6FF))
-                    : (isDark ? const Color(0xFF111827) : Colors.white),
-                borderRadius: BorderRadius.circular(16),
+                          ? AppColors.primarySubtleDark
+                          : AppColors.primarySubtleLight)
+                    : (isDark ? AppColors.surfaceDark : Colors.white),
+                borderRadius: BorderRadius.circular(AppRadius.card),
                 border: Border.all(
                   color: isSelected
-                      ? const Color(0xFF2563EB)
+                      ? AppColors.primary
                       : (isDark
-                            ? const Color(0xFF243041)
-                            : const Color(0xFFE2E8F0)),
+                            ? AppColors.borderStrongDark
+                            : AppColors.borderLight),
                   width: isSelected ? 1.6 : 1,
                 ),
               ),
@@ -642,8 +644,8 @@ class _SelectableSongCard extends StatelessWidget {
                           width: 72,
                           height: 72,
                           color: isDark
-                              ? const Color(0xFF1E293B)
-                              : const Color(0xFFE2E8F0),
+                              ? AppColors.surfaceElevatedDark
+                              : AppColors.borderLight,
                           child: Icon(
                             Icons.music_note_rounded,
                             color: subtitleColor,
@@ -726,10 +728,10 @@ class _MetaBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(999),
+        color: isDark ? AppColors.scaffoldDark : AppColors.surfaceElevatedLight,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
         ),
       ),
       child: Row(
@@ -839,16 +841,16 @@ class _InlineErrorMessage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF3F1114) : const Color(0xFFFEE2E2),
-        borderRadius: BorderRadius.circular(14),
+        color: isDark ? AppColors.dangerSubtleDark : AppColors.dangerSubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5),
+          color: isDark ? AppColors.dangerBorderDark : AppColors.dangerBorderLight,
         ),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
+          color: isDark ? AppColors.dangerTextDark : AppColors.dangerTextLight,
           fontWeight: FontWeight.w600,
         ),
       ),

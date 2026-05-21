@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_radius.dart';
 import '../app_feedback.dart';
 import 'app_card_surface.dart';
 
@@ -90,7 +92,7 @@ class SongDetailsSheet extends StatelessWidget {
             maxHeight: MediaQuery.of(context).size.height * 0.82,
           ),
           child: AppCardSurface(
-            radius: 28,
+            radius: AppRadius.sheet,
             padding: const EdgeInsets.fromLTRB(18, 8, 18, 18),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -130,7 +132,7 @@ class SongDetailsSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 AppCardSurface(
-                  radius: 20,
+                  radius: AppRadius.cardLarge,
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,7 +165,7 @@ class SongDetailsSheet extends StatelessWidget {
                 const SizedBox(height: 12),
                 Expanded(
                   child: AppCardSurface(
-                    radius: 20,
+                    radius: AppRadius.cardLarge,
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,7 +204,7 @@ class SongDetailsSheet extends StatelessWidget {
                     foregroundColor: Colors.white,
                     minimumSize: const Size.fromHeight(54),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(AppRadius.input),
                     ),
                   ),
                   icon: const Icon(Icons.ondemand_video_rounded),
@@ -232,13 +234,13 @@ class _MetaBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF172554) : const Color(0xFFEFF6FF),
-        borderRadius: BorderRadius.circular(999),
+        color: isDark ? AppColors.primarySubtleDark : AppColors.primarySubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8),
+          color: isDark ? const Color(0xFF93C5FD) : AppColors.primaryDark,
           fontWeight: FontWeight.w800,
         ),
       ),

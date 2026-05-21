@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_entity.dart';
 
+import '../../theme/app_colors.dart';
+import '../../theme/app_radius.dart';
 import 'app_cached_network_image.dart';
 import 'app_card_surface.dart';
 
@@ -102,7 +104,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
       child: AppCardSurface(
-        radius: 28,
+        radius: AppRadius.sheet,
         padding: const EdgeInsets.fromLTRB(10, 10, 10, 18),
         child: ConstrainedBox(
           constraints: BoxConstraints(
@@ -119,9 +121,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                       child: AspectRatio(
                         aspectRatio: 1,
                         child: Container(
-                          color: isDark
-                              ? const Color(0xFF172554)
-                              : const Color(0xFFEFF6FF),
+                          color: isDark ? AppColors.primarySubtleDark : AppColors.primarySubtleLight,
                           child: hasImage
                               ? Image(
                                   image: appCachedImageProvider(
@@ -133,7 +133,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                                   child: Text(
                                     initial,
                                     style: const TextStyle(
-                                      color: Color(0xFF0166FF),
+                                      color: AppColors.primaryBright,
                                       fontSize: 72,
                                       fontWeight: FontWeight.w800,
                                     ),
@@ -333,16 +333,16 @@ class _ProfilePermissionPill extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF132033) : const Color(0xFFEFF6FF),
-          borderRadius: BorderRadius.circular(999),
+          color: isDark ? const Color(0xFF132033) : AppColors.primarySubtleLight,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
           border: Border.all(
-            color: isDark ? const Color(0xFF1E3A5F) : const Color(0xFFBFDBFE),
+            color: isDark ? const Color(0xFF1E3A5F) : AppColors.primaryBorderLight,
           ),
         ),
         child: Text(
           value,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: const Color(0xFF0166FF),
+            color: AppColors.primaryBright,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -366,10 +366,10 @@ class _ProfileInfoPill extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
-          borderRadius: BorderRadius.circular(999),
+          color: isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceElevatedLight,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
           border: Border.all(
-            color: isDark ? const Color(0xFF334155) : const Color(0xFFD9DEE8),
+            color: isDark ? AppColors.borderSubtleDark : const Color(0xFFD9DEE8),
           ),
         ),
         child: Text(
@@ -411,19 +411,11 @@ class _ProfileStatusPill extends StatelessWidget {
             ? const Color(0xFFFCD34D)
             : const Color(0xFF92400E);
       case EventParticipantStatus.declined:
-        backgroundColor = isDark
-            ? const Color(0xFF3F1114)
-            : const Color(0xFFFEE2E2);
-        foregroundColor = isDark
-            ? const Color(0xFFFCA5A5)
-            : const Color(0xFF991B1B);
+        backgroundColor = isDark ? AppColors.dangerSubtleDark : AppColors.dangerSubtleLight;
+        foregroundColor = isDark ? AppColors.dangerTextDark : AppColors.dangerTextLight;
       case EventParticipantStatus.unknown:
-        backgroundColor = isDark
-            ? const Color(0xFF1E293B)
-            : const Color(0xFFE2E8F0);
-        foregroundColor = isDark
-            ? const Color(0xFFCBD5E1)
-            : const Color(0xFF475569);
+        backgroundColor = isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight;
+        foregroundColor = isDark ? AppColors.borderSubtleLight : AppColors.textSubtleDark;
     }
 
     return Align(
@@ -432,7 +424,7 @@ class _ProfileStatusPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         child: Text(
           status.label,
@@ -468,7 +460,7 @@ class _ProfileSkillsBlock extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: isDark ? const Color(0xFF334155) : const Color(0xFFD9DEE8),
+              color: isDark ? AppColors.borderSubtleDark : const Color(0xFFD9DEE8),
               style: BorderStyle.solid,
             ),
           ),
@@ -483,20 +475,16 @@ class _ProfileSkillsBlock extends StatelessWidget {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF132033)
-                          : const Color(0xFFEFF6FF),
+                      color: isDark ? const Color(0xFF132033) : AppColors.primarySubtleLight,
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                        color: isDark
-                            ? const Color(0xFF1E3A5F)
-                            : const Color(0xFFBFDBFE),
+                        color: isDark ? const Color(0xFF1E3A5F) : AppColors.primaryBorderLight,
                       ),
                     ),
                     child: Text(
                       skill,
                       style: theme.textTheme.titleSmall?.copyWith(
-                        color: const Color(0xFF0166FF),
+                        color: AppColors.primaryBright,
                         fontWeight: FontWeight.w800,
                       ),
                     ),

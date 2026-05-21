@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../domain/entities/music_project_entity.dart';
 import '../utils/music_project_ui_utils.dart';
 
@@ -62,7 +64,7 @@ class _MusicProjectTypeBadgeState extends State<MusicProjectTypeBadge>
       case MusicProjectType.singer:
         return const Color(0xFF9333EA);
       case MusicProjectType.unknown:
-        return const Color(0xFF475569);
+        return AppColors.textSubtleDark;
     }
   }
 
@@ -74,7 +76,7 @@ class _MusicProjectTypeBadgeState extends State<MusicProjectTypeBadge>
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -10,6 +10,8 @@ import 'package:louvor4_app/features/user_profile/data/impl/user_repository_impl
 import 'package:louvor4_app/features/user_profile/data/user_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../data/event_program_repository.dart';
 import '../../data/events_repository.dart';
@@ -142,7 +144,7 @@ class _EventDetailViewState extends State<_EventDetailView>
                     if (state.isProjectAdmin)
                       PopupMenuButton<_EventHeaderAction>(
                         tooltip: 'Ações do evento',
-                        color: isDark ? const Color(0xFF111827) : Colors.white,
+                        color: isDark ? AppColors.surfaceDark : Colors.white,
                         icon: const Icon(Icons.more_vert),
                         onSelected: _onHeaderActionSelected,
                         itemBuilder: (context) => const [
@@ -160,11 +162,11 @@ class _EventDetailViewState extends State<_EventDetailView>
                               contentPadding: EdgeInsets.zero,
                               leading: Icon(
                                 Icons.delete_outline,
-                                color: Color(0xFFB3261E),
+                                color: AppColors.danger,
                               ),
                               title: Text(
                                 'Deletar evento',
-                                style: TextStyle(color: Color(0xFFB3261E)),
+                                style: TextStyle(color: AppColors.danger),
                               ),
                             ),
                           ),
@@ -187,17 +189,17 @@ class _EventDetailViewState extends State<_EventDetailView>
                             assetPath: 'assets/icons/calendar.svg',
                             text: formatDate(event.date),
                             backgroundColor: isDark
-                                ? const Color(0xFF172554)
+                                ? AppColors.primarySubtleDark
                                 : const Color(0xFFEAF2FF),
-                            iconColor: const Color(0xFF2563EB),
+                            iconColor: AppColors.primary,
                           ),
                           _EventInfoItemData(
                             assetPath: 'assets/icons/alarm-clock.svg',
                             text: formatTime(event.time),
                             backgroundColor: isDark
-                                ? const Color(0xFF3F2A13)
-                                : const Color(0xFFFFF6E5),
-                            iconColor: const Color(0xFFF59E0B),
+                                ? AppColors.warningSubtleDark
+                                : AppColors.warningSubtleLight,
+                            iconColor: AppColors.warning,
                           ),
                           _EventInfoItemData(
                             assetPath: 'assets/icons/map-pinned.svg',
@@ -205,9 +207,9 @@ class _EventDetailViewState extends State<_EventDetailView>
                                 ? event.location!
                                 : 'Sem local definido',
                             backgroundColor: isDark
-                                ? const Color(0xFF123227)
-                                : const Color(0xFFE8FBF3),
-                            iconColor: const Color(0xFF10B981),
+                                ? AppColors.successSubtleDark
+                                : AppColors.successSubtleLight,
+                            iconColor: AppColors.successBright,
                             onTap: event.location?.trim().isNotEmpty == true
                                 ? () => _openMaps(event.location!)
                                 : null,
@@ -302,7 +304,7 @@ class _EventDetailViewState extends State<_EventDetailView>
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFB3261E),
+                backgroundColor: AppColors.danger,
               ),
               child: const Text('Remover'),
             ),
@@ -333,7 +335,7 @@ class _EventDetailViewState extends State<_EventDetailView>
       SnackBar(
         content: Text(state.actionErrorMessage ?? 'Erro ao remover música'),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: const Color(0xFFB3261E),
+        backgroundColor: AppColors.danger,
       ),
     );
     return false;
@@ -373,7 +375,7 @@ class _EventDetailViewState extends State<_EventDetailView>
       const SnackBar(
         content: Text('Evento atualizado com sucesso.'),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: Color(0xFF2E7D32),
+        backgroundColor: AppColors.success,
       ),
     );
   }
@@ -400,16 +402,16 @@ class _EventDetailTabs extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(2.5),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-            borderRadius: BorderRadius.circular(14),
+            color: isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight,
+            borderRadius: BorderRadius.circular(AppRadius.input),
           ),
           child: TabBar(
             controller: controller,
             dividerColor: Colors.transparent,
             indicatorSize: TabBarIndicatorSize.tab,
             indicator: BoxDecoration(
-              color: isDark ? const Color(0xFF111827) : Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              color: isDark ? AppColors.surfaceDark : Colors.white,
+              borderRadius: BorderRadius.circular(AppRadius.input),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.05),
@@ -457,11 +459,11 @@ class _EventHeroCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : Colors.white,
+        color: isDark ? AppColors.surfaceDark : Colors.white,
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: isDark ? const Color(0x33000000) : const Color(0x140F172A),
+            color: isDark ? AppColors.shadowDark : AppColors.shadowLight,
             blurRadius: isDark ? 24 : 22,
             offset: const Offset(0, 10),
           ),
@@ -524,8 +526,8 @@ class _EventDetailTabLabel extends StatelessWidget {
           color: selected
               ? theme.colorScheme.primary
               : (isDark
-                    ? const Color(0xFF94A3B8)
-                    : const Color(0xFF64748B)),
+                    ? AppColors.textMutedDark
+                    : AppColors.textMutedLight),
         ),
       ),
     );
@@ -593,17 +595,17 @@ class _ParticipantsTab extends StatelessWidget {
               FilledButton(
                 onPressed: onManageSchedule,
                 style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF2563EB),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 22,
                     vertical: 12,
                   ),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadius.card),
                   ),
                   elevation: 6,
-                  shadowColor: const Color(0x662563EB),
+                  shadowColor: AppColors.primaryShadow,
                 ),
                 child: const Text(
                   'Gerenciar Escala',
@@ -722,17 +724,17 @@ class _SongsTab extends StatelessWidget {
             FilledButton(
               onPressed: onAddSongs,
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB),
+                backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 22,
                   vertical: 12,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppRadius.card),
                 ),
                 elevation: 6,
-                shadowColor: const Color(0x662563EB),
+                shadowColor: AppColors.primaryShadow,
               ),
               child: const Text(
                 'Nova Música',
@@ -922,7 +924,7 @@ class _DetailLoadingState extends StatelessWidget {
         Container(
           height: 200,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+            color: isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight,
             borderRadius: BorderRadius.circular(18),
           ),
         ),
@@ -930,7 +932,7 @@ class _DetailLoadingState extends StatelessWidget {
         Container(
           height: 140,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+            color: isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight,
             borderRadius: BorderRadius.circular(18),
           ),
         ),
@@ -938,8 +940,8 @@ class _DetailLoadingState extends StatelessWidget {
         Container(
           height: 52,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-            borderRadius: BorderRadius.circular(14),
+            color: isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight,
+            borderRadius: BorderRadius.circular(AppRadius.input),
           ),
         ),
       ],
@@ -1009,10 +1011,10 @@ class _EmptyTabState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
-          color: isDark ? const Color(0xFF243041) : const Color(0xFFE2E8F0),
+          color: isDark ? AppColors.borderStrongDark : AppColors.borderLight,
         ),
       ),
       child: Column(

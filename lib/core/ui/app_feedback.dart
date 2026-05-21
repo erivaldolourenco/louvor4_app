@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 class AppFeedback {
   AppFeedback._();
 
@@ -15,7 +17,7 @@ class AppFeedback {
     messenger.showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color(0xFFB3261E),
+        backgroundColor: AppColors.danger,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -31,7 +33,7 @@ class AppFeedback {
     messenger.showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -47,7 +49,7 @@ class AppFeedback {
     messenger.showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color(0xFF2563EB),
+        backgroundColor: AppColors.primary,
         behavior: SnackBarBehavior.floating,
       ),
     );

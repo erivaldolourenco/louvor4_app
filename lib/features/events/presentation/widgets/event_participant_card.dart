@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_entity.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_radius.dart';
 
 class EventParticipantCard extends StatelessWidget {
   final String name;
@@ -44,13 +46,13 @@ class EventParticipantCard extends StatelessWidget {
               children: [
                 CircleAvatar(
                   backgroundColor: isDark
-                      ? const Color(0xFF172554)
-                      : const Color(0xFFEFF6FF),
+                      ? AppColors.primarySubtleDark
+                      : AppColors.primarySubtleLight,
                   backgroundImage: profileImage != null
                       ? appCachedImageProvider(profileImage)
                       : null,
                   child: profileImage == null
-                      ? const Icon(Icons.person, color: Color(0xFF0166FF))
+                      ? const Icon(Icons.person, color: AppColors.primaryBright)
                       : null,
                 ),
                 const SizedBox(width: 15),
@@ -79,7 +81,7 @@ class EventParticipantCard extends StatelessWidget {
                   ),
                   decoration: BoxDecoration(
                     color: badge.backgroundColor,
-                    borderRadius: BorderRadius.circular(999),
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
                   ),
                   child: Text(
                     badge.label,
@@ -106,7 +108,7 @@ class EventParticipantCard extends StatelessWidget {
         return _ParticipantStatusBadge(
           label: 'Aceito',
           backgroundColor: isDark
-              ? const Color(0xFF123227)
+              ? AppColors.successSubtleDark
               : const Color(0xFFDCFCE7),
           foregroundColor: isDark
               ? const Color(0xFF86EFAC)
@@ -116,7 +118,7 @@ class EventParticipantCard extends StatelessWidget {
         return _ParticipantStatusBadge(
           label: 'Pendente',
           backgroundColor: isDark
-              ? const Color(0xFF3F2A13)
+              ? AppColors.warningSubtleDark
               : const Color(0xFFFEF3C7),
           foregroundColor: isDark
               ? const Color(0xFFFCD34D)
@@ -126,21 +128,21 @@ class EventParticipantCard extends StatelessWidget {
         return _ParticipantStatusBadge(
           label: 'Recusado',
           backgroundColor: isDark
-              ? const Color(0xFF3F1114)
-              : const Color(0xFFFEE2E2),
+              ? AppColors.dangerSubtleDark
+              : AppColors.dangerSubtleLight,
           foregroundColor: isDark
-              ? const Color(0xFFFCA5A5)
-              : const Color(0xFF991B1B),
+              ? AppColors.dangerTextDark
+              : AppColors.dangerTextLight,
         );
       case EventParticipantStatus.unknown:
         return _ParticipantStatusBadge(
           label: 'Sem status',
           backgroundColor: isDark
-              ? const Color(0xFF1E293B)
-              : const Color(0xFFE2E8F0),
+              ? AppColors.surfaceElevatedDark
+              : AppColors.borderLight,
           foregroundColor: isDark
-              ? const Color(0xFFCBD5E1)
-              : const Color(0xFF475569),
+              ? AppColors.borderSubtleLight
+              : AppColors.textSubtleDark,
         );
     }
   }
