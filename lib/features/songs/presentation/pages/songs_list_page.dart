@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -8,6 +7,7 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
+import '../../../../core/ui/widgets/app_circular_action_button.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/ui/widgets/song_details_sheet.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
@@ -703,7 +703,7 @@ class _SongCard extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _CircularSongActionButton(
+                    AppCircularActionButton(
                       onPressed: onOpenYoutube,
                       assetPath: 'assets/icons/youtube.svg',
                       iconColor: const Color(0xFFDC2626),
@@ -711,7 +711,7 @@ class _SongCard extends StatelessWidget {
                       borderColor: const Color(0xFFFECACA),
                     ),
                     const SizedBox(width: 8),
-                    _CircularSongActionButton(
+                    AppCircularActionButton(
                       onPressed: onEdit,
                       assetPath: 'assets/icons/file-music.svg',
                       iconColor: onEdit != null
@@ -727,51 +727,6 @@ class _SongCard extends StatelessWidget {
                   ],
                 ),
               ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CircularSongActionButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final String assetPath;
-  final Color iconColor;
-  final Color backgroundColor;
-  final Color borderColor;
-
-  const _CircularSongActionButton({
-    required this.onPressed,
-    required this.assetPath,
-    required this.iconColor,
-    required this.backgroundColor,
-    required this.borderColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      shape: const CircleBorder(),
-      child: InkWell(
-        onTap: onPressed,
-        customBorder: const CircleBorder(),
-        child: Ink(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            shape: BoxShape.circle,
-            border: Border.all(color: borderColor),
-          ),
-          child: Center(
-            child: SvgPicture.asset(
-              assetPath,
-              width: 18,
-              height: 18,
-              colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
             ),
           ),
         ),

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
+import '../../../../core/ui/widgets/app_circular_action_button.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../features/songs/domain/entities/song_entity.dart';
@@ -426,17 +427,25 @@ class _DraftItemTile extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.edit_outlined, size: 18),
-            color: AppColors.textMutedLight,
+          const SizedBox(width: 8),
+          AppCircularActionButton(
             onPressed: onEdit,
+            assetPath: 'assets/icons/settings-2.svg',
+            iconColor: onEdit != null ? AppColors.primary : AppColors.textMutedDark,
+            backgroundColor: onEdit != null
+                ? AppColors.primarySubtleLight
+                : AppColors.surfaceElevatedLight,
+            borderColor: onEdit != null ? AppColors.primaryBorderLight : AppColors.borderLight,
           ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.delete_outline_rounded, size: 18),
-            color: AppColors.dangerBright,
+          const SizedBox(width: 8),
+          AppCircularActionButton(
             onPressed: onRemove,
+            assetPath: 'assets/icons/trash-2.svg',
+            iconColor: onRemove != null ? AppColors.dangerBright : AppColors.textMutedDark,
+            backgroundColor: onRemove != null
+                ? AppColors.dangerSubtleLight
+                : AppColors.surfaceElevatedLight,
+            borderColor: onRemove != null ? AppColors.dangerBorderLight : AppColors.borderLight,
           ),
         ],
       ),
