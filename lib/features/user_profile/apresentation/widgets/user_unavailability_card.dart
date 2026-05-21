@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:louvor4_app/core/theme/app_colors.dart';
+import 'package:louvor4_app/core/theme/app_radius.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/music_project_entity.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_unavailability_entity.dart';
@@ -24,8 +26,8 @@ class UserUnavailabilityCard extends StatelessWidget {
     final period = _buildPeriodLabel();
     final mappedProjects = _resolveProjects();
     final subtitleColor = theme.brightness == Brightness.dark
-        ? const Color(0xFF94A3B8)
-        : const Color(0xFF64748B);
+        ? AppColors.textMutedDark
+        : AppColors.textMutedLight;
 
     return AppCardSurface(
       radius: 24,
@@ -41,13 +43,13 @@ class UserUnavailabilityCard extends StatelessWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   color: theme.brightness == Brightness.dark
-                      ? const Color(0xFF172554)
-                      : const Color(0xFFEFF6FF),
-                  borderRadius: BorderRadius.circular(16),
+                      ? AppColors.primarySubtleDark
+                      : AppColors.primarySubtleLight,
+                  borderRadius: BorderRadius.circular(AppRadius.card),
                 ),
                 child: const Icon(
                   Icons.event_busy_rounded,
-                  color: Color(0xFF0166FF),
+                  color: AppColors.primaryBright,
                 ),
               ),
               const SizedBox(width: 14),
@@ -176,24 +178,24 @@ class _ProjectChip extends StatelessWidget {
     final backgroundColor = highlighted
         ? const Color(0xFF0166FF)
         : isDark
-        ? const Color(0xFF0F172A)
+        ? AppColors.scaffoldDark
         : const Color(0xFFF8FBFF);
     final foregroundColor = highlighted
         ? Colors.white
         : isDark
-        ? const Color(0xFFE2E8F0)
-        : const Color(0xFF1E3A8A);
+        ? AppColors.borderLight
+        : AppColors.primaryBorderDark;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(
           color: highlighted
               ? const Color(0xFF0166FF)
               : isDark
-              ? const Color(0xFF334155)
+              ? AppColors.borderSubtleDark
               : const Color(0xFFD6E4FF),
         ),
       ),

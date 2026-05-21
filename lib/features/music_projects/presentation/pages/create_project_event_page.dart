@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
@@ -343,16 +345,16 @@ class _InlineErrorMessage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF3F1114) : const Color(0xFFFEE2E2),
-        borderRadius: BorderRadius.circular(14),
+        color: isDark ? AppColors.dangerSubtleDark : AppColors.dangerSubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5),
+          color: isDark ? AppColors.dangerBorderDark : AppColors.dangerBorderLight,
         ),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
+          color: isDark ? AppColors.dangerTextDark : AppColors.dangerTextLight,
           fontWeight: FontWeight.w600,
         ),
       ),

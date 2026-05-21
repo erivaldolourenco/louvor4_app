@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../domain/entities/notification_item_entity.dart';
 
@@ -35,10 +36,10 @@ class NotificationCard extends StatelessWidget {
       alpha: isDark ? 0.72 : 0.82,
     );
     final highlightColor = notification.isRead
-        ? (isDark ? const Color(0xFF111827) : Colors.white)
+        ? (isDark ? AppColors.surfaceDark : Colors.white)
         : (isDark ? const Color(0xFF0F274F) : const Color(0xFFF4F8FF));
     final badgeColor = notification.isRead
-        ? const Color(0xFF94A3B8)
+        ? AppColors.textMutedDark
         : theme.colorScheme.primary;
 
     return AppCardSurface(
@@ -100,7 +101,7 @@ class NotificationCard extends StatelessWidget {
             Text(
               _formatDateTime(notification.createdAt),
               style: theme.textTheme.bodySmall?.copyWith(
-                color: const Color(0xFF64748B),
+                color: AppColors.textMutedLight,
                 fontWeight: FontWeight.w500,
               ),
             ),

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../data/impl/music_projects_repository_impl.dart';
 import '../../domain/entities/music_project_entity.dart';
@@ -22,7 +24,7 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
     isScrollControlled: true,
     backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.bottomSheet)),
     ),
     builder: (sheetContext) {
       return BlocProvider.value(
@@ -92,8 +94,8 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                       ListTile(
                         leading: CircleAvatar(
                           backgroundColor: isDark
-                              ? const Color(0xFF172554)
-                              : const Color(0xFFEFF6FF),
+                              ? AppColors.primarySubtleDark
+                              : AppColors.primarySubtleLight,
                           child: Icon(
                             Icons.add_rounded,
                             color: theme.colorScheme.primary,
@@ -132,19 +134,19 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                                   decoration: BoxDecoration(
                                     color: isActive
                                         ? (isDark
-                                              ? const Color(0xFF172554)
-                                              : const Color(0xFFEFF6FF))
+                                              ? AppColors.primarySubtleDark
+                                              : AppColors.primarySubtleLight)
                                         : Colors.transparent,
-                                    borderRadius: BorderRadius.circular(12),
+                                    borderRadius: BorderRadius.circular(AppRadius.input),
                                   ),
                                   child: ListTile(
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
+                                      borderRadius: BorderRadius.circular(AppRadius.input),
                                     ),
                                     leading: CircleAvatar(
                                       backgroundColor: isDark
-                                          ? const Color(0xFF172554)
-                                          : const Color(0xFFEFF6FF),
+                                          ? AppColors.primarySubtleDark
+                                          : AppColors.primarySubtleLight,
                                       backgroundImage:
                                           UrlUtils.isValidNetworkUrl(
                                             project.profileImage,
@@ -159,7 +161,7 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                                           )
                                           ? const Icon(
                                               Icons.multitrack_audio_rounded,
-                                              color: Color(0xFF0166FF),
+                                              color: AppColors.primaryBright,
                                             )
                                           : null,
                                     ),
@@ -193,8 +195,8 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                               ListTile(
                                 leading: CircleAvatar(
                                   backgroundColor: isDark
-                                      ? const Color(0xFF172554)
-                                      : const Color(0xFFEFF6FF),
+                                      ? AppColors.primarySubtleDark
+                                      : AppColors.primarySubtleLight,
                                   child: Icon(
                                     Icons.add_rounded,
                                     color: theme.colorScheme.primary,

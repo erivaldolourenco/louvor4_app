@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/widgets/app_cached_network_image.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
@@ -232,7 +234,7 @@ class _ProjectImageCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark ? const Color(0xFF243041) : Colors.grey.shade200;
+    final borderColor = isDark ? AppColors.borderStrongDark : Colors.grey.shade200;
     final subtitleColor = Theme.of(
       context,
     ).textTheme.bodySmall?.color?.withValues(alpha: 0.78);
@@ -245,8 +247,8 @@ class _ProjectImageCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF111827) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.bottomSheet),
         border: Border.all(color: borderColor),
       ),
       child: Column(
@@ -265,13 +267,13 @@ class _ProjectImageCard extends StatelessWidget {
                       ? appCachedImageProvider(imageUrl)
                       : null,
                   backgroundColor: isDark
-                      ? const Color(0xFF172554)
-                      : const Color(0xFFEFF6FF),
+                      ? AppColors.primarySubtleDark
+                      : AppColors.primarySubtleLight,
                   child: !hasLocalImage && !hasNetworkImage
                       ? Text(
                           initials,
                           style: const TextStyle(
-                            color: Color(0xFF0166FF),
+                            color: AppColors.primaryBright,
                             fontSize: 28,
                             fontWeight: FontWeight.w800,
                           ),
@@ -287,7 +289,7 @@ class _ProjectImageCard extends StatelessWidget {
                       color: const Color(0xFF0F4CDA),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isDark ? const Color(0xFF111827) : Colors.white,
+                        color: isDark ? AppColors.surfaceDark : Colors.white,
                         width: 2,
                       ),
                     ),
@@ -361,16 +363,16 @@ class _InlineErrorMessage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF3F1114) : const Color(0xFFFEE2E2),
-        borderRadius: BorderRadius.circular(14),
+        color: isDark ? AppColors.dangerSubtleDark : AppColors.dangerSubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5),
+          color: isDark ? AppColors.dangerBorderDark : AppColors.dangerBorderLight,
         ),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
+          color: isDark ? AppColors.dangerTextDark : AppColors.dangerTextLight,
           fontWeight: FontWeight.w600,
         ),
       ),

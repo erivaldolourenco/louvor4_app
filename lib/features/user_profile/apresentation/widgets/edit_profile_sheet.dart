@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../data/user_repository.dart';
 import '../../domain/entities/update_user_input_entity.dart';
@@ -239,10 +241,10 @@ class _FieldLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         label,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF111827),
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );
@@ -260,14 +262,14 @@ class _InlineErrorMessage extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFFEE2E2),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFFCA5A5)),
+        color: AppColors.dangerSubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.input),
+        border: Border.all(color: AppColors.dangerBorderLight),
       ),
       child: Text(
         message,
         style: const TextStyle(
-          color: Color(0xFF991B1B),
+          color: AppColors.dangerTextLight,
           fontWeight: FontWeight.w600,
         ),
       ),

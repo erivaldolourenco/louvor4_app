@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:louvor4_app/core/theme/app_colors.dart';
+import 'package:louvor4_app/core/theme/app_radius.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/app_form_sheet.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/music_project_entity.dart';
@@ -349,8 +351,8 @@ class _DateField extends StatelessWidget {
     final theme = Theme.of(context);
     final textColor = theme.textTheme.bodyLarge?.color;
     final mutedColor = theme.brightness == Brightness.dark
-        ? const Color(0xFF94A3B8)
-        : const Color(0xFF64748B);
+        ? AppColors.textMutedDark
+        : AppColors.textMutedLight;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -421,7 +423,7 @@ class _ProjectSelectorWrap extends StatelessWidget {
                 color: selected
                     ? const Color(0xFF0166FF)
                     : Theme.of(context).brightness == Brightness.dark
-                    ? const Color(0xFF334155)
+                    ? AppColors.borderSubtleDark
                     : const Color(0xFFD6E4FF),
               ),
             );
@@ -477,16 +479,16 @@ class _InlineError extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF3F1114) : const Color(0xFFFEE2E2),
-        borderRadius: BorderRadius.circular(14),
+        color: isDark ? AppColors.dangerSubtleDark : AppColors.dangerSubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFCA5A5),
+          color: isDark ? AppColors.dangerBorderDark : AppColors.dangerBorderLight,
         ),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? const Color(0xFFFCA5A5) : const Color(0xFF991B1B),
+          color: isDark ? AppColors.dangerTextDark : AppColors.dangerTextLight,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -506,16 +508,16 @@ class _InlineInfo extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(14),
+        color: isDark ? AppColors.scaffoldDark : AppColors.surfaceElevatedLight,
+        borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFDCE3EC),
+          color: isDark ? AppColors.borderSubtleDark : AppColors.borderStrongLight,
         ),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569),
+          color: isDark ? AppColors.borderSubtleLight : AppColors.textSubtleDark,
           fontWeight: FontWeight.w600,
         ),
       ),
