@@ -190,3 +190,19 @@ ButtonStyle appSecondaryPillButtonStyle(BuildContext context) {
     backgroundColor: isDark ? AppColors.scaffoldDark : AppColors.secondaryButtonBgLight,
   );
 }
+
+// Compact variant for inline Row use — avoids the infinite-width minimum that
+// Size.fromHeight sets, which crashes when the button is not wrapped in Expanded.
+ButtonStyle appPrimaryPillButtonStyleCompact(BuildContext context) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  return FilledButton.styleFrom(
+    minimumSize: const Size(0, 44),
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.input)),
+    backgroundColor: AppColors.primaryBright,
+    foregroundColor: AppColors.onPrimary,
+    elevation: isDark ? 0 : 6,
+    shadowColor: isDark ? Colors.transparent : AppColors.primaryButtonShadow,
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+  );
+}

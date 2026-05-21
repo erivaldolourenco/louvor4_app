@@ -603,7 +603,7 @@ class _ParticipantsTab extends StatelessWidget {
             if (state.isProjectAdmin)
               FilledButton(
                 onPressed: onManageSchedule,
-                style: appPrimaryPillButtonStyle(context),
+                style: appPrimaryPillButtonStyleCompact(context),
                 child: const Text(
                   'Gerenciar Escala',
                   style: TextStyle(fontWeight: FontWeight.w700),
@@ -729,7 +729,7 @@ class _SongsTab extends StatelessWidget {
             ),
             FilledButton(
               onPressed: onAddSongs,
-              style: appPrimaryPillButtonStyle(context),
+              style: appPrimaryPillButtonStyleCompact(context),
               child: const Text(
                 'Nova Música',
                 style: TextStyle(fontWeight: FontWeight.w700),

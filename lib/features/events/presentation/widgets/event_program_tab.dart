@@ -53,7 +53,7 @@ class EventProgramTab extends StatelessWidget {
               if (isAdmin)
                 FilledButton(
                   onPressed: () => _showTextItemDialog(context),
-                  style: appPrimaryPillButtonStyle(context),
+                  style: appPrimaryPillButtonStyleCompact(context),
                   child: const Text(
                     'Adicionar',
                     style: TextStyle(fontWeight: FontWeight.w700),
