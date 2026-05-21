@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_radius.dart';
+import '../../../../../core/ui/widgets/app_circular_action_button.dart';
 import '../../domain/entities/medley_entity.dart';
 
 class MedleyCard extends StatelessWidget {
@@ -92,25 +93,23 @@ class MedleyCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            Column(
+            Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _ActionButton(
-                  icon: Icons.edit_outlined,
-                  color: AppColors.primaryBright,
-                  bgColor: isDark
-                      ? AppColors.primarySubtleDark
-                      : AppColors.primarySubtleLight,
+                AppCircularActionButton(
                   onPressed: onEdit,
+                  assetPath: 'assets/icons/settings-2.svg',
+                  iconColor: AppColors.primary,
+                  backgroundColor: AppColors.primarySubtleLight,
+                  borderColor: AppColors.primaryBorderLight,
                 ),
-                const SizedBox(height: 6),
-                _ActionButton(
-                  icon: Icons.delete_outline_rounded,
-                  color: AppColors.dangerBright,
-                  bgColor: isDark
-                      ? AppColors.dangerSubtleDark
-                      : AppColors.dangerSubtleLight,
+                const SizedBox(width: 8),
+                AppCircularActionButton(
                   onPressed: onDelete,
+                  assetPath: 'assets/icons/trash-2.svg',
+                  iconColor: AppColors.dangerBright,
+                  backgroundColor: AppColors.dangerSubtleLight,
+                  borderColor: AppColors.dangerBorderLight,
                 ),
               ],
             ),
@@ -150,33 +149,3 @@ class _ItemCountBadge extends StatelessWidget {
   }
 }
 
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final Color bgColor;
-  final VoidCallback onPressed;
-
-  const _ActionButton({
-    required this.icon,
-    required this.color,
-    required this.bgColor,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: bgColor,
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(10),
-        onTap: onPressed,
-        child: SizedBox(
-          width: 36,
-          height: 36,
-          child: Icon(icon, size: 18, color: color),
-        ),
-      ),
-    );
-  }
-}
