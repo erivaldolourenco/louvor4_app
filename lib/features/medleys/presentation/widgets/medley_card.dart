@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../../core/ui/app_feedback.dart';
+import '../../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../../core/ui/widgets/app_circular_action_button.dart';
 import '../../../../../core/utils/youtube_utils.dart';
 import '../../domain/entities/medley_entity.dart';
@@ -30,128 +31,100 @@ class MedleyCard extends StatelessWidget {
 
     return Container(
       clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
-        border: Border.all(
-          color: isDark ? AppColors.borderDark : const Color(0xFFE5EDF6),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.18)
-                : AppColors.primaryBright.withValues(alpha: 0.04),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Container(width: 4, color: AppColors.primaryBright),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // ── Seção 1: Header ──────────────────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          medley.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        if (medley.description != null &&
-                            medley.description!.isNotEmpty) ...[
-                          const SizedBox(height: 3),
-                          Text(
-                            medley.description!,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: isDark
-                                  ? AppColors.textMutedDark
-                                  : AppColors.textMutedLight,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+      decoration: appCardDecoration(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // ── Seção 1: Header ────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  medley.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
                   ),
-
-                  Divider(height: 1, thickness: 1, color: dividerColor),
-
-                  // ── Seção 2: Lista de músicas ────────────────────────────
-                  medley.items.isEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
-                          child: Text(
-                            'Nenhuma música adicionada.',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: isDark
-                                  ? AppColors.textMutedDark
-                                  : AppColors.textMutedLight,
-                            ),
-                          ),
-                        )
-                      : Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-                          child: Column(
-                            children: [
-                              for (int i = 0; i < medley.items.length; i++) ...[
-                                _SongItemCard(
-                                  item: medley.items[i],
-                                  isDark: isDark,
-                                ),
-                                if (i < medley.items.length - 1)
-                                  const SizedBox(height: 8),
-                              ],
-                            ],
-                          ),
-                        ),
-
-                  Divider(height: 1, thickness: 1, color: dividerColor),
-
-                  // ── Seção 3: Ações ───────────────────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        AppCircularActionButton(
-                          onPressed: onEdit,
-                          assetPath: 'assets/icons/settings-2.svg',
-                          iconColor: AppColors.primary,
-                          backgroundColor: AppColors.primarySubtleLight,
-                          borderColor: AppColors.primaryBorderLight,
-                        ),
-                        const SizedBox(width: 8),
-                        AppCircularActionButton(
-                          onPressed: onDelete,
-                          assetPath: 'assets/icons/trash-2.svg',
-                          iconColor: AppColors.dangerBright,
-                          backgroundColor: AppColors.dangerSubtleLight,
-                          borderColor: AppColors.dangerBorderLight,
-                        ),
-                      ],
+                ),
+                if (medley.description != null &&
+                    medley.description!.isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    medley.description!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: isDark
+                          ? AppColors.textMutedDark
+                          : AppColors.textMutedLight,
                     ),
                   ),
                 ],
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+
+          Divider(height: 1, thickness: 1, color: dividerColor),
+
+          // ── Seção 2: Lista de músicas ──────────────────────────────────
+          medley.items.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Text(
+                    'Nenhuma música adicionada.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: isDark
+                          ? AppColors.textMutedDark
+                          : AppColors.textMutedLight,
+                    ),
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+                  child: Column(
+                    children: [
+                      for (int i = 0; i < medley.items.length; i++) ...[
+                        _SongItemCard(item: medley.items[i], isDark: isDark),
+                        if (i < medley.items.length - 1)
+                          const SizedBox(height: 8),
+                      ],
+                    ],
+                  ),
+                ),
+
+          Divider(height: 1, thickness: 1, color: dividerColor),
+
+          // ── Seção 3: Ações ─────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                AppCircularActionButton(
+                  onPressed: onEdit,
+                  assetPath: 'assets/icons/settings-2.svg',
+                  iconColor: AppColors.primary,
+                  backgroundColor: AppColors.primarySubtleLight,
+                  borderColor: AppColors.primaryBorderLight,
+                ),
+                const SizedBox(width: 8),
+                AppCircularActionButton(
+                  onPressed: onDelete,
+                  assetPath: 'assets/icons/trash-2.svg',
+                  iconColor: AppColors.dangerBright,
+                  backgroundColor: AppColors.dangerSubtleLight,
+                  borderColor: AppColors.dangerBorderLight,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
