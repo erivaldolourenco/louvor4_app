@@ -163,11 +163,11 @@ class _SongsContentState extends State<_SongsContent>
   // ------ Medley actions ------
 
   void _openCreateMedley() {
-    showMedleyFormSheet(context, songs: _songs);
+    openMedleyFormPage(context, songs: _songs);
   }
 
   void _openEditMedley(MedleyEntity medley) {
-    showMedleyFormSheet(context, songs: _songs, medley: medley);
+    openMedleyFormPage(context, songs: _songs, medley: medley);
   }
 
   void _confirmDeleteMedley(MedleyEntity medley) {

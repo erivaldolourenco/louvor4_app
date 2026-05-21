@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
+import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../features/songs/domain/entities/song_entity.dart';
 import '../../domain/entities/create_medley_input_entity.dart';
 import '../../domain/entities/medley_entity.dart';
@@ -13,28 +15,23 @@ import '../cubit/medley_cubit.dart';
 // Public API
 // ---------------------------------------------------------------------------
 
-Future<void> showMedleyFormSheet(
+Future<void> openMedleyFormPage(
   BuildContext context, {
   required List<SongEntity> songs,
   MedleyEntity? medley,
-}) async {
-  await showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    useSafeArea: true,
-    constraints: BoxConstraints(
-      maxHeight: MediaQuery.sizeOf(context).height * 0.93,
-    ),
-    builder: (ctx) => BlocProvider.value(
-      value: context.read<MedleyCubit>(),
-      child: _MedleyFormSheet(songs: songs, medley: medley),
+}) {
+  return Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => BlocProvider.value(
+        value: context.read<MedleyCubit>(),
+        child: _MedleyFormPage(songs: songs, medley: medley),
+      ),
     ),
   );
 }
 
 // ---------------------------------------------------------------------------
-// Draft item model (local to this sheet)
+// Draft item model (local to this page)
 // ---------------------------------------------------------------------------
 
 class _DraftItem {
@@ -64,20 +61,20 @@ class _DraftItem {
 }
 
 // ---------------------------------------------------------------------------
-// Form sheet
+// Page
 // ---------------------------------------------------------------------------
 
-class _MedleyFormSheet extends StatefulWidget {
+class _MedleyFormPage extends StatefulWidget {
   final List<SongEntity> songs;
   final MedleyEntity? medley;
 
-  const _MedleyFormSheet({required this.songs, this.medley});
+  const _MedleyFormPage({required this.songs, this.medley});
 
   @override
-  State<_MedleyFormSheet> createState() => _MedleyFormSheetState();
+  State<_MedleyFormPage> createState() => _MedleyFormPageState();
 }
 
-class _MedleyFormSheetState extends State<_MedleyFormSheet> {
+class _MedleyFormPageState extends State<_MedleyFormPage> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameCtrl;
   late final TextEditingController _descCtrl;
@@ -177,12 +174,7 @@ class _MedleyFormSheetState extends State<_MedleyFormSheet> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_draftItems.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Adicione pelo menos uma música ao medley.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AppFeedback.showError('Adicione pelo menos uma música ao medley.');
       return;
     }
 
@@ -213,25 +205,12 @@ class _MedleyFormSheetState extends State<_MedleyFormSheet> {
     if (!mounted) return;
 
     if (success) {
+      AppFeedback.showSuccess(
+        _isEditing ? 'Medley atualizado com sucesso.' : 'Medley criado com sucesso.',
+      );
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _isEditing ? 'Medley atualizado com sucesso.' : 'Medley criado com sucesso.',
-          ),
-          backgroundColor: AppColors.success,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
     } else {
-      final error = cubit.state.actionError ?? 'Erro ao salvar medley.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: AppColors.danger,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AppFeedback.showError(cubit.state.actionError ?? 'Erro ao salvar medley.');
     }
   }
 
@@ -243,120 +222,123 @@ class _MedleyFormSheetState extends State<_MedleyFormSheet> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: AppFormSheet(
+    return Scaffold(
+      appBar: StandardSectionAppBar(
         title: _isEditing ? 'Editar Medley' : 'Novo Medley',
         subtitle: _isEditing
             ? 'Altere as músicas e informações do medley.'
             : 'Monte uma sequência de músicas para usar nas escalas.',
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Name
-              _FieldLabel(label: 'Nome do medley *'),
-              TextFormField(
-                controller: _nameCtrl,
-                enabled: !isActioning,
-                decoration: appFormFieldDecoration(
-                  context,
-                  hintText: 'Ex: Abertura do culto',
-                  prefixIcon: Icons.title_rounded,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _FieldLabel(label: 'Nome do medley *'),
+                TextFormField(
+                  controller: _nameCtrl,
+                  enabled: !isActioning,
+                  decoration: appFormFieldDecoration(
+                    context,
+                    hintText: 'Ex: Abertura do culto',
+                    prefixIcon: Icons.title_rounded,
+                  ),
+                  validator: (v) {
+                    if ((v ?? '').trim().length < 3) return 'Mínimo de 3 caracteres.';
+                    return null;
+                  },
                 ),
-                validator: (v) {
-                  if ((v ?? '').trim().length < 3) return 'Mínimo de 3 caracteres.';
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
 
-              // Description
-              _FieldLabel(label: 'Descrição (opcional)'),
-              TextFormField(
-                controller: _descCtrl,
-                enabled: !isActioning,
-                maxLines: 2,
-                decoration: appFormFieldDecoration(
-                  context,
-                  hintText: 'Uma breve descrição...',
-                  alignLabelWithHint: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 14,
+                _FieldLabel(label: 'Descrição (opcional)'),
+                TextFormField(
+                  controller: _descCtrl,
+                  enabled: !isActioning,
+                  maxLines: 2,
+                  decoration: appFormFieldDecoration(
+                    context,
+                    hintText: 'Uma breve descrição...',
+                    alignLabelWithHint: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 14,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 22),
+                const SizedBox(height: 22),
 
-              // Draft items
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Músicas do medley',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: theme.textTheme.bodyMedium?.color,
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Músicas do medley',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
                       ),
                     ),
-                  ),
-                  Text(
-                    '${_draftItems.length} ${_draftItems.length == 1 ? 'música' : 'músicas'}',
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textMutedLight,
+                    Text(
+                      '${_draftItems.length} ${_draftItems.length == 1 ? 'música' : 'músicas'}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textMutedLight,
+                      ),
                     ),
-                  ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                if (_draftItems.isNotEmpty) ...[
+                  ..._draftItems.asMap().entries.map((entry) {
+                    final idx = entry.key;
+                    final item = entry.value;
+                    return _DraftItemTile(
+                      item: item,
+                      index: idx + 1,
+                      isDark: isDark,
+                      onEdit: isActioning ? null : () => _editItem(item),
+                      onRemove: isActioning ? null : () => _removeItem(item.draftId),
+                    );
+                  }),
+                  const SizedBox(height: 8),
                 ],
-              ),
-              const SizedBox(height: 10),
 
-              if (_draftItems.isNotEmpty) ...[
-                ..._draftItems.asMap().entries.map((entry) {
-                  final idx = entry.key;
-                  final item = entry.value;
-                  return _DraftItemTile(
-                    item: item,
-                    index: idx + 1,
-                    isDark: isDark,
-                    onEdit: isActioning ? null : () => _editItem(item),
-                    onRemove: isActioning ? null : () => _removeItem(item.draftId),
-                  );
-                }),
-                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  style: appSecondaryPillButtonStyle(context),
+                  onPressed: isActioning ? null : _addSong,
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text('Adicionar Música'),
+                ),
+
+                const SizedBox(height: 22),
+
+                FilledButton(
+                  style: appPrimaryPillButtonStyle(context),
+                  onPressed: isActioning ? null : _save,
+                  child: isActioning
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(_isEditing ? 'Salvar alterações' : 'Criar Medley'),
+                ),
+                const SizedBox(height: 10),
+                OutlinedButton(
+                  style: appSecondaryPillButtonStyle(context),
+                  onPressed: isActioning ? null : () => Navigator.of(context).pop(),
+                  child: const Text('Cancelar'),
+                ),
               ],
-
-              // Add song button
-              OutlinedButton.icon(
-                style: appSecondaryPillButtonStyle(context),
-                onPressed: isActioning ? null : _addSong,
-                icon: const Icon(Icons.add_rounded),
-                label: const Text('Adicionar Música'),
-              ),
-
-              const SizedBox(height: 22),
-
-              // Save button
-              FilledButton(
-                style: appPrimaryPillButtonStyle(context),
-                onPressed: isActioning ? null : _save,
-                child: isActioning
-                    ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(_isEditing ? 'Salvar alterações' : 'Criar Medley'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -503,7 +485,7 @@ class _FieldLabel extends StatelessWidget {
         style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: Theme.of(context).textTheme.bodyMedium?.color,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );
@@ -568,7 +550,6 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
       ),
       child: Column(
         children: [
-          // Handle
           Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 4),
             child: Container(
@@ -580,7 +561,6 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
               ),
             ),
           ),
-          // Title
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
             child: Row(
@@ -597,7 +577,6 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
               ],
             ),
           ),
-          // Search
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
             child: TextField(
@@ -641,7 +620,6 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
               ),
             ),
           ),
-          // List
           Expanded(
             child: filtered.isEmpty
                 ? Center(
@@ -818,10 +796,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
           children: [
             const Text(
               'Tom *',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 6),
             TextFormField(
@@ -836,34 +811,24 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: BorderSide(
-                    color: isDark
-                        ? AppColors.borderSubtleDark
-                        : AppColors.borderLight,
+                    color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: BorderSide(
-                    color: isDark
-                        ? AppColors.borderSubtleDark
-                        : AppColors.borderLight,
+                    color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: const BorderSide(
-                    color: AppColors.primaryBright,
-                    width: 1.4,
-                  ),
+                  borderSide: const BorderSide(color: AppColors.primaryBright, width: 1.4),
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: const BorderSide(color: AppColors.dangerBright),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               ),
               validator: (v) {
                 if ((v ?? '').trim().isEmpty) return 'Tom é obrigatório.';
@@ -891,30 +856,20 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: BorderSide(
-                    color: isDark
-                        ? AppColors.borderSubtleDark
-                        : AppColors.borderLight,
+                    color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: BorderSide(
-                    color: isDark
-                        ? AppColors.borderSubtleDark
-                        : AppColors.borderLight,
+                    color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: const BorderSide(
-                    color: AppColors.primaryBright,
-                    width: 1.4,
-                  ),
+                  borderSide: const BorderSide(color: AppColors.primaryBright, width: 1.4),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               ),
             ),
           ],
@@ -922,14 +877,14 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(ctx).pop(),
+          onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancelar'),
         ),
         FilledButton(
           onPressed: () {
             if (!_formKey.currentState!.validate()) return;
             final notes = _notesCtrl.text.trim();
-            Navigator.of(ctx).pop<_ItemConfig>((
+            Navigator.of(context).pop<_ItemConfig>((
               key: _keyCtrl.text.trim(),
               notes: notes.isEmpty ? null : notes,
             ));
@@ -939,6 +894,4 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
       ],
     );
   }
-
-  BuildContext get ctx => context;
 }
