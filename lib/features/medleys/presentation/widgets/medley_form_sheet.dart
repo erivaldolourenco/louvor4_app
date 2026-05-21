@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -50,13 +51,13 @@ class _DraftItem {
     required this.sequence,
   });
 
-  _DraftItem copyWith({String? key, String? notes}) {
+  _DraftItem copyWith({String? key, String? notes, int? sequence}) {
     return _DraftItem(
       draftId: draftId,
       song: song,
       key: key ?? this.key,
       notes: notes ?? this.notes,
-      sequence: sequence,
+      sequence: sequence ?? this.sequence,
     );
   }
 }
@@ -142,7 +143,7 @@ class _MedleyFormPageState extends State<_MedleyFormPage> {
           song: song,
           key: config.key,
           notes: config.notes,
-          sequence: _nextSequence(),
+          sequence: config.sequence,
         ),
       ];
     });
@@ -160,7 +161,11 @@ class _MedleyFormPageState extends State<_MedleyFormPage> {
 
     setState(() {
       _draftItems = _draftItems
-          .map((d) => d.draftId == item.draftId ? d.copyWith(key: config.key, notes: config.notes) : d)
+          .map(
+            (d) => d.draftId == item.draftId
+                ? d.copyWith(key: config.key, notes: config.notes, sequence: config.sequence)
+                : d,
+          )
           .toList();
     });
   }
@@ -714,7 +719,7 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
 // Item config dialog (key + notes)
 // ---------------------------------------------------------------------------
 
-typedef _ItemConfig = ({String key, String? notes});
+typedef _ItemConfig = ({String key, String? notes, int sequence});
 
 Future<_ItemConfig?> _showItemConfig(
   BuildContext context, {
@@ -729,6 +734,7 @@ Future<_ItemConfig?> _showItemConfig(
       songTitle: song.title,
       initialKey: initialKey,
       initialNotes: initialNotes,
+      initialSequence: nextSequence,
     ),
   );
 }
@@ -737,11 +743,13 @@ class _ItemConfigDialog extends StatefulWidget {
   final String songTitle;
   final String initialKey;
   final String initialNotes;
+  final int initialSequence;
 
   const _ItemConfigDialog({
     required this.songTitle,
     required this.initialKey,
     required this.initialNotes,
+    required this.initialSequence,
   });
 
   @override
@@ -752,6 +760,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _keyCtrl;
   late final TextEditingController _notesCtrl;
+  late final TextEditingController _sequenceCtrl;
 
   static final _keyRegex = RegExp(r'^[A-G](#|b)?m?$');
 
@@ -760,13 +769,41 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
     super.initState();
     _keyCtrl = TextEditingController(text: widget.initialKey);
     _notesCtrl = TextEditingController(text: widget.initialNotes);
+    _sequenceCtrl = TextEditingController(text: '${widget.initialSequence}');
   }
 
   @override
   void dispose() {
     _keyCtrl.dispose();
     _notesCtrl.dispose();
+    _sequenceCtrl.dispose();
     super.dispose();
+  }
+
+  InputDecoration _fieldDecoration(bool isDark, {String? hint}) {
+    final borderColor = isDark ? AppColors.borderSubtleDark : AppColors.borderLight;
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: isDark ? AppColors.scaffoldDark : AppColors.surfaceElevatedLight,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.input),
+        borderSide: BorderSide(color: borderColor),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.input),
+        borderSide: BorderSide(color: borderColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.input),
+        borderSide: const BorderSide(color: AppColors.primaryBright, width: 1.4),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.input),
+        borderSide: const BorderSide(color: AppColors.dangerBright),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+    );
   }
 
   @override
@@ -775,7 +812,9 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
 
     return AlertDialog(
       backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.cardLarge)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
+      ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -803,6 +842,26 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Sequência
+            const Text(
+              'Sequência *',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            TextFormField(
+              controller: _sequenceCtrl,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              decoration: _fieldDecoration(isDark, hint: 'Ex: 1, 2, 3…'),
+              validator: (v) {
+                final n = int.tryParse((v ?? '').trim());
+                if (n == null || n < 1) return 'Informe um número maior que 0.';
+                return null;
+              },
+            ),
+            const SizedBox(height: 14),
+
+            // Tom
             const Text(
               'Tom *',
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
@@ -811,34 +870,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
             TextFormField(
               controller: _keyCtrl,
               autocorrect: false,
-              decoration: InputDecoration(
-                hintText: 'Ex: C, D#, Ebm, Am',
-                filled: true,
-                fillColor: isDark
-                    ? AppColors.scaffoldDark
-                    : AppColors.surfaceElevatedLight,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide(
-                    color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide(
-                    color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: const BorderSide(color: AppColors.primaryBright, width: 1.4),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: const BorderSide(color: AppColors.dangerBright),
-                ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              ),
+              decoration: _fieldDecoration(isDark, hint: 'Ex: C, D#, Ebm, Am'),
               validator: (v) {
                 if ((v ?? '').trim().isEmpty) return 'Tom é obrigatório.';
                 if (!_keyRegex.hasMatch(v!.trim())) {
@@ -848,6 +880,8 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
               },
             ),
             const SizedBox(height: 14),
+
+            // Observações
             const Text(
               'Observações (opcional)',
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
@@ -856,28 +890,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
             TextFormField(
               controller: _notesCtrl,
               maxLines: 2,
-              decoration: InputDecoration(
-                hintText: 'Ex: Entrar no refrão...',
-                filled: true,
-                fillColor: isDark
-                    ? AppColors.scaffoldDark
-                    : AppColors.surfaceElevatedLight,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide(
-                    color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide(
-                    color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: const BorderSide(color: AppColors.primaryBright, width: 1.4),
-                ),
+              decoration: _fieldDecoration(isDark, hint: 'Ex: Entrar no refrão...').copyWith(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               ),
             ),
@@ -894,6 +907,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
             if (!_formKey.currentState!.validate()) return;
             final notes = _notesCtrl.text.trim();
             Navigator.of(context).pop<_ItemConfig>((
+              sequence: int.parse(_sequenceCtrl.text.trim()),
               key: _keyCtrl.text.trim(),
               notes: notes.isEmpty ? null : notes,
             ));
