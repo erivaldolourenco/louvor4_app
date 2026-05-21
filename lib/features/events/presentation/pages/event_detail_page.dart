@@ -235,12 +235,18 @@ class _EventDetailViewState extends State<_EventDetailView>
                   state: state,
                   mutedColor: mutedColor,
                   onManageSchedule: () => _onManageSchedule(state),
+                  onRefresh: () => context
+                      .read<EventDetailCubit>()
+                      .load(widget.eventId, force: true),
                 ),
                 _SongsTab(
                   state: state,
                   mutedColor: mutedColor,
                   onAddSongs: () => _onAddSongs(state),
                   onRemoveSong: _onRemoveSong,
+                  onRefresh: () => context
+                      .read<EventDetailCubit>()
+                      .load(widget.eventId, force: true),
                 ),
                 EventProgramTab(
                   isAdmin: state.isProjectAdmin,
@@ -539,11 +545,13 @@ class _ParticipantsTab extends StatelessWidget {
   final EventDetailState state;
   final Color? mutedColor;
   final VoidCallback onManageSchedule;
+  final VoidCallback onRefresh;
 
   const _ParticipantsTab({
     required this.state,
     required this.mutedColor,
     required this.onManageSchedule,
+    required this.onRefresh,
   });
 
   Future<bool> _handleParticipantInviteAction(
@@ -604,7 +612,14 @@ class _ParticipantsTab extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        if (state.participants.isEmpty)
+        if (state.participantsLoadFailed && state.participants.isEmpty)
+          _RetryTabState(
+            icon: Icons.group_off_rounded,
+            title: 'Não foi possível carregar a equipe',
+            subtitle: 'Verifique sua conexão e tente novamente.',
+            onRetry: onRefresh,
+          )
+        else if (state.participants.isEmpty)
           const _EmptyTabState(
             icon: Icons.group_off_rounded,
             title: 'Sem participantes',
@@ -655,12 +670,14 @@ class _SongsTab extends StatelessWidget {
   final Color? mutedColor;
   final VoidCallback onAddSongs;
   final Future<bool> Function(String eventSongId) onRemoveSong;
+  final VoidCallback onRefresh;
 
   const _SongsTab({
     required this.state,
     required this.mutedColor,
     required this.onAddSongs,
     required this.onRemoveSong,
+    required this.onRefresh,
   });
 
   Map<String, List<dynamic>> _groupSongsByAddedBy() {
@@ -721,7 +738,14 @@ class _SongsTab extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 12),
-        if (state.songs.isEmpty)
+        if (state.songsLoadFailed && state.songs.isEmpty)
+          _RetryTabState(
+            icon: Icons.music_off_rounded,
+            title: 'Não foi possível carregar o repertório',
+            subtitle: 'Verifique sua conexão e tente novamente.',
+            onRetry: onRefresh,
+          )
+        else if (state.songs.isEmpty)
           const _EmptyTabState(
             icon: Icons.music_off_rounded,
             title: 'Sem músicas',
@@ -960,6 +984,62 @@ class _DetailErrorState extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _RetryTabState extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onRetry;
+
+  const _RetryTabState({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final titleColor = theme.textTheme.titleMedium?.color;
+    final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(alpha: 0.78);
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.surfaceDark : Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(
+          color: isDark ? AppColors.borderStrongDark : AppColors.borderLight,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, size: 30, color: subtitleColor),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            style: TextStyle(color: titleColor, fontWeight: FontWeight.w700),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: TextStyle(color: subtitleColor, fontSize: 13),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh_rounded, size: 16),
+            label: const Text('Tentar novamente'),
+          ),
+        ],
       ),
     );
   }

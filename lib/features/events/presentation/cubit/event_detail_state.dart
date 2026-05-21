@@ -17,6 +17,8 @@ class EventDetailState extends Equatable {
   final bool isProjectAdmin;
   final bool canAddSongs;
   final String? deletingSongId;
+  final bool participantsLoadFailed;
+  final bool songsLoadFailed;
 
   const EventDetailState({
     this.status = EventDetailStatus.initial,
@@ -29,6 +31,8 @@ class EventDetailState extends Equatable {
     this.isProjectAdmin = false,
     this.canAddSongs = false,
     this.deletingSongId,
+    this.participantsLoadFailed = false,
+    this.songsLoadFailed = false,
   });
 
   EventDetailState copyWith({
@@ -44,6 +48,8 @@ class EventDetailState extends Equatable {
     bool? canAddSongs,
     String? deletingSongId,
     bool clearDeletingSongId = false,
+    bool? participantsLoadFailed,
+    bool? songsLoadFailed,
   }) {
     return EventDetailState(
       status: status ?? this.status,
@@ -60,6 +66,9 @@ class EventDetailState extends Equatable {
       deletingSongId: clearDeletingSongId
           ? null
           : (deletingSongId ?? this.deletingSongId),
+      participantsLoadFailed:
+          participantsLoadFailed ?? this.participantsLoadFailed,
+      songsLoadFailed: songsLoadFailed ?? this.songsLoadFailed,
     );
   }
 
@@ -75,5 +84,7 @@ class EventDetailState extends Equatable {
     isProjectAdmin,
     canAddSongs,
     deletingSongId,
+    participantsLoadFailed,
+    songsLoadFailed,
   ];
 }

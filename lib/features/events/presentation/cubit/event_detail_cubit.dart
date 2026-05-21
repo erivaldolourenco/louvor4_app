@@ -35,15 +35,20 @@ class EventDetailCubit extends Cubit<EventDetailState> {
 
     try {
       final event = await _repository.getEventDetail(eventId);
+      bool participantsFailed = false;
+      bool songsFailed = false;
+
       final participants = await _safeLoad(
         () => _repository.getEventParticipants(eventId),
         fallback: const <EventParticipant>[],
         debugLabel: 'participantes do evento',
+        onError: () => participantsFailed = true,
       );
       final songs = await _safeLoad(
         () => _repository.getEventSongs(eventId),
         fallback: const <EventSong>[],
         debugLabel: 'músicas do evento',
+        onError: () => songsFailed = true,
       );
 
       final hasProjectId = event.projectId.trim().isNotEmpty;
@@ -91,6 +96,8 @@ class EventDetailCubit extends Cubit<EventDetailState> {
           participants: participants,
           currentUser: currentUser,
         ),
+        participantsLoadFailed: participantsFailed,
+        songsLoadFailed: songsFailed,
       );
       emit(nextState);
       _cacheByEventId[eventId] = _CachedEventDetailData(
@@ -112,6 +119,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     Future<T> Function() loader, {
     required T fallback,
     required String debugLabel,
+    VoidCallback? onError,
   }) async {
     try {
       return await loader();
@@ -119,6 +127,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       if (kDebugMode) {
         print('Falha ao carregar $debugLabel: $e');
       }
+      onError?.call();
       return fallback;
     }
   }

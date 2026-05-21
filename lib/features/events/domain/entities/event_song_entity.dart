@@ -34,11 +34,11 @@ class EventSong {
           ? Map<String, dynamic>.from(json['eventMedley'] as Map)
           : <String, dynamic>{};
       return EventSong(
-        id: json['id'].toString(),
+        id: json['id']?.toString() ?? '',
         title: medley['name']?.toString() ?? 'Medley',
         artist: medley['description']?.toString(),
         notes: medley['notes']?.toString() ?? json['notes']?.toString(),
-        addedBy: json['addedBy'].toString(),
+        addedBy: json['addedBy']?.toString() ?? '',
         type: SetlistItemType.medley,
       );
     }
@@ -47,14 +47,14 @@ class EventSong {
         ? Map<String, dynamic>.from(json['eventSong'] as Map)
         : json;
     return EventSong(
-      id: json['id'].toString(),
-      title: song['title'].toString(),
+      id: json['id']?.toString() ?? '',
+      title: song['title']?.toString() ?? '',
       artist: song['artist']?.toString(),
       key: song['key']?.toString(),
       bpm: _toInt(song['bpm']),
       youTubeUrl: song['youTubeUrl']?.toString(),
       notes: json['notes']?.toString(),
-      addedBy: json['addedBy'].toString(),
+      addedBy: json['addedBy']?.toString() ?? '',
     );
   }
 
