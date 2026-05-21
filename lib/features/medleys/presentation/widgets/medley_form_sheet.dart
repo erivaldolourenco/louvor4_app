@@ -8,6 +8,7 @@ import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_circular_action_button.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
+import '../../../../core/utils/youtube_utils.dart';
 import '../../../../features/songs/domain/entities/song_entity.dart';
 import '../../domain/entities/create_medley_input_entity.dart';
 import '../../domain/entities/medley_entity.dart';
@@ -732,6 +733,8 @@ Future<_ItemConfig?> _showItemConfig(
     context: context,
     builder: (ctx) => _ItemConfigDialog(
       songTitle: song.title,
+      songArtist: song.artist,
+      youTubeUrl: song.youTubeUrl,
       initialKey: initialKey,
       initialNotes: initialNotes,
       initialSequence: nextSequence,
@@ -741,12 +744,16 @@ Future<_ItemConfig?> _showItemConfig(
 
 class _ItemConfigDialog extends StatefulWidget {
   final String songTitle;
+  final String songArtist;
+  final String? youTubeUrl;
   final String initialKey;
   final String initialNotes;
   final int initialSequence;
 
   const _ItemConfigDialog({
     required this.songTitle,
+    required this.songArtist,
+    required this.youTubeUrl,
     required this.initialKey,
     required this.initialNotes,
     required this.initialSequence,
@@ -780,7 +787,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
     super.dispose();
   }
 
-  InputDecoration _fieldDecoration(bool isDark, {String? hint}) {
+  InputDecoration _fieldDecoration(bool isDark, {String? hint, int maxLines = 1}) {
     final borderColor = isDark ? AppColors.borderSubtleDark : AppColors.borderLight;
     return InputDecoration(
       hintText: hint,
@@ -802,119 +809,228 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
         borderRadius: BorderRadius.circular(AppRadius.input),
         borderSide: const BorderSide(color: AppColors.dangerBright),
       ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: maxLines > 1 ? 10 : 12,
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final thumbnailUrl = YoutubeUtils.getThumbnail(widget.youTubeUrl);
+    final hasThumb = widget.youTubeUrl != null && widget.youTubeUrl!.isNotEmpty;
+    final dialogBg = isDark ? AppColors.surfaceDark : Colors.white;
 
-    return AlertDialog(
-      backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+    return Dialog(
+      backgroundColor: dialogBg,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.cardLarge),
       ),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text(
-            'Configurar música',
-            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            widget.songTitle,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textMutedLight,
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-      content: Form(
-        key: _formKey,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Sequência
-            const Text(
-              'Sequência *',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+            // ── Thumbnail header ──────────────────────────────────────────
+            SizedBox(
+              height: 160,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  hasThumb
+                      ? Image.network(
+                          thumbnailUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => _ThumbFallback(isDark: isDark),
+                        )
+                      : _ThumbFallback(isDark: isDark),
+                  // gradient
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.75),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // title + artist
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    bottom: 14,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.songTitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                        if (widget.songArtist.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            widget.songArtist,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.white70,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  // close button
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Material(
+                      color: Colors.black.withValues(alpha: 0.35),
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => Navigator.of(context).pop(),
+                        child: const Padding(
+                          padding: EdgeInsets.all(6),
+                          child: Icon(Icons.close_rounded, color: Colors.white, size: 18),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 6),
-            TextFormField(
-              controller: _sequenceCtrl,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: _fieldDecoration(isDark, hint: 'Ex: 1, 2, 3…'),
-              validator: (v) {
-                final n = int.tryParse((v ?? '').trim());
-                if (n == null || n < 1) return 'Informe um número maior que 0.';
-                return null;
-              },
-            ),
-            const SizedBox(height: 14),
 
-            // Tom
-            const Text(
-              'Tom *',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: 6),
-            TextFormField(
-              controller: _keyCtrl,
-              autocorrect: false,
-              decoration: _fieldDecoration(isDark, hint: 'Ex: C, D#, Ebm, Am'),
-              validator: (v) {
-                if ((v ?? '').trim().isEmpty) return 'Tom é obrigatório.';
-                if (!_keyRegex.hasMatch(v!.trim())) {
-                  return 'Use A–G com # ou b e/ou m. Ex: C#m';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 14),
+            // ── Campos ────────────────────────────────────────────────────
+            SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Sequência
+                    const Text(
+                      'Sequência *',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _sequenceCtrl,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: _fieldDecoration(isDark, hint: 'Ex: 1, 2, 3…'),
+                      validator: (v) {
+                        final n = int.tryParse((v ?? '').trim());
+                        if (n == null || n < 1) return 'Informe um número maior que 0.';
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
 
-            // Observações
-            const Text(
-              'Observações (opcional)',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    // Tom
+                    const Text(
+                      'Tom *',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _keyCtrl,
+                      autocorrect: false,
+                      decoration: _fieldDecoration(isDark, hint: 'Ex: C, D#, Ebm, Am'),
+                      validator: (v) {
+                        if ((v ?? '').trim().isEmpty) return 'Tom é obrigatório.';
+                        if (!_keyRegex.hasMatch(v!.trim())) {
+                          return 'Use A–G com # ou b e/ou m. Ex: C#m';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Observações
+                    const Text(
+                      'Observações (opcional)',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 6),
+                    TextFormField(
+                      controller: _notesCtrl,
+                      maxLines: 3,
+                      decoration: _fieldDecoration(isDark, hint: 'Ex: Entrar no refrão...', maxLines: 3),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 6),
-            TextFormField(
-              controller: _notesCtrl,
-              maxLines: 2,
-              decoration: _fieldDecoration(isDark, hint: 'Ex: Entrar no refrão...').copyWith(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+
+            // ── Ações ─────────────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      style: appSecondaryPillButtonStyle(context),
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('Cancelar'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      style: appPrimaryPillButtonStyle(context),
+                      onPressed: () {
+                        if (!_formKey.currentState!.validate()) return;
+                        final notes = _notesCtrl.text.trim();
+                        Navigator.of(context).pop<_ItemConfig>((
+                          sequence: int.parse(_sequenceCtrl.text.trim()),
+                          key: _keyCtrl.text.trim(),
+                          notes: notes.isEmpty ? null : notes,
+                        ));
+                      },
+                      child: const Text('Confirmar'),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(
-          onPressed: () {
-            if (!_formKey.currentState!.validate()) return;
-            final notes = _notesCtrl.text.trim();
-            Navigator.of(context).pop<_ItemConfig>((
-              sequence: int.parse(_sequenceCtrl.text.trim()),
-              key: _keyCtrl.text.trim(),
-              notes: notes.isEmpty ? null : notes,
-            ));
-          },
-          child: const Text('Confirmar'),
-        ),
-      ],
+    );
+  }
+}
+
+class _ThumbFallback extends StatelessWidget {
+  final bool isDark;
+
+  const _ThumbFallback({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: isDark ? AppColors.surfaceElevatedDark : AppColors.primarySubtleLight,
+      child: const Center(
+        child: Icon(Icons.music_note_rounded, color: AppColors.primaryBright, size: 48),
+      ),
     );
   }
 }
