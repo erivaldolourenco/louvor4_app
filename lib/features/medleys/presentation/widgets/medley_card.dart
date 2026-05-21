@@ -12,14 +12,14 @@ import '../../domain/entities/medley_item_entity.dart';
 
 class MedleyCard extends StatelessWidget {
   final MedleyEntity medley;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const MedleyCard({
     super.key,
     required this.medley,
-    required this.onEdit,
-    required this.onDelete,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
@@ -98,32 +98,37 @@ class MedleyCard extends StatelessWidget {
                   ),
                 ),
 
-          Divider(height: 1, thickness: 1, color: dividerColor),
+          if (onEdit != null || onDelete != null) ...[
+            Divider(height: 1, thickness: 1, color: dividerColor),
 
-          // ── Seção 3: Ações ─────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                AppCircularActionButton(
-                  onPressed: onEdit,
-                  assetPath: 'assets/icons/settings-2.svg',
-                  iconColor: AppColors.primary,
-                  backgroundColor: AppColors.primarySubtleLight,
-                  borderColor: AppColors.primaryBorderLight,
-                ),
-                const SizedBox(width: 8),
-                AppCircularActionButton(
-                  onPressed: onDelete,
-                  assetPath: 'assets/icons/trash-2.svg',
-                  iconColor: AppColors.dangerBright,
-                  backgroundColor: AppColors.dangerSubtleLight,
-                  borderColor: AppColors.dangerBorderLight,
-                ),
-              ],
+            // ── Seção 3: Ações ───────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (onEdit != null)
+                    AppCircularActionButton(
+                      onPressed: onEdit,
+                      assetPath: 'assets/icons/settings-2.svg',
+                      iconColor: AppColors.primary,
+                      backgroundColor: AppColors.primarySubtleLight,
+                      borderColor: AppColors.primaryBorderLight,
+                    ),
+                  if (onEdit != null && onDelete != null)
+                    const SizedBox(width: 8),
+                  if (onDelete != null)
+                    AppCircularActionButton(
+                      onPressed: onDelete,
+                      assetPath: 'assets/icons/trash-2.svg',
+                      iconColor: AppColors.dangerBright,
+                      backgroundColor: AppColors.dangerSubtleLight,
+                      borderColor: AppColors.dangerBorderLight,
+                    ),
+                ],
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

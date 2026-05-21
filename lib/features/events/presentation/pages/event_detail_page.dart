@@ -5,7 +5,8 @@ import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/song_details_sheet.dart';
 import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 import 'package:louvor4_app/core/ui/widgets/header_project_event.dart';
-import 'package:louvor4_app/features/events/presentation/widgets/event_music_card.dart';
+import '../../../../core/ui/widgets/song_list_card.dart';
+import '../../../medleys/presentation/widgets/medley_card.dart';
 import 'package:louvor4_app/features/user_profile/data/impl/user_repository_impl.dart';
 import 'package:louvor4_app/features/user_profile/data/user_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -680,6 +681,12 @@ class _SongsTab extends StatelessWidget {
     required this.onRefresh,
   });
 
+  Future<void> _launchYoutube(String url) async {
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   Map<String, List<dynamic>> _groupSongsByAddedBy() {
     final grouped = <String, List<dynamic>>{};
 
@@ -765,32 +772,36 @@ class _SongsTab extends StatelessWidget {
                 ),
               ),
               ...group.value.map(
-                (song) => EventMusicCard(
-                  eventSongId: song.id,
-                  title: song.title,
-                  artist: song.isMedley
-                      ? (song.artist ?? 'Medley')
-                      : (song.artist ?? 'Desconhecido'),
-                  musicKey: song.key ?? '',
-                  bpm: song.bpm,
-                  youtubeUrl: song.youTubeUrl,
-                  isMedley: song.isMedley,
-                  onTap: () => showSongDetailsModal(
-                    context,
-                    title: song.title,
-                    artist: song.isMedley
-                        ? (song.artist ?? '')
-                        : (song.artist ?? 'Desconhecido'),
-                    musicKey: song.key,
-                    bpm: song.bpm?.toString(),
-                    youTubeUrl: song.youTubeUrl ?? '',
-                    notes: song.notes,
-                  ),
-                  canRemove: state.isProjectAdmin,
-                  isRemoving: state.deletingSongId == song.id,
-                  onRemove: state.deletingSongId == song.id
-                      ? null
-                      : () => onRemoveSong(song.id),
+                (song) => Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: song.isMedley && song.medleyEntity != null
+                      ? MedleyCard(medley: song.medleyEntity!)
+                      : SongListCard(
+                          dismissKey: song.id,
+                          title: song.title,
+                          artist: song.artist ?? 'Desconhecido',
+                          musicKey: song.key,
+                          bpm: song.bpm?.toString(),
+                          youTubeUrl: song.youTubeUrl,
+                          onTap: () => showSongDetailsModal(
+                            context,
+                            title: song.title,
+                            artist: song.artist ?? 'Desconhecido',
+                            musicKey: song.key,
+                            bpm: song.bpm?.toString(),
+                            youTubeUrl: song.youTubeUrl ?? '',
+                            notes: song.notes,
+                          ),
+                          onOpenYoutube: (song.youTubeUrl != null &&
+                                  song.youTubeUrl!.isNotEmpty)
+                              ? () => _launchYoutube(song.youTubeUrl!)
+                              : null,
+                          onRemove: (state.isProjectAdmin &&
+                                  state.deletingSongId != song.id)
+                              ? () => onRemoveSong(song.id)
+                              : null,
+                          isRemoving: state.deletingSongId == song.id,
+                        ),
                 ),
               ),
               const SizedBox(height: 6),

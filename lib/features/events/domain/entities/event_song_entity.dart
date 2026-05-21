@@ -1,3 +1,5 @@
+import '../../../medleys/domain/entities/medley_entity.dart';
+
 enum SetlistItemType { song, medley }
 
 class EventSong {
@@ -10,6 +12,7 @@ class EventSong {
   final String? notes;
   final String addedBy;
   final SetlistItemType type;
+  final MedleyEntity? medleyEntity;
 
   const EventSong({
     required this.id,
@@ -21,6 +24,7 @@ class EventSong {
     this.notes,
     required this.addedBy,
     this.type = SetlistItemType.song,
+    this.medleyEntity,
   });
 
   bool get isMedley => type == SetlistItemType.medley;
@@ -30,16 +34,19 @@ class EventSong {
     final isMedley = rawType == 'MEDLEY';
 
     if (isMedley) {
-      final medley = json['eventMedley'] != null
+      final medleyMap = json['eventMedley'] != null
           ? Map<String, dynamic>.from(json['eventMedley'] as Map)
           : <String, dynamic>{};
+      final medleyEntity = MedleyEntity.fromJson(medleyMap);
+
       return EventSong(
         id: json['id']?.toString() ?? '',
-        title: medley['name']?.toString() ?? 'Medley',
-        artist: medley['description']?.toString(),
-        notes: medley['notes']?.toString() ?? json['notes']?.toString(),
+        title: medleyEntity.name.isNotEmpty ? medleyEntity.name : 'Medley',
+        artist: medleyEntity.description,
+        notes: medleyEntity.notes ?? json['notes']?.toString(),
         addedBy: json['addedBy']?.toString() ?? '',
         type: SetlistItemType.medley,
+        medleyEntity: medleyEntity,
       );
     }
 

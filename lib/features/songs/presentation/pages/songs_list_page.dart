@@ -6,12 +6,10 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
-import '../../../../core/ui/widgets/app_card_surface.dart';
-import '../../../../core/ui/widgets/app_circular_action_button.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/ui/widgets/song_details_sheet.dart';
+import '../../../../core/ui/widgets/song_list_card.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
-import '../../../../core/utils/youtube_utils.dart';
 import '../../../medleys/data/impl/medley_repository_impl.dart';
 import '../../../medleys/domain/entities/medley_entity.dart';
 import '../../../medleys/presentation/cubit/medley_cubit.dart';
@@ -395,8 +393,12 @@ class _SongsContentState extends State<_SongsContent>
                     padding: const EdgeInsets.fromLTRB(16, 10, 16, 90),
                     itemBuilder: (_, index) {
                       final song = filteredSongs[index];
-                      return _SongCard(
-                        song: song,
+                      return SongListCard(
+                        title: song.title,
+                        artist: song.artist,
+                        musicKey: song.key,
+                        bpm: song.bpm,
+                        youTubeUrl: song.youTubeUrl,
                         onTap: () => showSongDetailsModal(
                           context,
                           title: song.title,
@@ -606,167 +608,3 @@ class _MedleysEmpty extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Song card (unchanged from before)
-// ---------------------------------------------------------------------------
-
-class _SongCard extends StatelessWidget {
-  final SongEntity song;
-  final VoidCallback onTap;
-  final VoidCallback onOpenYoutube;
-  final VoidCallback? onEdit;
-
-  const _SongCard({
-    required this.song,
-    required this.onTap,
-    required this.onOpenYoutube,
-    required this.onEdit,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: AppCardSurface(
-          radius: 22,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
-                  child: Image.network(
-                    YoutubeUtils.getThumbnail(
-                      song.youTubeUrl,
-                      quality: 'default',
-                    ),
-                    width: 82,
-                    height: 82,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Image.asset(
-                      YoutubeUtils.defaultThumb,
-                      width: 82,
-                      height: 82,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        song.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: const Color(0xFF374151),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        song.artist,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontStyle: FontStyle.italic,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textMutedDark,
-                            ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          _MetaBadge(label: 'Tom: ${song.key}'),
-                          if (song.bpm != null && song.bpm!.isNotEmpty) ...[
-                            const SizedBox(width: 8),
-                            _MetaBadge(
-                              icon: Icons.speed_rounded,
-                              label: '${song.bpm} BPM',
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AppCircularActionButton(
-                      onPressed: onOpenYoutube,
-                      assetPath: 'assets/icons/youtube.svg',
-                      iconColor: const Color(0xFFDC2626),
-                      backgroundColor: const Color(0xFFFEF2F2),
-                      borderColor: const Color(0xFFFECACA),
-                    ),
-                    const SizedBox(width: 8),
-                    AppCircularActionButton(
-                      onPressed: onEdit,
-                      assetPath: 'assets/icons/file-music.svg',
-                      iconColor: onEdit != null
-                          ? AppColors.primary
-                          : AppColors.textMutedDark,
-                      backgroundColor: onEdit != null
-                          ? AppColors.primarySubtleLight
-                          : AppColors.surfaceElevatedLight,
-                      borderColor: onEdit != null
-                          ? AppColors.primaryBorderLight
-                          : AppColors.borderLight,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MetaBadge extends StatelessWidget {
-  final IconData? icon;
-  final String label;
-
-  const _MetaBadge({this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceSubtleLight,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: AppColors.borderLight),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            Icon(icon, size: 14, color: AppColors.textMutedLight),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textSubtleDark,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
