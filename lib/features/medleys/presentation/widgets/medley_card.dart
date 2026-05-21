@@ -183,192 +183,163 @@ class _SongItemCard extends StatelessWidget {
     final theme = Theme.of(context);
     final hasNotes = item.notes != null && item.notes!.isNotEmpty;
     final hasYouTube = item.youTubeUrl != null && item.youTubeUrl!.isNotEmpty;
-    final dividerColor =
-        isDark ? AppColors.borderSubtleDark : AppColors.borderLight;
+    final mutedColor =
+        isDark ? AppColors.textMutedDark : AppColors.textMutedLight;
     final thumbnailUrl = YoutubeUtils.getThumbnail(item.youTubeUrl);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // ── Parte 1: Thumbnail + info ──────────────────────────────────────
-        Stack(
-          children: [
-            // Thumbnail
-            SizedBox(
-              height: 120,
-              width: double.infinity,
-              child: Image.network(
-                thumbnailUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  color: isDark
-                      ? AppColors.surfaceElevatedDark
-                      : AppColors.primarySubtleLight,
-                  child: const Icon(
-                    Icons.music_note_rounded,
-                    color: AppColors.primaryBright,
-                    size: 36,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Thumbnail com badge de sequência
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  thumbnailUrl,
+                  width: 64,
+                  height: 64,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.surfaceElevatedDark
+                          : AppColors.primarySubtleLight,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.music_note_rounded,
+                      color: AppColors.primaryBright,
+                      size: 28,
+                    ),
                   ),
                 ),
               ),
-            ),
-            // Gradient overlay para legibilidade do texto
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.72),
+              Positioned(
+                top: 4,
+                left: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBright,
+                    borderRadius: BorderRadius.circular(AppRadius.badge),
+                  ),
+                  child: Text(
+                    '${item.sequence}',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 12),
+          // Info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  item.songTitle ?? '—',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                if (item.songArtist != null &&
+                    item.songArtist!.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    item.songArtist!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: mutedColor,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    if (item.key != null && item.key!.isNotEmpty)
+                      _ItemBadge(label: 'Tom: ${item.key!}'),
+                  ],
+                ),
+                if (hasNotes) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.notes_rounded, size: 12, color: mutedColor),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          item.notes!,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: mutedColor,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ),
-            ),
-            // Sequence badge
-            Positioned(
-              top: 10,
-              left: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryBright,
-                  borderRadius: BorderRadius.circular(AppRadius.badge),
-                ),
-                child: Text(
-                  '${item.sequence}',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-            // Title + artist + key — sobre o gradiente
-            Positioned(
-              left: 12,
-              right: 12,
-              bottom: 10,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          item.songTitle ?? '—',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
-                        ),
-                        if (item.songArtist != null &&
-                            item.songArtist!.isNotEmpty) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            item.songArtist!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.white70,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  if (item.key != null && item.key!.isNotEmpty) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(AppRadius.badge),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.4),
-                        ),
-                      ),
-                      child: Text(
-                        item.key!,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
-              ),
+              ],
+            ),
+          ),
+          if (hasYouTube) ...[
+            const SizedBox(width: 8),
+            AppCircularActionButton(
+              onPressed: _openYouTube,
+              assetPath: 'assets/icons/youtube.svg',
+              iconColor: const Color(0xFFDC2626),
+              backgroundColor: const Color(0xFFFEF2F2),
+              borderColor: const Color(0xFFFECACA),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ItemBadge extends StatelessWidget {
+  final String label;
+
+  const _ItemBadge({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceSubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.borderLight),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textSubtleDark,
         ),
-
-        // ── Parte 2: Observações ───────────────────────────────────────────
-        if (hasNotes) ...[
-          Divider(height: 1, thickness: 1, color: dividerColor),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  Icons.notes_rounded,
-                  size: 14,
-                  color: isDark
-                      ? AppColors.textMutedDark
-                      : AppColors.textMutedLight,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    item.notes!,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark
-                          ? AppColors.textMutedDark
-                          : AppColors.textMutedLight,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-
-        // ── Parte 3: Ação YouTube ──────────────────────────────────────────
-        if (hasYouTube) ...[
-          Divider(height: 1, thickness: 1, color: dividerColor),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                AppCircularActionButton(
-                  onPressed: _openYouTube,
-                  assetPath: 'assets/icons/youtube.svg',
-                  iconColor: const Color(0xFFDC2626),
-                  backgroundColor: const Color(0xFFFEF2F2),
-                  borderColor: const Color(0xFFFECACA),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
+      ),
     );
   }
 }
