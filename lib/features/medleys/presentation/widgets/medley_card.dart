@@ -25,6 +25,7 @@ class MedleyCard extends StatelessWidget {
     final dividerColor = isDark ? AppColors.borderSubtleDark : AppColors.borderLight;
 
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDark : Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.cardLarge),
@@ -41,114 +42,130 @@ class MedleyCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Seção 1: Header ──────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+          // Accent strip
+          Container(width: 4, color: AppColors.primaryBright),
+          // Card content
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.primarySubtleDark
-                        : AppColors.primarySubtleLight,
-                    borderRadius: BorderRadius.circular(AppRadius.input),
-                  ),
-                  child: const Icon(
-                    Icons.queue_music_rounded,
-                    color: AppColors.primary,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                // ── Seção 1: Header ──────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        medley.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? AppColors.primarySubtleDark
+                              : AppColors.primarySubtleLight,
+                          borderRadius: BorderRadius.circular(AppRadius.input),
+                        ),
+                        child: const Icon(
+                          Icons.queue_music_rounded,
+                          color: AppColors.primary,
+                          size: 24,
                         ),
                       ),
-                      if (medley.description != null &&
-                          medley.description!.isNotEmpty) ...[
-                        const SizedBox(height: 3),
-                        Text(
-                          medley.description!,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              medley.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            if (medley.description != null &&
+                                medley.description!.isNotEmpty) ...[
+                              const SizedBox(height: 3),
+                              Text(
+                                medley.description!,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: isDark
+                                      ? AppColors.textMutedDark
+                                      : AppColors.textMutedLight,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Divider(height: 1, thickness: 1, color: dividerColor),
+
+                // ── Seção 2: Lista de músicas ─────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: medley.items.isEmpty
+                      ? Text(
+                          'Nenhuma música adicionada.',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: isDark
                                 ? AppColors.textMutedDark
                                 : AppColors.textMutedLight,
                           ),
+                        )
+                      : Column(
+                          children: medley.items
+                              .map(
+                                (item) => _SongRow(
+                                  item: item,
+                                  isDark: isDark,
+                                  isLast: item == medley.items.last,
+                                ),
+                              )
+                              .toList(),
                         ),
-                      ],
+                ),
+
+                Divider(height: 1, thickness: 1, color: dividerColor),
+
+                // ── Seção 3: Ações ────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
+                  child: Row(
+                    children: [
+                      _ItemCountBadge(
+                        count: medley.items.length,
+                        isDark: isDark,
+                      ),
+                      const Spacer(),
+                      AppCircularActionButton(
+                        onPressed: onEdit,
+                        assetPath: 'assets/icons/settings-2.svg',
+                        iconColor: AppColors.primary,
+                        backgroundColor: AppColors.primarySubtleLight,
+                        borderColor: AppColors.primaryBorderLight,
+                      ),
+                      const SizedBox(width: 8),
+                      AppCircularActionButton(
+                        onPressed: onDelete,
+                        assetPath: 'assets/icons/trash-2.svg',
+                        iconColor: AppColors.dangerBright,
+                        backgroundColor: AppColors.dangerSubtleLight,
+                        borderColor: AppColors.dangerBorderLight,
+                      ),
                     ],
                   ),
-                ),
-              ],
-            ),
-          ),
-
-          Divider(height: 1, thickness: 1, color: dividerColor),
-
-          // ── Seção 2: Lista de músicas ─────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: medley.items.isEmpty
-                ? Text(
-                    'Nenhuma música adicionada.',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: isDark
-                          ? AppColors.textMutedDark
-                          : AppColors.textMutedLight,
-                    ),
-                  )
-                : Column(
-                    children: medley.items
-                        .map(
-                          (item) => _SongRow(
-                            item: item,
-                            isDark: isDark,
-                            isLast: item == medley.items.last,
-                          ),
-                        )
-                        .toList(),
-                  ),
-          ),
-
-          Divider(height: 1, thickness: 1, color: dividerColor),
-
-          // ── Seção 3: Ações ────────────────────────────────────────────────
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-            child: Row(
-              children: [
-                _ItemCountBadge(count: medley.items.length, isDark: isDark),
-                const Spacer(),
-                AppCircularActionButton(
-                  onPressed: onEdit,
-                  assetPath: 'assets/icons/settings-2.svg',
-                  iconColor: AppColors.primary,
-                  backgroundColor: AppColors.primarySubtleLight,
-                  borderColor: AppColors.primaryBorderLight,
-                ),
-                const SizedBox(width: 8),
-                AppCircularActionButton(
-                  onPressed: onDelete,
-                  assetPath: 'assets/icons/trash-2.svg',
-                  iconColor: AppColors.dangerBright,
-                  backgroundColor: AppColors.dangerSubtleLight,
-                  borderColor: AppColors.dangerBorderLight,
                 ),
               ],
             ),
@@ -251,7 +268,9 @@ class _ItemCountBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceSubtleLight,
+        color: isDark
+            ? AppColors.surfaceElevatedDark
+            : AppColors.surfaceSubtleLight,
         borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(
           color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
