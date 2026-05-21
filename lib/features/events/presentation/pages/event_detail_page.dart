@@ -775,7 +775,13 @@ class _SongsTab extends StatelessWidget {
                 (song) => Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: song.isMedley && song.medleyEntity != null
-                      ? MedleyCard(medley: song.medleyEntity!)
+                      ? MedleyCard(
+                          medley: song.medleyEntity!,
+                          onDelete: (state.isProjectAdmin &&
+                                  state.deletingSongId != song.id)
+                              ? () => onRemoveSong(song.id)
+                              : null,
+                        )
                       : SongListCard(
                           dismissKey: song.id,
                           title: song.title,
