@@ -497,10 +497,25 @@ class _EventHeroCard extends StatelessWidget {
                   const SizedBox(height: 3),
                   GestureDetector(
                     onTap: onLocationTap,
-                    child: Icon(
-                      Icons.location_on_rounded,
-                      size: 20,
-                      color: mutedColor,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.location_on_rounded,
+                          size: 16,
+                          color: mutedColor,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Localização',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: mutedColor,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
