@@ -91,6 +91,7 @@ class EventProgramCubit extends Cubit<EventProgramState> {
               songId: item.songId,
               songTitle: item.songTitle,
               songArtist: item.songArtist,
+              songYouTubeUrl: item.songYouTubeUrl,
             );
           } else if (item is MedleyProgramItemEntity) {
             return MedleyProgramItemEntity(

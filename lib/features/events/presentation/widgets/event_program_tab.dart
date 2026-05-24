@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_radius.dart';
+import '../../../../../core/utils/youtube_utils.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
@@ -273,15 +274,35 @@ class _ProgramItemCard extends StatelessWidget {
           children: [
             _PositionBadge(position: position, isDark: isDark),
             const SizedBox(width: 10),
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: iconBgColor,
+            if (isMusic && music!.songYouTubeUrl != null && music.songYouTubeUrl!.isNotEmpty)
+              ClipRRect(
                 borderRadius: BorderRadius.circular(AppRadius.input),
+                child: Image.network(
+                  YoutubeUtils.getThumbnail(music.songYouTubeUrl, quality: 'default'),
+                  width: 48,
+                  height: 48,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, e, stack) => Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: iconBgColor,
+                      borderRadius: BorderRadius.circular(AppRadius.input),
+                    ),
+                    child: Icon(iconData, color: iconColor, size: 20),
+                  ),
+                ),
+              )
+            else
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: iconBgColor,
+                  borderRadius: BorderRadius.circular(AppRadius.input),
+                ),
+                child: Icon(iconData, color: iconColor, size: 20),
               ),
-              child: Icon(iconData, color: iconColor, size: 20),
-            ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
