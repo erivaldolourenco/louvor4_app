@@ -442,6 +442,7 @@ class _EventHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 4, 0, 8),
       child: Row(
@@ -497,25 +498,34 @@ class _EventHeroCard extends StatelessWidget {
                   const SizedBox(height: 3),
                   GestureDetector(
                     onTap: onLocationTap,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.location_on_rounded,
-                          size: 16,
-                          color: mutedColor,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: isDark ? AppColors.primarySubtleDark : AppColors.primarySubtleLight,
+                        borderRadius: BorderRadius.circular(AppRadius.badge),
+                        border: Border.all(
+                          color: isDark ? AppColors.primaryBorderDark : AppColors.primaryBorderLight,
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Localização',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                            color: mutedColor,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.location_on_rounded,
+                            size: 14,
+                            color: AppColors.primary,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Text(
+                            'Localização',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
