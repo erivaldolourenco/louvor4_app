@@ -260,13 +260,13 @@ class _SongItemCard extends StatelessWidget {
                           ),
                         ),
                       ],
-                      if (item.key != null && item.key!.isNotEmpty) ...[
-                        const SizedBox(height: 5),
-                        _ItemBadge(label: 'Tom: ${item.key!}'),
-                      ],
                     ],
                   ),
                 ),
+                if (item.key != null && item.key!.isNotEmpty) ...[
+                  const SizedBox(width: 10),
+                  _KeyChip(label: item.key!, isDark: isDark),
+                ],
               ],
             ),
           ),
@@ -322,26 +322,45 @@ class _SongItemCard extends StatelessWidget {
   }
 }
 
-class _ItemBadge extends StatelessWidget {
+class _KeyChip extends StatelessWidget {
   final String label;
+  final bool isDark;
 
-  const _ItemBadge({required this.label});
+  const _KeyChip({required this.label, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
+    final mutedColor = isDark ? AppColors.textMutedDark : AppColors.textMutedLight;
+    const strongColor = AppColors.textSubtleDark;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSubtleLight,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: AppColors.borderLight),
+        color: isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceSubtleLight,
+        borderRadius: BorderRadius.circular(AppRadius.badge),
+        border: Border.all(
+          color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
+        ),
       ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textSubtleDark,
+      child: RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: 'Tom ',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: mutedColor,
+              ),
+            ),
+            TextSpan(
+              text: label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: strongColor,
+              ),
+            ),
+          ],
         ),
       ),
     );
