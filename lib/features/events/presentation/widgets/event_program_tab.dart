@@ -81,6 +81,7 @@ class EventProgramTab extends StatelessWidget {
           header: header,
           buildDefaultDragHandles: false,
           onReorder: (oldIndex, newIndex) {
+            if (!isAdmin) return;
             if (newIndex > oldIndex) newIndex -= 1;
             final ids = state.items.map((i) => i.id).toList();
             final id = ids.removeAt(oldIndex);
@@ -97,13 +98,13 @@ class EventProgramTab extends StatelessWidget {
                   position: i + 1,
                   isAdmin: isAdmin,
                   itemIndex: i,
-                  onEdit: state.items[i] is TextProgramItemEntity
+                  onEdit: isAdmin && state.items[i] is TextProgramItemEntity
                       ? () => _showTextItemDialog(
                           context,
                           item: state.items[i] as TextProgramItemEntity,
                         )
                       : null,
-                  onDelete: state.items[i] is TextProgramItemEntity
+                  onDelete: isAdmin && state.items[i] is TextProgramItemEntity
                       ? () => _confirmDelete(
                           context,
                           state.items[i] as TextProgramItemEntity,
@@ -223,8 +224,30 @@ class _ProgramItemCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final isMusic = item is MusicProgramItemEntity;
+    final isMedley = item is MedleyProgramItemEntity;
     final music = isMusic ? item as MusicProgramItemEntity : null;
-    final text = isMusic ? null : item as TextProgramItemEntity;
+    final medley = isMedley ? item as MedleyProgramItemEntity : null;
+    final text = (!isMusic && !isMedley) ? item as TextProgramItemEntity : null;
+
+    final iconData = isMusic
+        ? Icons.music_note_rounded
+        : isMedley
+            ? Icons.queue_music_rounded
+            : Icons.text_fields_rounded;
+
+    final iconColor = isMusic
+        ? AppColors.primary
+        : isMedley
+            ? const Color(0xFF0891B2)
+            : const Color(0xFF7C3AED);
+
+    final iconBgColor = isMusic
+        ? (isDark ? AppColors.primarySubtleDark : AppColors.primarySubtleLight)
+        : isMedley
+            ? (isDark ? const Color(0xFF0C2233) : const Color(0xFFE0F2FE))
+            : (isDark ? const Color(0xFF1E1B3A) : const Color(0xFFF5F3FF));
+
+    final isEditable = text != null;
 
     return Container(
       decoration: BoxDecoration(
@@ -254,24 +277,10 @@ class _ProgramItemCard extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: isMusic
-                    ? (isDark
-                          ? AppColors.primarySubtleDark
-                          : AppColors.primarySubtleLight)
-                    : (isDark
-                          ? const Color(0xFF1E1B3A)
-                          : const Color(0xFFF5F3FF)),
+                color: iconBgColor,
                 borderRadius: BorderRadius.circular(AppRadius.input),
               ),
-              child: Icon(
-                isMusic
-                    ? Icons.music_note_rounded
-                    : Icons.text_fields_rounded,
-                color: isMusic
-                    ? AppColors.primary
-                    : const Color(0xFF7C3AED),
-                size: 20,
-              ),
+              child: Icon(iconData, color: iconColor, size: 20),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -280,7 +289,11 @@ class _ProgramItemCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    isMusic ? music!.songTitle : text!.title,
+                    isMusic
+                        ? music!.songTitle
+                        : isMedley
+                            ? medley!.medleyName
+                            : text!.title,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -298,7 +311,19 @@ class _ProgramItemCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     )
-                  else if (text!.description != null &&
+                  else if (isMedley && medley!.songs.isNotEmpty)
+                    Text(
+                      medley.songs.map((s) => s.title).join(' • '),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: isDark
+                            ? AppColors.textMutedDark
+                            : AppColors.textMutedLight,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  else if (text != null &&
+                      text.description != null &&
                       text.description!.isNotEmpty)
                     Text(
                       text.description!,
@@ -315,8 +340,8 @@ class _ProgramItemCard extends StatelessWidget {
             ),
             if (isAdmin) ...[
               const SizedBox(width: 4),
-              if (!isMusic) ...[
-                Column(
+              if (isEditable) ...[
+                Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _SmallIconButton(
@@ -327,6 +352,7 @@ class _ProgramItemCard extends StatelessWidget {
                           : AppColors.primarySubtleLight,
                       onPressed: onEdit,
                     ),
+                    const SizedBox(width: 4),
                     _SmallIconButton(
                       icon: Icons.delete_outline_rounded,
                       color: AppColors.dangerBright,
@@ -337,7 +363,7 @@ class _ProgramItemCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(width: 2),
+                const SizedBox(width: 6),
               ],
               ReorderableDragStartListener(
                 index: itemIndex,

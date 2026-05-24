@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/song_details_sheet.dart';
 import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
@@ -178,46 +177,20 @@ class _EventDetailViewState extends State<_EventDetailView>
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 34, 16, 0),
-                    child: Transform.translate(
-                      offset: const Offset(0, -34),
-                      child: _EventHeroCard(
-                        title: event.title,
-                        description: event.description,
-                        titleColor: titleColor,
-                        mutedColor: mutedColor,
-                        items: [
-                          _EventInfoItemData(
-                            assetPath: 'assets/icons/calendar.svg',
-                            text: formatDate(event.date),
-                            backgroundColor: isDark
-                                ? AppColors.primarySubtleDark
-                                : const Color(0xFFEAF2FF),
-                            iconColor: AppColors.primary,
-                          ),
-                          _EventInfoItemData(
-                            assetPath: 'assets/icons/alarm-clock.svg',
-                            text: formatTime(event.time),
-                            backgroundColor: isDark
-                                ? AppColors.warningSubtleDark
-                                : AppColors.warningSubtleLight,
-                            iconColor: AppColors.warning,
-                          ),
-                          _EventInfoItemData(
-                            assetPath: 'assets/icons/map-pinned.svg',
-                            text: event.location?.trim().isNotEmpty == true
-                                ? event.location!
-                                : 'Sem local definido',
-                            backgroundColor: isDark
-                                ? AppColors.successSubtleDark
-                                : AppColors.successSubtleLight,
-                            iconColor: AppColors.successBright,
-                            onTap: event.location?.trim().isNotEmpty == true
-                                ? () => _openMaps(event.location!)
-                                : null,
-                          ),
-                        ],
-                      ),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    child: _EventHeroCard(
+                      title: event.title,
+                      description: event.description,
+                      titleColor: titleColor,
+                      mutedColor: mutedColor,
+                      date: formatDate(event.date),
+                      time: formatTime(event.time),
+                      location: event.location?.trim().isNotEmpty == true
+                          ? event.location!
+                          : 'Sem local definido',
+                      onLocationTap: event.location?.trim().isNotEmpty == true
+                          ? () => _openMaps(event.location!)
+                          : null,
                     ),
                   ),
                 ),
@@ -266,9 +239,10 @@ class _EventDetailViewState extends State<_EventDetailView>
     final googleMapsUrl = Uri.parse(
       'https://www.google.com/maps/search/?api=1&query=$query',
     );
-
-    if (await canLaunchUrl(googleMapsUrl)) {
+    try {
       await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      await launchUrl(googleMapsUrl, mode: LaunchMode.platformDefault);
     }
   }
 
@@ -450,14 +424,20 @@ class _EventHeroCard extends StatelessWidget {
   final String? description;
   final Color? titleColor;
   final Color? mutedColor;
-  final List<_EventInfoItemData> items;
+  final String date;
+  final String time;
+  final String location;
+  final VoidCallback? onLocationTap;
 
   const _EventHeroCard({
     required this.title,
     required this.description,
     required this.titleColor,
     required this.mutedColor,
-    required this.items,
+    required this.date,
+    required this.time,
+    required this.location,
+    this.onLocationTap,
   });
 
   @override
@@ -465,50 +445,81 @@ class _EventHeroCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: isDark ? AppColors.shadowDark : AppColors.shadowLight,
-            blurRadius: isDark ? 24 : 22,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(22, 26, 22, 18),
-        child: Column(
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 4, 0, 8),
+      child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: titleColor,
-                height: 1.05,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: titleColor,
+                      height: 1.15,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (description != null && description!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      description!,
+                      style: TextStyle(
+                        color: mutedColor,
+                        fontSize: 15,
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ],
               ),
             ),
-            if (description != null && description!.trim().isNotEmpty) ...[
-              const SizedBox(height: 10),
-              Text(
-                description!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: mutedColor,
-                  fontSize: 16,
-                  height: 1.4,
-                  fontStyle: FontStyle.italic,
-                  fontWeight: FontWeight.w600,
+            const SizedBox(width: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '$date · $time',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: mutedColor,
+                  ),
                 ),
-              ),
-            ],
-            const SizedBox(height: 14),
-            _EventInfoHighlightsRow(items: items),
+                const SizedBox(height: 3),
+                GestureDetector(
+                  onTap: onLocationTap,
+                  child: Text(
+                    location,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: mutedColor,
+                      decoration: onLocationTap != null
+                          ? TextDecoration.underline
+                          : TextDecoration.none,
+                      decorationStyle: TextDecorationStyle.dotted,
+                      decorationColor: mutedColor?.withValues(alpha: 0.55),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
-      ),
     );
   }
 }
@@ -816,117 +827,6 @@ class _SongsTab extends StatelessWidget {
       ],
     );
   }
-}
-
-class _EventInfoHighlightItem extends StatelessWidget {
-  final String assetPath;
-  final String text;
-  final Color backgroundColor;
-  final Color iconColor;
-  final VoidCallback? onTap;
-
-  const _EventInfoHighlightItem({
-    required this.assetPath,
-    required this.text,
-    required this.backgroundColor,
-    required this.iconColor,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final titleColor = Theme.of(context).textTheme.titleMedium?.color;
-    final isLocationAction = onTap != null;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: backgroundColor,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: SvgPicture.asset(
-                  assetPath,
-                  width: 16,
-                  height: 16,
-                  colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              text,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: titleColor,
-                fontWeight: FontWeight.w800,
-                fontSize: 13,
-                height: 1.2,
-                decoration: isLocationAction
-                    ? TextDecoration.underline
-                    : TextDecoration.none,
-                decorationStyle: TextDecorationStyle.dotted,
-                decorationColor: titleColor?.withValues(alpha: 0.55),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _EventInfoHighlightsRow extends StatelessWidget {
-  final List<_EventInfoItemData> items;
-
-  const _EventInfoHighlightsRow({required this.items});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: items
-          .map(
-            (item) => Expanded(
-              child: _EventInfoHighlightItem(
-                assetPath: item.assetPath,
-                text: item.text,
-                backgroundColor: item.backgroundColor,
-                iconColor: item.iconColor,
-                onTap: item.onTap,
-              ),
-            ),
-          )
-          .toList(growable: false),
-    );
-  }
-}
-
-class _EventInfoItemData {
-  final String assetPath;
-  final String text;
-  final Color backgroundColor;
-  final Color iconColor;
-  final VoidCallback? onTap;
-
-  const _EventInfoItemData({
-    required this.assetPath,
-    required this.text,
-    required this.backgroundColor,
-    required this.iconColor,
-    this.onTap,
-  });
 }
 
 class _DetailLoadingState extends StatelessWidget {

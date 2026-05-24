@@ -6,22 +6,22 @@ import '../../utils/url_utils.dart';
 
 class HeaderProjectEvent extends StatelessWidget {
   final String title;
+  final String? subtitle;
   final List<Widget>? actions;
   final String? backgroundImageUrl;
-  final Widget? backgroundOverlay;
 
   const HeaderProjectEvent({
     super.key,
     required this.title,
+    this.subtitle,
     this.actions,
     this.backgroundImageUrl,
-    this.backgroundOverlay,
   });
 
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 86,
+      expandedHeight: 64,
       pinned: true,
       stretch: true,
       backgroundColor: AppColors.scaffoldDark,
@@ -30,15 +30,32 @@ class HeaderProjectEvent extends StatelessWidget {
       scrolledUnderElevation: 0,
       centerTitle: false,
       titleSpacing: 20,
-      title: Text(
-        title,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
-          color: Colors.white,
-          fontWeight: FontWeight.w800,
-          fontSize: 24,
-        ),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: 20,
+            ),
+          ),
+          if (subtitle != null)
+            Text(
+              subtitle!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
+            ),
+        ],
       ),
       actions: actions,
       flexibleSpace: FlexibleSpaceBar(
@@ -63,8 +80,6 @@ class HeaderProjectEvent extends StatelessWidget {
                 ),
               ),
             ),
-            // ignore: use_null_aware_elements
-            if (backgroundOverlay case final overlay?) overlay,
           ],
         ),
       ),

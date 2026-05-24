@@ -29,9 +29,9 @@ class EventProgramCubit extends Cubit<EventProgramState> {
   Future<bool> createTextItem(CreateTextProgramItemInputEntity input) async {
     emit(EventProgramState(status: state.status, items: state.items, isActioning: true));
     try {
-      final created = await _repo.createTextItem(eventId, input);
-      final updated = [...state.items, created]..sort((a, b) => a.position.compareTo(b.position));
-      emit(EventProgramState(status: EventProgramStatus.success, items: updated));
+      await _repo.createTextItem(eventId, input);
+      final items = await _repo.getProgram(eventId);
+      emit(EventProgramState(status: EventProgramStatus.success, items: items));
       return true;
     } catch (e) {
       emit(EventProgramState(
@@ -46,9 +46,9 @@ class EventProgramCubit extends Cubit<EventProgramState> {
   Future<bool> updateTextItem(String itemId, UpdateTextProgramItemInputEntity input) async {
     emit(EventProgramState(status: state.status, items: state.items, isActioning: true));
     try {
-      final updated = await _repo.updateTextItem(eventId, itemId, input);
-      final newList = state.items.map((i) => i.id == itemId ? updated : i).toList();
-      emit(EventProgramState(status: EventProgramStatus.success, items: newList));
+      await _repo.updateTextItem(eventId, itemId, input);
+      final items = await _repo.getProgram(eventId);
+      emit(EventProgramState(status: EventProgramStatus.success, items: items));
       return true;
     } catch (e) {
       emit(EventProgramState(
@@ -91,6 +91,14 @@ class EventProgramCubit extends Cubit<EventProgramState> {
               songId: item.songId,
               songTitle: item.songTitle,
               songArtist: item.songArtist,
+            );
+          } else if (item is MedleyProgramItemEntity) {
+            return MedleyProgramItemEntity(
+              id: item.id,
+              position: entry.key,
+              medleyId: item.medleyId,
+              medleyName: item.medleyName,
+              songs: item.songs,
             );
           } else {
             final t = item as TextProgramItemEntity;

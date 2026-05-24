@@ -166,6 +166,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
         return [
           HeaderProjectEvent(
             title: project.name,
+            subtitle: MusicProjectUiUtils.typeLabel(project.type),
             actions: [
               if (_isAdmin)
                 PopupMenuButton<String>(
@@ -203,19 +204,6 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
                 ),
             ],
             backgroundImageUrl: project.profileImage,
-            backgroundOverlay: Positioned(
-              left: 20,
-              right: 20,
-              bottom: 22,
-              child: Text(
-                MusicProjectUiUtils.typeLabel(project.type),
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
           ),
         ];
       },

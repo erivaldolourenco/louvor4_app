@@ -14,9 +14,11 @@ class EventProgramRepositoryImpl implements EventProgramRepository {
   Future<List<ProgramItemEntity>> getProgram(String eventId) async {
     try {
       final response = await _dio.get('/events/$eventId/program');
-      final list = response.data as List;
+      final rawData = response.data;
+      final list = rawData is List ? rawData : <dynamic>[];
       final items = list
-          .map((e) => ProgramItemEntity.fromJson(Map<String, dynamic>.from(e as Map)))
+          .whereType<Map>()
+          .map((e) => ProgramItemEntity.fromJson(Map<String, dynamic>.from(e)))
           .toList();
       items.sort((a, b) => a.position.compareTo(b.position));
       return items;
@@ -35,7 +37,11 @@ class EventProgramRepositoryImpl implements EventProgramRepository {
         '/events/$eventId/program/text',
         data: input.toJson(),
       );
-      return ProgramItemEntity.fromJson(Map<String, dynamic>.from(response.data as Map));
+      final data = response.data;
+      if (data is Map) {
+        return ProgramItemEntity.fromJson(Map<String, dynamic>.from(data));
+      }
+      return TextProgramItemEntity(id: '', position: -1, title: input.title);
     } on DioException catch (e) {
       throw Exception(_extractError(e, fallback: 'Não foi possível criar o item.'));
     }
@@ -52,7 +58,11 @@ class EventProgramRepositoryImpl implements EventProgramRepository {
         '/events/$eventId/program/$itemId',
         data: input.toJson(),
       );
-      return ProgramItemEntity.fromJson(Map<String, dynamic>.from(response.data as Map));
+      final data = response.data;
+      if (data is Map) {
+        return ProgramItemEntity.fromJson(Map<String, dynamic>.from(data));
+      }
+      return TextProgramItemEntity(id: itemId, position: -1, title: input.title);
     } on DioException catch (e) {
       throw Exception(_extractError(e, fallback: 'Não foi possível atualizar o item.'));
     }

@@ -34,8 +34,9 @@ class EventSong {
     final isMedley = rawType == 'MEDLEY';
 
     if (isMedley) {
-      final medleyMap = json['eventMedley'] != null
-          ? Map<String, dynamic>.from(json['eventMedley'] as Map)
+      final eventMedleyRaw = json['eventMedley'];
+      final medleyMap = eventMedleyRaw is Map
+          ? Map<String, dynamic>.from(eventMedleyRaw)
           : <String, dynamic>{};
       final medleyEntity = MedleyEntity.fromJson(medleyMap);
 
@@ -50,8 +51,9 @@ class EventSong {
       );
     }
 
-    final song = json['eventSong'] != null
-        ? Map<String, dynamic>.from(json['eventSong'] as Map)
+    final eventSongRaw = json['eventSong'];
+    final song = eventSongRaw is Map
+        ? Map<String, dynamic>.from(eventSongRaw)
         : json;
     return EventSong(
       id: json['id']?.toString() ?? '',
