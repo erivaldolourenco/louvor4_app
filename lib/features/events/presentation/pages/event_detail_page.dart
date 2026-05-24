@@ -442,9 +442,6 @@ class _EventHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 4, 0, 8),
       child: Row(
@@ -496,26 +493,17 @@ class _EventHeroCard extends StatelessWidget {
                     color: mutedColor,
                   ),
                 ),
-                const SizedBox(height: 3),
-                GestureDetector(
-                  onTap: onLocationTap,
-                  child: Text(
-                    location,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.right,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                if (onLocationTap != null) ...[
+                  const SizedBox(height: 3),
+                  GestureDetector(
+                    onTap: onLocationTap,
+                    child: Icon(
+                      Icons.location_on_rounded,
+                      size: 20,
                       color: mutedColor,
-                      decoration: onLocationTap != null
-                          ? TextDecoration.underline
-                          : TextDecoration.none,
-                      decorationStyle: TextDecorationStyle.dotted,
-                      decorationColor: mutedColor?.withValues(alpha: 0.55),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ],
