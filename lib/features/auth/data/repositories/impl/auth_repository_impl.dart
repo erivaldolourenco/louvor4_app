@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:louvor4_app/features/auth/domain/entities/authenticated_user_entity.dart';
+import 'package:louvor4_app/features/auth/domain/entities/forgot_password_channels_entity.dart';
 import 'package:louvor4_app/features/auth/domain/exceptions/auth_request_exception.dart';
 
 import '../../../../../core/network/api_client.dart';
@@ -71,6 +72,55 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> register(CreateUserInputEntity input) async {
     try {
       await _dio.post('/users/create', data: input.toJson());
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      final message = _extractApiErrorMessage(e);
+      throw AuthRequestException(message: message, statusCode: status);
+    }
+  }
+
+  @override
+  Future<ForgotPasswordChannelsEntity> getAvailableChannels(String email) async {
+    try {
+      final response = await _dio.post(
+        '/auth/forgot-password/channels',
+        data: {'email': email},
+      );
+      final data = response.data as Map<String, dynamic>;
+      return ForgotPasswordChannelsEntity(
+        maskedEmail: data['maskedEmail'] as String,
+        maskedPhone: data['maskedPhone'] as String?,
+      );
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      final message = _extractApiErrorMessage(e);
+      throw AuthRequestException(message: message, statusCode: status);
+    }
+  }
+
+  @override
+  Future<void> forgotPassword({required String email, required String channel}) async {
+    try {
+      await _dio.post('/auth/forgot-password', data: {'email': email, 'channel': channel});
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      final message = _extractApiErrorMessage(e);
+      throw AuthRequestException(message: message, statusCode: status);
+    }
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    try {
+      await _dio.post('/auth/reset-password', data: {
+        'email': email,
+        'code': code,
+        'newPassword': newPassword,
+      });
     } on DioException catch (e) {
       final status = e.response?.statusCode;
       final message = _extractApiErrorMessage(e);
