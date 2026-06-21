@@ -395,6 +395,7 @@ class _ProjectSelectorWrap extends StatelessWidget {
       children: projects
           .map((project) {
             final selected = selectedProjectIds.contains(project.id);
+            final cs = Theme.of(context).colorScheme;
             return FilterChip(
               label: Text(project.name),
               selected: selected,
@@ -402,22 +403,16 @@ class _ProjectSelectorWrap extends StatelessWidget {
               avatar: Icon(
                 _iconForProjectType(project.type),
                 size: 18,
-                color: selected
-                    ? Colors.white
-                    : Theme.of(context).colorScheme.primary,
+                color: selected ? cs.onPrimaryContainer : cs.primary,
               ),
-              selectedColor: const Color(0xFF0166FF),
-              checkmarkColor: Colors.white,
+              selectedColor: cs.primaryContainer,
+              checkmarkColor: cs.onPrimaryContainer,
               labelStyle: TextStyle(
-                color: selected ? Colors.white : null,
+                color: selected ? cs.onPrimaryContainer : null,
                 fontWeight: FontWeight.w600,
               ),
               side: BorderSide(
-                color: selected
-                    ? const Color(0xFF0166FF)
-                    : Theme.of(context).brightness == Brightness.dark
-                    ? AppColors.borderSubtleDark
-                    : const Color(0xFFD6E4FF),
+                color: selected ? cs.primary : cs.outlineVariant,
               ),
             );
           })

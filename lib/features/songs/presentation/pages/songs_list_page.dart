@@ -172,11 +172,7 @@ class _SongsContentState extends State<_SongsContent>
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Remover "${medley.name}"?',
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ),
+        title: Text('Remover "${medley.name}"?'),
         content: const Text('Esta ação não pode ser desfeita.'),
         actions: [
           TextButton(
@@ -185,7 +181,8 @@ class _SongsContentState extends State<_SongsContent>
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.danger,
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
             ),
             onPressed: () async {
               Navigator.of(ctx).pop();

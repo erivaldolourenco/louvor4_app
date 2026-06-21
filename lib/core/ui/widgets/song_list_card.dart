@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../utils/youtube_utils.dart';
 import 'app_card_surface.dart';
@@ -42,7 +41,7 @@ class SongListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
 
     Widget cardContent = AppCardSurface(
       radius: 22,
@@ -55,11 +54,7 @@ class SongListCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _Thumbnail(
-                  youTubeUrl: youTubeUrl,
-                  isMedley: isMedley,
-                  isDark: isDark,
-                ),
+                _Thumbnail(youTubeUrl: youTubeUrl, isMedley: isMedley),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -70,9 +65,7 @@ class SongListCard extends StatelessWidget {
                         title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: theme.textTheme.titleMedium,
                       ),
                       if (artist != null && artist!.isNotEmpty) ...[
                         const SizedBox(height: 3),
@@ -83,9 +76,7 @@ class SongListCard extends StatelessWidget {
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontStyle: FontStyle.italic,
                             fontWeight: FontWeight.w500,
-                            color: isDark
-                                ? AppColors.textMutedDark
-                                : AppColors.textMutedLight,
+                            color: cs.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -94,11 +85,7 @@ class SongListCard extends StatelessWidget {
                 ),
                 if (!isMedley) ...[
                   const SizedBox(width: 12),
-                  _KeyBpm(
-                    musicKey: musicKey,
-                    bpm: bpm,
-                    isDark: isDark,
-                  ),
+                  _KeyBpm(musicKey: musicKey, bpm: bpm),
                 ],
               ],
             ),
@@ -106,11 +93,7 @@ class SongListCard extends StatelessWidget {
 
           // ── Actions section ───────────────────────────────────────
           if (_hasActions) ...[
-            Divider(
-              height: 1,
-              thickness: 1,
-              color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
-            ),
+            Divider(height: 1, thickness: 1, color: cs.outlineVariant),
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
               child: Row(
@@ -127,9 +110,9 @@ class SongListCard extends StatelessWidget {
                       AppCircularActionButton(
                         onPressed: onOpenYoutube,
                         assetPath: 'assets/icons/youtube.svg',
-                        iconColor: const Color(0xFFDC2626),
-                        backgroundColor: const Color(0xFFFEF2F2),
-                        borderColor: const Color(0xFFFECACA),
+                        iconColor: cs.error,
+                        backgroundColor: cs.errorContainer,
+                        borderColor: cs.error.withValues(alpha: 0.3),
                       ),
                     if (!isMedley && onOpenYoutube != null && onEdit != null)
                       const SizedBox(width: 8),
@@ -137,9 +120,9 @@ class SongListCard extends StatelessWidget {
                       AppCircularActionButton(
                         onPressed: onEdit,
                         assetPath: 'assets/icons/file-music.svg',
-                        iconColor: AppColors.primary,
-                        backgroundColor: AppColors.primarySubtleLight,
-                        borderColor: AppColors.primaryBorderLight,
+                        iconColor: cs.onPrimaryContainer,
+                        backgroundColor: cs.primaryContainer,
+                        borderColor: cs.primary.withValues(alpha: 0.3),
                       ),
                   ],
                 ],
@@ -157,12 +140,12 @@ class SongListCard extends StatelessWidget {
         confirmDismiss: (_) => onRemove!(),
         background: Container(
           decoration: BoxDecoration(
-            color: AppColors.danger,
+            color: cs.error,
             borderRadius: BorderRadius.circular(22),
           ),
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
+          child: Icon(Icons.delete_outline, color: cs.onError, size: 28),
         ),
         child: cardContent,
       );
@@ -187,26 +170,23 @@ class SongListCard extends StatelessWidget {
 class _Thumbnail extends StatelessWidget {
   final String? youTubeUrl;
   final bool isMedley;
-  final bool isDark;
 
-  const _Thumbnail({
-    required this.youTubeUrl,
-    required this.isMedley,
-    required this.isDark,
-  });
+  const _Thumbnail({required this.youTubeUrl, required this.isMedley});
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     if (isMedley) {
       return Container(
         width: 64,
         height: 64,
         decoration: BoxDecoration(
-          color: isDark ? AppColors.warningSubtleDark : AppColors.warningSubtleLight,
+          color: cs.secondaryContainer,
           borderRadius: BorderRadius.circular(14),
         ),
-        child: const Center(
-          child: Icon(Icons.queue_music_rounded, color: AppColors.warning, size: 32),
+        child: Center(
+          child: Icon(Icons.queue_music_rounded, color: cs.onSecondaryContainer, size: 32),
         ),
       );
     }
@@ -232,18 +212,11 @@ class _Thumbnail extends StatelessWidget {
 class _KeyBpm extends StatelessWidget {
   final String? musicKey;
   final String? bpm;
-  final bool isDark;
 
-  const _KeyBpm({
-    required this.musicKey,
-    required this.bpm,
-    required this.isDark,
-  });
+  const _KeyBpm({required this.musicKey, required this.bpm});
 
   @override
   Widget build(BuildContext context) {
-    final mutedColor = isDark ? AppColors.textMutedDark : AppColors.textMutedLight;
-    final strongColor = isDark ? AppColors.textSubtleDark : AppColors.textSubtleDark;
     final hasBpm = bpm != null && bpm!.isNotEmpty;
     final keyLabel = musicKey?.isNotEmpty == true ? musicKey! : '-';
 
@@ -251,22 +224,10 @@ class _KeyBpm extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisSize: MainAxisSize.min,
       children: [
-        _InfoChip(
-          label: 'Tom',
-          value: keyLabel,
-          isDark: isDark,
-          valueColor: strongColor,
-          labelColor: mutedColor,
-        ),
+        _InfoChip(label: 'Tom', value: keyLabel),
         if (hasBpm) ...[
           const SizedBox(height: 6),
-          _InfoChip(
-            label: 'BPM',
-            value: bpm!,
-            isDark: isDark,
-            valueColor: strongColor,
-            labelColor: mutedColor,
-          ),
+          _InfoChip(label: 'BPM', value: bpm!),
         ],
       ],
     );
@@ -276,28 +237,19 @@ class _KeyBpm extends StatelessWidget {
 class _InfoChip extends StatelessWidget {
   final String label;
   final String value;
-  final bool isDark;
-  final Color valueColor;
-  final Color labelColor;
 
-  const _InfoChip({
-    required this.label,
-    required this.value,
-    required this.isDark,
-    required this.valueColor,
-    required this.labelColor,
-  });
+  const _InfoChip({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceSubtleLight,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.badge),
-        border: Border.all(
-          color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
-        ),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: RichText(
         text: TextSpan(
@@ -305,14 +257,14 @@ class _InfoChip extends StatelessWidget {
             TextSpan(
               text: '$label ',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: labelColor,
+                color: cs.onSurfaceVariant,
               ),
             ),
             TextSpan(
               text: value,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: valueColor,
+                fontWeight: FontWeight.w700,
+                color: cs.onSurface,
               ),
             ),
           ],

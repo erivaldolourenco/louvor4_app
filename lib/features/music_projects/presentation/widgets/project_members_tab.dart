@@ -666,27 +666,17 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
                                           }
                                         });
                                       },
-                                selectedColor: const Color(0xFFDCEAFE),
-                                checkmarkColor: const Color(0xFF0166FF),
+                                selectedColor: Theme.of(context).colorScheme.primaryContainer,
+                                checkmarkColor: Theme.of(context).colorScheme.onPrimaryContainer,
                                 labelStyle: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   color: _selectedSkillIds.contains(skill.id)
-                                      ? const Color(0xFF0166FF)
-                                      : Theme.of(
-                                          context,
-                                        ).textTheme.bodyMedium?.color,
+                                      ? Theme.of(context).colorScheme.onPrimaryContainer
+                                      : Theme.of(context).textTheme.bodyMedium?.color,
                                 ),
-                                backgroundColor:
-                                    Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? AppColors.scaffoldDark
-                                    : Colors.white,
+                                backgroundColor: Theme.of(context).colorScheme.surface,
                                 side: BorderSide(
-                                  color:
-                                      Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? AppColors.borderSubtleDark
-                                      : AppColors.borderSubtleLight,
+                                  color: Theme.of(context).colorScheme.outlineVariant,
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(AppRadius.pill),

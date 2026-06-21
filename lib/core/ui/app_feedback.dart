@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
-
 class AppFeedback {
   AppFeedback._();
 
@@ -11,13 +9,9 @@ class AppFeedback {
     final context = navigatorKey.currentContext;
     if (context == null) return;
     final cs = Theme.of(context).colorScheme;
-
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    if (messenger == null) return;
-
-    messenger.showSnackBar(
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(message, style: TextStyle(color: cs.onError)),
         backgroundColor: cs.error,
         behavior: SnackBarBehavior.floating,
       ),
@@ -27,14 +21,11 @@ class AppFeedback {
   static void showSuccess(String message) {
     final context = navigatorKey.currentContext;
     if (context == null) return;
-
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    if (messenger == null) return;
-
-    messenger.showSnackBar(
+    final cs = Theme.of(context).colorScheme;
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
       SnackBar(
-        content: Text(message),
-        backgroundColor: AppColors.success,
+        content: Text(message, style: TextStyle(color: cs.onPrimaryContainer)),
+        backgroundColor: cs.primaryContainer,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -44,13 +35,9 @@ class AppFeedback {
     final context = navigatorKey.currentContext;
     if (context == null) return;
     final cs = Theme.of(context).colorScheme;
-
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    if (messenger == null) return;
-
-    messenger.showSnackBar(
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Text(message, style: TextStyle(color: cs.onPrimary)),
         backgroundColor: cs.primary,
         behavior: SnackBarBehavior.floating,
       ),
