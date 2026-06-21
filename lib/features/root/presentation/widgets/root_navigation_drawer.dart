@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/features/root/presentation/widgets/root_user_avatar.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_radius.dart';
 
 class RootNavigationDrawer extends StatelessWidget {
@@ -22,13 +21,14 @@ class RootNavigationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final username = _buildUsername();
     final drawerBackground = theme.brightness == Brightness.dark
-        ? AppColors.surfaceDark
+        ? cs.surface
         : Colors.white;
     final secondaryTextColor = theme.brightness == Brightness.dark
-        ? AppColors.textMutedDark
-        : AppColors.textMutedLight;
+        ? cs.onSurfaceVariant
+        : cs.onSurfaceVariant;
 
     return Drawer(
       backgroundColor: drawerBackground,

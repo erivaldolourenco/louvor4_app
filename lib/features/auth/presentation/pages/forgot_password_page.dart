@@ -122,7 +122,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
   }
 
   String _titleForStep(int step) => switch (step) {
-        1 => 'Informe seu e-mail para recuperar o acesso',
+        1 => 'Informe seu e-mail ou usuário para recuperar o acesso',
         2 => 'Como deseja receber o código?',
         _ => 'Digite o código recebido e crie uma nova senha',
       };
@@ -131,17 +131,17 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _FieldLabel(label: 'E-mail'),
         TextField(
           controller: _emailCtrl,
-          keyboardType: TextInputType.emailAddress,
+          keyboardType: TextInputType.text,
           textInputAction: TextInputAction.done,
-          decoration: appFormFieldDecoration(
-            context,
-            hintText: 'voce@email.com',
-            prefixIcon: Icons.email_outlined,
+          autocorrect: false,
+          decoration: InputDecoration(
+            labelText: 'E-mail ou usuário',
+            hintText: 'voce@email.com ou @usuario',
+            prefixIcon: Icon(Icons.person_outline_rounded),
           ),
-          onChanged: (v) => context.read<ForgotPasswordCubit>().emailChanged(v),
+          onChanged: (v) => context.read<ForgotPasswordCubit>().identifierChanged(v),
           onSubmitted: (_) => context.read<ForgotPasswordCubit>().loadChannels(),
         ),
         const SizedBox(height: 24),
@@ -212,7 +212,6 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _FieldLabel(label: 'Código de verificação'),
         TextField(
           controller: _codeCtrl,
           keyboardType: TextInputType.number,
@@ -223,24 +222,23 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
           style: const TextStyle(
             fontSize: 22,
             letterSpacing: 8,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
-          decoration: appFormFieldDecoration(context, hintText: '000000').copyWith(
+          decoration: InputDecoration(hintText: '000000').copyWith(
             counterText: '',
             hintStyle: const TextStyle(letterSpacing: 8),
           ),
           onChanged: (v) => context.read<ForgotPasswordCubit>().codeChanged(v),
         ),
         const SizedBox(height: 16),
-        const _FieldLabel(label: 'Nova senha'),
         TextField(
           controller: _newPasswordCtrl,
           obscureText: _obscure,
           textInputAction: TextInputAction.done,
-          decoration: appFormFieldDecoration(
-            context,
+          decoration: InputDecoration(
+            labelText: 'Nova senha',
             hintText: 'Mínimo 6 caracteres',
-            prefixIcon: Icons.lock_outline_rounded,
+            prefixIcon: Icon(Icons.lock_outline_rounded),
             suffixIcon: IconButton(
               onPressed: () => setState(() => _obscure = !_obscure),
               icon: Icon(
@@ -309,7 +307,9 @@ class _ChannelOption extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: selected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+              color: selected
+                  ? colorScheme.onPrimaryContainer
+                  : colorScheme.onSurfaceVariant,
               size: 24,
             ),
             const SizedBox(width: 14),
@@ -322,7 +322,9 @@ class _ChannelOption extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 15,
-                      color: selected ? colorScheme.primary : colorScheme.onSurface,
+                      color: selected
+                          ? colorScheme.onPrimaryContainer
+                          : colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -330,7 +332,9 @@ class _ChannelOption extends StatelessWidget {
                     subtitle,
                     style: TextStyle(
                       fontSize: 13,
-                      color: colorScheme.onSurfaceVariant,
+                      color: selected
+                          ? colorScheme.onPrimaryContainer.withValues(alpha: 0.75)
+                          : colorScheme.onSurfaceVariant,
                       letterSpacing: 1,
                     ),
                   ),
@@ -339,30 +343,11 @@ class _ChannelOption extends StatelessWidget {
             ),
             Icon(
               selected ? Icons.radio_button_checked : Icons.radio_button_off,
-              color: selected ? colorScheme.primary : colorScheme.outline,
+              color: selected
+                  ? colorScheme.onPrimaryContainer
+                  : colorScheme.outline,
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FieldLabel extends StatelessWidget {
-  final String label;
-
-  const _FieldLabel({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
-          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );

@@ -261,7 +261,7 @@ class _ProgramItemCard extends StatelessWidget {
           BoxShadow(
             color: isDark
                 ? Colors.black.withValues(alpha: 0.15)
-                : AppColors.primaryBright.withValues(alpha: 0.04),
+                : AppColors.primary.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -367,7 +367,7 @@ class _ProgramItemCard extends StatelessWidget {
                   children: [
                     _SmallIconButton(
                       icon: Icons.edit_outlined,
-                      color: AppColors.primaryBright,
+                      color: AppColors.primary,
                       bgColor: isDark
                           ? AppColors.primarySubtleDark
                           : AppColors.primarySubtleLight,
@@ -428,8 +428,7 @@ class _PositionBadge extends StatelessWidget {
       child: Center(
         child: Text(
           '$position',
-          style: TextStyle(
-            fontSize: 12,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
             fontWeight: FontWeight.w800,
             color: isDark
                 ? AppColors.textMutedDark
@@ -516,7 +515,7 @@ class _EmptyProgramState extends StatelessWidget {
           Text(
             'A programação deste evento está vazia.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: subtitleColor, fontSize: 13),
+            style: theme.textTheme.bodyMedium?.copyWith(fontSize: 13, color: subtitleColor),
           ),
           if (isAdmin) ...[
             const SizedBox(height: 16),

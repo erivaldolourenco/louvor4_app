@@ -272,9 +272,8 @@ class _ProjectImageCard extends StatelessWidget {
                   child: !hasLocalImage && !hasNetworkImage
                       ? Text(
                           initials,
-                          style: const TextStyle(
-                            color: AppColors.primaryBright,
-                            fontSize: 28,
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            color: AppColors.primary,
                             fontWeight: FontWeight.w800,
                           ),
                         )
@@ -315,7 +314,7 @@ class _ProjectImageCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Toque na imagem para alterar',
-            style: TextStyle(fontSize: 12, color: subtitleColor),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: subtitleColor),
           ),
         ],
       ),
@@ -341,9 +340,7 @@ class _FieldLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
           color: Theme.of(context).textTheme.bodyMedium?.color,
         ),
       ),

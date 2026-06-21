@@ -107,9 +107,8 @@ class ProfilePage extends StatelessWidget {
                     child: !hasProfileImage
                         ? Text(
                             _buildUserInitial(user),
-                            style: const TextStyle(
-                              color: AppColors.primaryBright,
-                              fontSize: 36,
+                            style: theme.textTheme.displaySmall?.copyWith(
+                              color: AppColors.primary,
                               fontWeight: FontWeight.w800,
                             ),
                           )
@@ -152,13 +151,12 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Toque na imagem para alterar',
-              style: TextStyle(fontSize: 12, color: subtitleColor),
+              style: theme.textTheme.bodySmall?.copyWith(color: subtitleColor),
             ),
             const SizedBox(height: 20),
             Text(
               '${user.firstName} ${user.lastName}',
-              style: TextStyle(
-                fontSize: 22,
+              style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: titleColor,
               ),
@@ -166,7 +164,7 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               _buildProfileSubtitle(user),
-              style: TextStyle(fontSize: 16, color: subtitleColor),
+              style: theme.textTheme.bodyLarge?.copyWith(color: subtitleColor),
             ),
           ],
         ),
@@ -192,7 +190,7 @@ class ProfilePage extends StatelessWidget {
           children: [
             Text(
               'Informações pessoais',
-              style: TextStyle(
+              style: theme.textTheme.titleMedium?.copyWith(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: titleColor,
@@ -234,13 +232,13 @@ class ProfilePage extends StatelessWidget {
                   onChanged: (value) =>
                       AppThemeController.instance.setDarkMode(value),
                   contentPadding: EdgeInsets.zero,
-                  title: const Text(
+                  title: Text(
                     'Modo escuro',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   subtitle: const Text('Ativar tema escuro no aplicativo'),
                   secondary: const Icon(Icons.dark_mode_outlined),
-                  activeThumbColor: AppColors.primaryBright,
+                  activeThumbColor: AppColors.primary,
                 );
               },
             ),
@@ -288,17 +286,14 @@ class ProfilePage extends StatelessWidget {
         children: [
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
+            style: theme.textTheme.labelMedium?.copyWith(
               color: labelColor,
-              fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 16,
+            style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: valueColor,
             ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:louvor4_app/core/theme/app_colors.dart';
 import 'package:louvor4_app/core/theme/app_radius.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/music_project_entity.dart';
@@ -23,11 +22,12 @@ class UserUnavailabilityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final period = _buildPeriodLabel();
     final mappedProjects = _resolveProjects();
     final subtitleColor = theme.brightness == Brightness.dark
-        ? AppColors.textMutedDark
-        : AppColors.textMutedLight;
+        ? cs.onSurfaceVariant
+        : cs.onSurfaceVariant;
 
     return AppCardSurface(
       radius: 24,
@@ -43,13 +43,13 @@ class UserUnavailabilityCard extends StatelessWidget {
                 height: 48,
                 decoration: BoxDecoration(
                   color: theme.brightness == Brightness.dark
-                      ? AppColors.primarySubtleDark
-                      : AppColors.primarySubtleLight,
+                      ? cs.primaryContainer
+                      : cs.primaryContainer,
                   borderRadius: BorderRadius.circular(AppRadius.card),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.event_busy_rounded,
-                  color: AppColors.primaryBright,
+                  color: cs.primary,
                 ),
               ),
               const SizedBox(width: 14),
@@ -60,7 +60,7 @@ class UserUnavailabilityCard extends StatelessWidget {
                     Text(
                       period,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -174,17 +174,18 @@ class _ProjectChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final backgroundColor = highlighted
-        ? const Color(0xFF0166FF)
+        ? Color(0xFF0166FF)
         : isDark
-        ? AppColors.scaffoldDark
-        : const Color(0xFFF8FBFF);
+        ? cs.surface
+        : Color(0xFFF8FBFF);
     final foregroundColor = highlighted
         ? Colors.white
         : isDark
-        ? AppColors.borderLight
-        : AppColors.primaryBorderDark;
+        ? cs.outlineVariant
+        : cs.primaryContainer;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
@@ -193,9 +194,9 @@ class _ProjectChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(
           color: highlighted
-              ? const Color(0xFF0166FF)
+              ? Color(0xFF0166FF)
               : isDark
-              ? AppColors.borderSubtleDark
+              ? cs.outlineVariant
               : const Color(0xFFD6E4FF),
         ),
       ),

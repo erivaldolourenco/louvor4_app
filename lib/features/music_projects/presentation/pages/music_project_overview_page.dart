@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/header_project_event.dart';
 import '../../data/impl/music_projects_repository_impl.dart';
@@ -124,6 +122,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
 
   Widget _buildBody() {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
     if (_isLoading) {
@@ -137,10 +136,10 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.cloud_off_rounded,
                 size: 46,
-                color: AppColors.textMutedLight,
+                color: cs.onSurfaceVariant,
               ),
               const SizedBox(height: 10),
               Text(
@@ -170,7 +169,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
             actions: [
               if (_isAdmin)
                 PopupMenuButton<String>(
-                  color: isDark ? AppColors.surfaceDark : Colors.white,
+                  color: isDark ? cs.surface : Colors.white,
                   icon: const Icon(
                     Icons.more_vert_rounded,
                     color: Colors.white,
@@ -209,11 +208,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
       },
       body: Column(
         children: [
-          Container(
-            color: theme.scaffoldBackgroundColor,
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-            child: _ProjectTabs(controller: _tabController),
-          ),
+          _ProjectTabs(controller: _tabController),
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -253,84 +248,50 @@ class _ProjectTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final inactiveColor = isDark
-        ? AppColors.textMutedDark
-        : AppColors.textMutedLight;
+    final cs = Theme.of(context).colorScheme;
 
     const tabs = [
       (assetPath: 'assets/icons/calendar-fold.svg', label: 'Eventos'),
       (assetPath: 'assets/icons/users-round.svg', label: 'Membros'),
       (assetPath: 'assets/icons/wrench.svg', label: 'Funções'),
     ];
-    const activeColor = AppColors.primary;
 
     return AnimatedBuilder(
       animation: controller.animation ?? controller,
-      builder: (context, child) {
+      builder: (context, _) {
         final activeIndex =
             controller.animation?.value.round() ?? controller.index;
 
-        return Container(
-          padding: const EdgeInsets.all(2.5),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight,
-            borderRadius: BorderRadius.circular(AppRadius.input),
-          ),
-          child: TabBar(
-            controller: controller,
-            dividerColor: Colors.transparent,
-            indicatorSize: TabBarIndicatorSize.tab,
-            indicator: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppRadius.input),
-              boxShadow: [
-                BoxShadow(
-                  color: isDark
-                      ? AppColors.shadowDark
-                      : const Color(0x18000000),
-                  blurRadius: isDark ? 14 : 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            splashFactory: NoSplash.splashFactory,
-            overlayColor: WidgetStateProperty.all(Colors.transparent),
-            tabs: [
-              for (var index = 0; index < tabs.length; index++)
-                Tab(
-                  height: 40,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SvgPicture.asset(
-                        tabs[index].assetPath,
-                        width: 18,
-                        height: 18,
-                        colorFilter: ColorFilter.mode(
-                          index == activeIndex ? activeColor : inactiveColor,
-                          BlendMode.srcIn,
-                        ),
+        return TabBar(
+          controller: controller,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+          tabs: [
+            for (var i = 0; i < tabs.length; i++)
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      tabs[i].assetPath,
+                      width: 18,
+                      height: 18,
+                      colorFilter: ColorFilter.mode(
+                        i == activeIndex ? cs.primary : cs.onSurfaceVariant,
+                        BlendMode.srcIn,
                       ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
-                          tabs[index].label,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: index == activeIndex
-                                ? activeColor
-                                : inactiveColor,
-                          ),
-                        ),
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        tabs[i].label,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-            ],
-          ),
+              ),
+          ],
         );
       },
     );

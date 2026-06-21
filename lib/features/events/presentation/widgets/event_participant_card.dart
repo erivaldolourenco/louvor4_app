@@ -52,7 +52,7 @@ class EventParticipantCard extends StatelessWidget {
                       ? appCachedImageProvider(profileImage)
                       : null,
                   child: profileImage == null
-                      ? const Icon(Icons.person, color: AppColors.primaryBright)
+                      ? const Icon(Icons.person, color: AppColors.primary)
                       : null,
                 ),
                 const SizedBox(width: 15),
@@ -69,7 +69,7 @@ class EventParticipantCard extends StatelessWidget {
                       ),
                       Text(
                         skill,
-                        style: TextStyle(color: subtitleColor, fontSize: 12),
+                        style: theme.textTheme.bodySmall?.copyWith(color: subtitleColor),
                       ),
                     ],
                   ),
@@ -85,9 +85,8 @@ class EventParticipantCard extends StatelessWidget {
                   ),
                   child: Text(
                     badge.label,
-                    style: TextStyle(
+                    style: theme.textTheme.labelSmall?.copyWith(
                       color: badge.foregroundColor,
-                      fontSize: 11,
                       fontWeight: FontWeight.w700,
                     ),
                   ),

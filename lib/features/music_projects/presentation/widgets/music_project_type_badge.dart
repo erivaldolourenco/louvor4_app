@@ -95,10 +95,8 @@ class _MusicProjectTypeBadgeState extends State<MusicProjectTypeBadge>
           const SizedBox(width: 6),
           Text(
             MusicProjectUiUtils.typeLabel(widget.type),
-            style: TextStyle(
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
               color: color,
-              fontWeight: FontWeight.w700,
-              fontSize: 12,
             ),
           ),
         ],

@@ -59,8 +59,7 @@ class AppFormSheet extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: TextStyle(
-                          fontSize: 24,
+                        style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w800,
                           color: titleColor,
                         ),
@@ -68,8 +67,7 @@ class AppFormSheet extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         subtitle,
-                        style: TextStyle(
-                          fontSize: 14,
+                        style: theme.textTheme.bodyMedium?.copyWith(
                           height: 1.4,
                           color: subtitleColor,
                         ),
@@ -104,7 +102,7 @@ class AppFormSheet extends StatelessWidget {
                       ),
                     ],
                   ),
-                  child: Icon(icon, size: 38, color: AppColors.primaryBright),
+                  child: Icon(icon, size: 38, color: AppColors.primary),
                 ),
               ),
             ),
@@ -151,7 +149,7 @@ InputDecoration appFormFieldDecoration(
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppRadius.input),
-      borderSide: const BorderSide(color: AppColors.primaryBright, width: 1.4),
+      borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppRadius.input),
@@ -171,7 +169,7 @@ ButtonStyle appPrimaryPillButtonStyle(BuildContext context) {
   return FilledButton.styleFrom(
     minimumSize: const Size.fromHeight(56),
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.input)),
-    backgroundColor: AppColors.primaryBright,
+    backgroundColor: AppColors.primary,
     foregroundColor: AppColors.onPrimary,
     elevation: isDark ? 0 : 6,
     shadowColor: isDark ? Colors.transparent : AppColors.primaryButtonShadow,
@@ -199,7 +197,7 @@ ButtonStyle appPrimaryPillButtonStyleCompact(BuildContext context) {
     minimumSize: const Size(0, 44),
     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.input)),
-    backgroundColor: AppColors.primaryBright,
+    backgroundColor: AppColors.primary,
     foregroundColor: AppColors.onPrimary,
     elevation: isDark ? 0 : 6,
     shadowColor: isDark ? Colors.transparent : AppColors.primaryButtonShadow,

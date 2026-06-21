@@ -132,9 +132,8 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                               : Center(
                                   child: Text(
                                     initial,
-                                    style: const TextStyle(
-                                      color: AppColors.primaryBright,
-                                      fontSize: 72,
+                                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                                      color: AppColors.primary,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
@@ -342,7 +341,7 @@ class _ProfilePermissionPill extends StatelessWidget {
         child: Text(
           value,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: AppColors.primaryBright,
+            color: AppColors.primary,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -484,7 +483,7 @@ class _ProfileSkillsBlock extends StatelessWidget {
                     child: Text(
                       skill,
                       style: theme.textTheme.titleSmall?.copyWith(
-                        color: AppColors.primaryBright,
+                        color: AppColors.primary,
                         fontWeight: FontWeight.w800,
                       ),
                     ),

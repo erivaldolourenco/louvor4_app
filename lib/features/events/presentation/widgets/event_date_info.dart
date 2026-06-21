@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_radius.dart';
 
 class EventDateInfo extends StatelessWidget {
@@ -48,6 +47,7 @@ class EventDateInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
     return Row(
       children: [
@@ -56,40 +56,40 @@ class EventDateInfo extends StatelessWidget {
           height: 42,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: AppColors.primarySubtleLight,
+            color: cs.primaryContainer,
             borderRadius: BorderRadius.circular(AppRadius.input),
-            border: Border.all(color: AppColors.primaryBorderLight),
+            border: Border.all(color: cs.primaryContainer),
           ),
           child: Text(
             date.day.toString(),
             style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: AppColors.primaryBorderDark,
+              fontWeight: FontWeight.w700,
+              color: cs.primaryContainer,
               height: 1,
             ),
           ),
         ),
-        const SizedBox(width: 10),
+        SizedBox(width: 10),
         Expanded(
           child: Text(
             '${getMonthName(date.month)} • ${getWeekDay(date)}',
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w700,
-              color: AppColors.borderSubtleDark,
+              color: cs.outlineVariant,
             ),
           ),
         ),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.surfaceSubtleLight,
+            color: cs.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
           child: Text(
             getRelativeTime(date),
             style: theme.textTheme.labelMedium?.copyWith(
               fontWeight: FontWeight.w700,
-              color: AppColors.textSubtleDark,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ),

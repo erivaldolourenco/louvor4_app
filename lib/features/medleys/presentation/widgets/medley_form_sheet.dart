@@ -282,16 +282,14 @@ class _MedleyFormPageState extends State<_MedleyFormPage> {
                     Expanded(
                       child: Text(
                         'Músicas do medley',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
+                        style: theme.textTheme.titleSmall?.copyWith(
                           color: theme.textTheme.bodyMedium?.color,
                         ),
                       ),
                     ),
                     Text(
                       '${_draftItems.length} ${_draftItems.length == 1 ? 'música' : 'músicas'}',
-                      style: const TextStyle(
+                      style: theme.textTheme.bodyMedium?.copyWith(
                         fontSize: 13,
                         color: AppColors.textMutedLight,
                       ),
@@ -398,7 +396,7 @@ class _DraftItemTile extends StatelessWidget {
             child: Center(
               child: Text(
                 '$index',
-                style: const TextStyle(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
                   color: AppColors.primary,
@@ -415,10 +413,7 @@ class _DraftItemTile extends StatelessWidget {
                   item.song.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
+                  style: Theme.of(context).textTheme.titleSmall,
                 ),
                 const SizedBox(height: 2),
                 Row(
@@ -476,7 +471,7 @@ class _MiniTag extends StatelessWidget {
         label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontSize: 11, color: AppColors.textSubtleDark),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textSubtleDark),
       ),
     );
   }
@@ -497,9 +492,7 @@ class _FieldLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
           color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
@@ -580,9 +573,12 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
             child: Row(
               children: [
-                const Text(
+                Text(
                   'Selecionar música',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const Spacer(),
                 IconButton(
@@ -624,7 +620,7 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: const BorderSide(
-                    color: AppColors.primaryBright,
+                    color: AppColors.primary,
                     width: 1.4,
                   ),
                 ),
@@ -698,9 +694,7 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
                           ),
                           child: Text(
                             song.key,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                            style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
                               color: AppColors.primary,
                             ),
                           ),
@@ -803,7 +797,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.input),
-        borderSide: const BorderSide(color: AppColors.primaryBright, width: 1.4),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.input),
@@ -874,8 +868,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                           widget.songTitle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 16,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
                           ),
@@ -886,7 +879,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                             widget.songArtist,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               fontSize: 13,
                               color: Colors.white70,
                               fontWeight: FontWeight.w500,
@@ -927,9 +920,9 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Sequência
-                    const Text(
+                    Text(
                       'Sequência *',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 6),
                     TextFormField(
@@ -946,9 +939,9 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                     const SizedBox(height: 14),
 
                     // Tom
-                    const Text(
+                    Text(
                       'Tom *',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 6),
                     TextFormField(
@@ -966,9 +959,9 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                     const SizedBox(height: 14),
 
                     // Observações
-                    const Text(
+                    Text(
                       'Observações (opcional)',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 13, fontWeight: FontWeight.w700),
                     ),
                     const SizedBox(height: 6),
                     TextFormField(
@@ -1029,7 +1022,7 @@ class _ThumbFallback extends StatelessWidget {
     return Container(
       color: isDark ? AppColors.surfaceElevatedDark : AppColors.primarySubtleLight,
       child: const Center(
-        child: Icon(Icons.music_note_rounded, color: AppColors.primaryBright, size: 48),
+        child: Icon(Icons.music_note_rounded, color: AppColors.primary, size: 48),
       ),
     );
   }

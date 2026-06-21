@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
 
 class StandardSectionAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -15,7 +14,7 @@ class StandardSectionAppBar extends StatelessWidget implements PreferredSizeWidg
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
     return AppBar(
       backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
       surfaceTintColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
@@ -25,13 +24,13 @@ class StandardSectionAppBar extends StatelessWidget implements PreferredSizeWidg
         children: [
           Text(
             title,
-            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 2),
+          SizedBox(height: 2),
           Text(
             subtitle,
             style: theme.textTheme.bodySmall?.copyWith(
-              color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+              color: cs.onSurfaceVariant,
             ),
           ),
         ],

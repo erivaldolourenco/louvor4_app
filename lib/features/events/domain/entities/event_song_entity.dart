@@ -10,6 +10,7 @@ class EventSong {
   final int? bpm;
   final String? youTubeUrl;
   final String? notes;
+  final String? referenceAudioUrl;
   final String addedBy;
   final SetlistItemType type;
   final MedleyEntity? medleyEntity;
@@ -22,6 +23,7 @@ class EventSong {
     this.bpm,
     this.youTubeUrl,
     this.notes,
+    this.referenceAudioUrl,
     required this.addedBy,
     this.type = SetlistItemType.song,
     this.medleyEntity,
@@ -63,6 +65,7 @@ class EventSong {
       bpm: _toInt(song['bpm']),
       youTubeUrl: song['youTubeUrl']?.toString(),
       notes: json['notes']?.toString(),
+      referenceAudioUrl: song['referenceAudioUrl']?.toString(),
       addedBy: json['addedBy']?.toString() ?? '',
     );
   }

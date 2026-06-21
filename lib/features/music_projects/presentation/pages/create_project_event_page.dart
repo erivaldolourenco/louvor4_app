@@ -98,7 +98,7 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
                   controller: _titleController,
                   enabled: !state.isSubmitting,
                   maxLength: 80,
-                  style: const TextStyle(fontSize: 15),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 15),
                   decoration: appFormFieldDecoration(
                     context,
                     hintText: 'Ex: Culto Domingo',
@@ -322,9 +322,7 @@ class _SectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
           color: Theme.of(context).textTheme.bodyMedium?.color,
         ),
       ),

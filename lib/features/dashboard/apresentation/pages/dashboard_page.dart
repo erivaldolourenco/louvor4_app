@@ -118,7 +118,7 @@ class _DashboardEventCard extends StatelessWidget {
             ),
             child: const Icon(
               Icons.calendar_month_rounded,
-              color: AppColors.primaryBright,
+              color: AppColors.primary,
             ),
           ),
           const SizedBox(width: 14),
@@ -165,7 +165,7 @@ class _DashboardEventCard extends StatelessWidget {
               _MetricBadge(
                 icon: Icons.groups_2_rounded,
                 value: participantsCount.toString(),
-                color: AppColors.primaryBright,
+                color: AppColors.primary,
               ),
               const SizedBox(height: 8),
               _MetricBadge(
@@ -225,7 +225,7 @@ class _MetricBadge extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           value,
-          style: TextStyle(
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: color,
             fontWeight: FontWeight.w800,
             fontSize: 18,

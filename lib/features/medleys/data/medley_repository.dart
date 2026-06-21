@@ -9,4 +9,6 @@ abstract class MedleyRepository {
   Future<MedleyEntity> updateMedley(String id, CreateMedleyInputEntity input);
 
   Future<void> deleteMedley(String id);
+
+  Future<void> uploadReferenceAudio(String id, String filePath);
 }

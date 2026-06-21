@@ -9,17 +9,17 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
   ForgotPasswordCubit(this._repo) : super(const ForgotPasswordState());
 
-  void emailChanged(String v) => emit(state.copyWith(email: v));
+  void identifierChanged(String v) => emit(state.copyWith(identifier: v));
   void selectChannel(String channel) => emit(state.copyWith(selectedChannel: channel));
   void codeChanged(String v) => emit(state.copyWith(code: v));
   void newPasswordChanged(String v) => emit(state.copyWith(newPassword: v));
 
   Future<void> loadChannels() async {
-    final email = state.email.trim();
-    if (email.isEmpty) {
+    final identifier = state.identifier.trim();
+    if (identifier.isEmpty) {
       emit(state.copyWith(
         status: ForgotPasswordStatus.failure,
-        errorMessage: 'Informe seu e-mail.',
+        errorMessage: 'Informe seu e-mail ou nome de usuário.',
       ));
       return;
     }
@@ -27,7 +27,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
     emit(state.copyWith(status: ForgotPasswordStatus.loading, errorMessage: null));
 
     try {
-      final channels = await _repo.getAvailableChannels(email);
+      final channels = await _repo.getAvailableChannels(identifier);
       emit(state.copyWith(
         status: ForgotPasswordStatus.channelsLoaded,
         step: 2,
@@ -49,7 +49,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     try {
       await _repo.forgotPassword(
-        email: state.email.trim(),
+        identifier: state.identifier.trim(),
         channel: state.selectedChannel,
       );
       emit(state.copyWith(status: ForgotPasswordStatus.codeSent, step: 3));
@@ -94,7 +94,7 @@ class ForgotPasswordCubit extends Cubit<ForgotPasswordState> {
 
     try {
       await _repo.resetPassword(
-        email: state.email.trim(),
+        identifier: state.identifier.trim(),
         code: code,
         newPassword: newPassword,
       );

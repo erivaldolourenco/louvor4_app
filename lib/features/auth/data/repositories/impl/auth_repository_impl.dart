@@ -80,11 +80,11 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<ForgotPasswordChannelsEntity> getAvailableChannels(String email) async {
+  Future<ForgotPasswordChannelsEntity> getAvailableChannels(String identifier) async {
     try {
       final response = await _dio.post(
         '/auth/forgot-password/channels',
-        data: {'email': email},
+        data: {'identifier': identifier},
       );
       final data = response.data as Map<String, dynamic>;
       return ForgotPasswordChannelsEntity(
@@ -99,9 +99,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> forgotPassword({required String email, required String channel}) async {
+  Future<void> forgotPassword({required String identifier, required String channel}) async {
     try {
-      await _dio.post('/auth/forgot-password', data: {'email': email, 'channel': channel});
+      await _dio.post('/auth/forgot-password', data: {'identifier': identifier, 'channel': channel});
     } on DioException catch (e) {
       final status = e.response?.statusCode;
       final message = _extractApiErrorMessage(e);
@@ -111,13 +111,13 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> resetPassword({
-    required String email,
+    required String identifier,
     required String code,
     required String newPassword,
   }) async {
     try {
       await _dio.post('/auth/reset-password', data: {
-        'email': email,
+        'identifier': identifier,
         'code': code,
         'newPassword': newPassword,
       });

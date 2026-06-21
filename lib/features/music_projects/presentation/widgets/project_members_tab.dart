@@ -772,9 +772,7 @@ class _FormSectionLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
           color: Theme.of(context).textTheme.bodyMedium?.color,
         ),
       ),
@@ -921,8 +919,8 @@ class _MemberAvatar extends StatelessWidget {
           : AppColors.primarySubtleLight,
       child: Text(
         initial.toUpperCase(),
-        style: const TextStyle(
-          color: AppColors.primaryBright,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          color: AppColors.primary,
           fontWeight: FontWeight.w800,
           fontSize: 18,
         ),
@@ -962,10 +960,8 @@ class _RoleBadge extends StatelessWidget {
       ),
       child: Text(
         role.label,
-        style: TextStyle(
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
           color: foreground,
-          fontWeight: FontWeight.w700,
-          fontSize: 12,
         ),
       ),
     );
@@ -995,12 +991,10 @@ class _SkillTag extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
           color: muted
               ? AppColors.textMutedDark
               : (isDark ? AppColors.borderLight : AppColors.borderSubtleDark),
-          fontWeight: FontWeight.w700,
-          fontSize: 12,
         ),
       ),
     );

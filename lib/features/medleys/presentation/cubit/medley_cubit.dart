@@ -104,4 +104,7 @@ class MedleyCubit extends Cubit<MedleyState> {
       return false;
     }
   }
+
+  Future<void> uploadReferenceAudio(String id, String filePath) =>
+      _repo.uploadReferenceAudio(id, filePath);
 }

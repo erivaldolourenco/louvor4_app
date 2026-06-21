@@ -8,4 +8,6 @@ abstract class SongsRepository {
   Future<SongEntity> getSongById(String id);
 
   Future<SongEntity> updateSong(SongEntity song);
+
+  Future<void> uploadReferenceAudio(String songId, String filePath);
 }

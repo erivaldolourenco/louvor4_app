@@ -240,15 +240,14 @@ class _ProjectEventCard extends StatelessWidget {
                     children: [
                       Text(
                         month,
-                        style: const TextStyle(
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w800,
-                          fontSize: 14,
-                          color: AppColors.primaryBright,
+                          color: AppColors.primary,
                         ),
                       ),
                       Text(
                         day,
-                        style: TextStyle(
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.w800,
                           fontSize: 30,
                           height: 1,
@@ -333,9 +332,7 @@ class _ProjectEventCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           '${event.participantsCount}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             color: AppColors.primary,
                           ),
                         ),
@@ -356,10 +353,8 @@ class _ProjectEventCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           '${event.repertoireCount}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                            color: Color(0xFFD97706),
+                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                            color: const Color(0xFFD97706),
                           ),
                         ),
                       ],

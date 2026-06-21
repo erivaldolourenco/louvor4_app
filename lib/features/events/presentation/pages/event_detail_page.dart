@@ -455,8 +455,7 @@ class _EventHeroCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
-                      fontSize: 22,
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.w800,
                       color: titleColor,
                       height: 1.15,
@@ -468,7 +467,7 @@ class _EventHeroCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       description!,
-                      style: TextStyle(
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: mutedColor,
                         fontSize: 15,
                         fontStyle: FontStyle.italic,
@@ -488,7 +487,7 @@ class _EventHeroCard extends StatelessWidget {
               children: [
                 Text(
                   '$date · $time',
-                  style: TextStyle(
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: mutedColor,
@@ -518,8 +517,7 @@ class _EventHeroCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             'Localização',
-                            style: TextStyle(
-                              fontSize: 12,
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
                               fontWeight: FontWeight.w600,
                               color: AppColors.primary,
                             ),
@@ -552,7 +550,7 @@ class _EventDetailTabLabel extends StatelessWidget {
       height: 40,
       child: Text(
         label,
-        style: TextStyle(
+        style: theme.textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w700,
           fontSize: 13,
           color: selected
@@ -961,7 +959,7 @@ class _RetryTabState extends StatelessWidget {
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: TextStyle(color: subtitleColor, fontSize: 13),
+            style: theme.textTheme.bodyMedium?.copyWith(fontSize: 13, color: subtitleColor),
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
@@ -1016,7 +1014,7 @@ class _EmptyTabState extends StatelessWidget {
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: TextStyle(color: subtitleColor, fontSize: 13),
+            style: theme.textTheme.bodyMedium?.copyWith(fontSize: 13, color: subtitleColor),
           ),
         ],
       ),

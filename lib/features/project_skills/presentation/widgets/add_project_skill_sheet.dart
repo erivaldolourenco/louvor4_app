@@ -84,9 +84,8 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
               const SizedBox(height: 6),
               Text(
                 'Selecione um ícone para a função.',
-                style: TextStyle(
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.error,
-                  fontSize: 12,
                 ),
               ),
             ],
@@ -237,8 +236,7 @@ class _IconPickerGrid extends StatelessWidget {
                 Text(
                   label,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 11,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: isSelected
                         ? AppColors.primary
@@ -267,9 +265,7 @@ class _FieldLabel extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w700,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
           color: Theme.of(context).textTheme.bodyMedium?.color,
         ),
       ),

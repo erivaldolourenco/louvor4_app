@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
@@ -108,7 +107,7 @@ class _ProjectSkillsView extends StatelessWidget {
                             Text(
                               'Funções',
                               style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(fontWeight: FontWeight.w800),
+                                  ?.copyWith(fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 2),
                             Text(
@@ -238,7 +237,7 @@ class _ProjectSkillCard extends StatelessWidget {
                 child: Text(
                   skill.name,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: titleColor,
                   ),
                 ),
@@ -314,6 +313,7 @@ class _ProjectSkillCard extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
+        final cs = Theme.of(context).colorScheme;
         return AlertDialog(
           title: const Text('Excluir função'),
           content: Text(
@@ -322,12 +322,12 @@ class _ProjectSkillCard extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Cancelar'),
+              child: Text('Cancelar'),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.danger,
+                backgroundColor: cs.error,
               ),
               child: const Text('Excluir'),
             ),

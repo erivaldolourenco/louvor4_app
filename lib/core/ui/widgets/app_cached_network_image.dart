@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
 import '../../utils/url_utils.dart';
 
 ImageProvider<Object>? appCachedImageProvider(String? imageUrl) {
@@ -29,8 +28,9 @@ class AppCachedNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final placeholderColor = isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight;
+    final placeholderColor = isDark ? cs.surfaceContainerLow : cs.outlineVariant;
 
     return CachedNetworkImage(
       imageUrl: imageUrl,
@@ -46,7 +46,7 @@ class AppCachedNetworkImage extends StatelessWidget {
             width: width,
             height: height,
             color: placeholderColor,
-            child: Icon(Icons.broken_image_outlined, color: AppColors.textMutedDark),
+            child: Icon(Icons.broken_image_outlined, color: cs.onSurfaceVariant),
           ),
     );
   }

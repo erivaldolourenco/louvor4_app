@@ -173,7 +173,7 @@ class RootBottomNavigationBar extends StatelessWidget {
             child: Center(
               child: Text(
                 badgeLabel,
-                style: const TextStyle(
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: Colors.white,
                   fontSize: 10,
                   fontWeight: FontWeight.w700,

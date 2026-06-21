@@ -10,12 +10,13 @@ BoxDecoration appCardDecoration(
   Color? borderColor,
   List<BoxShadow>? boxShadow,
 }) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
   return BoxDecoration(
-    color: color ?? (isDark ? AppColors.surfaceDark : AppColors.surfaceElevatedLight),
+    color: color ?? (cs.surfaceContainerLow),
     borderRadius: BorderRadius.circular(radius),
     border: Border.all(
-      color: borderColor ?? (isDark ? AppColors.borderStrongDark : AppColors.borderStrongLight),
+      color: borderColor ?? (cs.outline),
     ),
     boxShadow: boxShadow ?? [
       BoxShadow(

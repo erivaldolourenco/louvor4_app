@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../data/impl/music_projects_repository_impl.dart';
@@ -33,7 +32,7 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
           child: BlocBuilder<ProjectCubit, ProjectState>(
             builder: (context, state) {
               final theme = Theme.of(context);
-              final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
               final subtitleColor = theme.textTheme.bodyMedium?.color
                   ?.withValues(alpha: 0.75);
 
@@ -93,9 +92,7 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                     if (projects.isEmpty)
                       ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: isDark
-                              ? AppColors.primarySubtleDark
-                              : AppColors.primarySubtleLight,
+                          backgroundColor: cs.primaryContainer,
                           child: Icon(
                             Icons.add_rounded,
                             color: theme.colorScheme.primary,
@@ -126,16 +123,14 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                               ...projects.map((project) {
                                 final isActive = activeId == project.id;
                                 return AnimatedContainer(
-                                  duration: const Duration(milliseconds: 160),
+                                  duration: Duration(milliseconds: 160),
                                   margin: const EdgeInsets.symmetric(
                                     horizontal: 4,
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
                                     color: isActive
-                                        ? (isDark
-                                              ? AppColors.primarySubtleDark
-                                              : AppColors.primarySubtleLight)
+                                        ? (cs.primaryContainer)
                                         : Colors.transparent,
                                     borderRadius: BorderRadius.circular(AppRadius.input),
                                   ),
@@ -144,9 +139,7 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                                       borderRadius: BorderRadius.circular(AppRadius.input),
                                     ),
                                     leading: CircleAvatar(
-                                      backgroundColor: isDark
-                                          ? AppColors.primarySubtleDark
-                                          : AppColors.primarySubtleLight,
+                                      backgroundColor: cs.primaryContainer,
                                       backgroundImage:
                                           UrlUtils.isValidNetworkUrl(
                                             project.profileImage,
@@ -159,9 +152,9 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                                           !UrlUtils.isValidNetworkUrl(
                                             project.profileImage,
                                           )
-                                          ? const Icon(
+                                          ? Icon(
                                               Icons.multitrack_audio_rounded,
-                                              color: AppColors.primaryBright,
+                                              color: cs.primary,
                                             )
                                           : null,
                                     ),
@@ -191,12 +184,10 @@ Future<MusicProjectEntity?> showProjectSelector(BuildContext context) async {
                                   ),
                                 );
                               }),
-                              const Divider(height: 24),
+                              Divider(height: 24),
                               ListTile(
                                 leading: CircleAvatar(
-                                  backgroundColor: isDark
-                                      ? AppColors.primarySubtleDark
-                                      : AppColors.primarySubtleLight,
+                                  backgroundColor: cs.primaryContainer,
                                   child: Icon(
                                     Icons.add_rounded,
                                     color: theme.colorScheme.primary,

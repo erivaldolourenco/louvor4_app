@@ -45,8 +45,8 @@ class RootUserAvatar extends StatelessWidget {
       child: !hasProfileImage
           ? Text(
               _buildInitial(),
-              style: TextStyle(
-                color: AppColors.primaryBright,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: AppColors.primary,
                 fontSize: radius * 0.9,
                 fontWeight: FontWeight.w800,
               ),

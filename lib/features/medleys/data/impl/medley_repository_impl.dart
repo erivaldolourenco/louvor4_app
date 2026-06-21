@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 
 import '../../../../core/network/api_client.dart';
@@ -79,6 +81,26 @@ class MedleyRepositoryImpl implements MedleyRepository {
         _extractApiErrorMessage(
           e,
           fallback: 'Não foi possível remover o medley.',
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<void> uploadReferenceAudio(String id, String filePath) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          filePath,
+          filename: File(filePath).uri.pathSegments.last,
+        ),
+      });
+      await _dio.post('/medleys/$id/audio?type=REFERENCE', data: formData);
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível enviar o áudio de referência.',
         ),
       );
     }

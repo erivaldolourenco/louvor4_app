@@ -340,7 +340,7 @@ class _SongsContentState extends State<_SongsContent>
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppRadius.card),
                     borderSide: const BorderSide(
-                      color: AppColors.primaryBright,
+                      color: AppColors.primary,
                       width: 1.4,
                     ),
                   ),
@@ -374,13 +374,12 @@ class _SongsContentState extends State<_SongsContent>
                             Text(
                               'Nenhuma música encontrada\npara "$_searchQuery"',
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                 color: Theme.of(context)
                                     .textTheme
                                     .bodyMedium
                                     ?.color
                                     ?.withValues(alpha: 0.7),
-                                fontSize: 16,
                               ),
                             ),
                           ],
@@ -517,11 +516,10 @@ class _SongsTabBar extends StatelessWidget {
                 Tab(
                   child: Text(
                     'Músicas',
-                    style: TextStyle(
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       fontWeight: tabIndex == 0
                           ? FontWeight.w700
                           : FontWeight.w500,
-                      fontSize: 14,
                       color: tabIndex == 0
                           ? (isDark
                                 ? AppColors.surfaceElevatedLight
@@ -533,11 +531,10 @@ class _SongsTabBar extends StatelessWidget {
                 Tab(
                   child: Text(
                     'Medleys',
-                    style: TextStyle(
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       fontWeight: tabIndex == 1
                           ? FontWeight.w700
                           : FontWeight.w500,
-                      fontSize: 14,
                       color: tabIndex == 1
                           ? (isDark
                                 ? AppColors.surfaceElevatedLight

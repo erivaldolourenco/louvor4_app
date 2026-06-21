@@ -7,12 +7,12 @@ abstract class AuthRepository {
 
   Future<void> register(CreateUserInputEntity input);
 
-  Future<ForgotPasswordChannelsEntity> getAvailableChannels(String email);
+  Future<ForgotPasswordChannelsEntity> getAvailableChannels(String identifier);
 
-  Future<void> forgotPassword({required String email, required String channel});
+  Future<void> forgotPassword({required String identifier, required String channel});
 
   Future<void> resetPassword({
-    required String email,
+    required String identifier,
     required String code,
     required String newPassword,
   });

@@ -7,6 +7,7 @@ class MedleyEntity extends Equatable {
   final String name;
   final String? description;
   final String? notes;
+  final String? referenceAudioUrl;
   final List<MedleyItemEntity> items;
 
   const MedleyEntity({
@@ -14,6 +15,7 @@ class MedleyEntity extends Equatable {
     required this.name,
     this.description,
     this.notes,
+    this.referenceAudioUrl,
     this.items = const [],
   });
 
@@ -35,6 +37,7 @@ class MedleyEntity extends Equatable {
       name: (json['name'] ?? '').toString(),
       description: _normalizeOptional(json['description']),
       notes: _normalizeOptional(json['notes']),
+      referenceAudioUrl: _normalizeOptional(json['referenceAudioUrl']),
       items: items,
     );
   }
@@ -46,5 +49,5 @@ class MedleyEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, name, description, notes, items];
+  List<Object?> get props => [id, name, description, notes, referenceAudioUrl, items];
 }

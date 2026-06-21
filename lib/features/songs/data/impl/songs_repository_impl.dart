@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 
 import '../../../../core/network/api_client.dart';
@@ -50,6 +52,24 @@ class SongsRepositoryImpl implements SongsRepository {
       final response = await _dio.put('/songs/update', data: song.toJson());
       return SongEntity.fromJson(
         Map<String, dynamic>.from(response.data as Map),
+      );
+    } on DioException catch (e) {
+      throw Exception(_extractApiErrorMessage(e));
+    }
+  }
+
+  @override
+  Future<void> uploadReferenceAudio(String songId, String filePath) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          filePath,
+          filename: File(filePath).uri.pathSegments.last,
+        ),
+      });
+      await _dio.post(
+        '/songs/$songId/audio?type=REFERENCE',
+        data: formData,
       );
     } on DioException catch (e) {
       throw Exception(_extractApiErrorMessage(e));

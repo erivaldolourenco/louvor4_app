@@ -203,7 +203,7 @@ class _SongItemCard extends StatelessWidget {
                           ),
                           child: const Icon(
                             Icons.music_note_rounded,
-                            color: AppColors.primaryBright,
+                            color: AppColors.primary,
                             size: 26,
                           ),
                         ),
@@ -218,12 +218,12 @@ class _SongItemCard extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryBright,
+                          color: AppColors.primary,
                           borderRadius: BorderRadius.circular(AppRadius.badge),
                         ),
                         child: Text(
                           '${item.sequence}',
-                          style: const TextStyle(
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
                             color: Colors.white,
@@ -346,16 +346,13 @@ class _KeyChip extends StatelessWidget {
           children: [
             TextSpan(
               text: 'Tom ',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: mutedColor,
               ),
             ),
             TextSpan(
               text: label,
-              style: const TextStyle(
-                fontSize: 12,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: strongColor,
               ),

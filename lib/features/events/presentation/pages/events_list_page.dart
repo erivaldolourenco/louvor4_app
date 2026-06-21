@@ -146,20 +146,20 @@ class _HomeTabBar extends StatelessWidget {
         dividerColor: Colors.transparent,
         indicatorSize: TabBarIndicatorSize.tab,
         indicator: const UnderlineTabIndicator(
-          borderSide: BorderSide(color: AppColors.primaryBright, width: 3),
+          borderSide: BorderSide(color: AppColors.primary, width: 3),
           borderRadius: BorderRadius.all(Radius.circular(AppRadius.pill)),
         ),
         splashFactory: NoSplash.splashFactory,
         overlayColor: WidgetStateProperty.all(Colors.transparent),
-        labelStyle: const TextStyle(
+        labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.w700,
           fontSize: 15,
         ),
-        unselectedLabelStyle: const TextStyle(
+        unselectedLabelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.w500,
           fontSize: 15,
         ),
-        labelColor: AppColors.primaryBright,
+        labelColor: AppColors.primary,
         unselectedLabelColor: isDark
             ? AppColors.textSubtleDark
             : AppColors.textMutedDark,
@@ -411,7 +411,7 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
                   height: 10,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.primaryBright,
+                    color: AppColors.primary,
                   ),
                 ),
                 Expanded(child: Container(width: 2, color: lineColor)),

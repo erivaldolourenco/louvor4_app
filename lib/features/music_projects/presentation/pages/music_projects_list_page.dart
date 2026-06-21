@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/utils/url_utils.dart';
@@ -236,17 +235,17 @@ class _ProjectSelectableCard extends StatelessWidget {
     );
   }
 
-  Widget _avatarFallback([BuildContext? context]) {
-    final isDark = context != null
-        ? Theme.of(context).brightness == Brightness.dark
-        : false;
+  Widget _avatarFallback([BuildContext? ctx]) {
+    final cs = ctx != null
+        ? Theme.of(ctx).colorScheme
+        : const ColorScheme.light();
     return Container(
       width: 56,
       height: 56,
-      color: isDark ? AppColors.primarySubtleDark : AppColors.primarySubtleLight,
-      child: const Icon(
+      color: cs.primaryContainer,
+      child: Icon(
         Icons.multitrack_audio_rounded,
-        color: AppColors.primaryBright,
+        color: cs.primary,
         size: 24,
       ),
     );
@@ -260,6 +259,7 @@ class _CreateProjectCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Material(
@@ -273,8 +273,8 @@ class _CreateProjectCard extends StatelessWidget {
             context,
             radius: AppRadius.card,
             borderColor: isDark
-                ? const Color(0xFF3B82F6)
-                : AppColors.textMutedDark,
+                ? Color(0xFF3B82F6)
+                : cs.onSurfaceVariant,
             color: Theme.of(context).cardColor,
           ),
           child: Row(
@@ -283,12 +283,10 @@ class _CreateProjectCard extends StatelessWidget {
                 width: 34,
                 height: 34,
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.primarySubtleDark
-                      : AppColors.primarySubtleLight,
+                  color: cs.primaryContainer,
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
-                child: const Icon(Icons.add_rounded, color: AppColors.primaryBright),
+                child: Icon(Icons.add_rounded, color: cs.primary),
               ),
               const SizedBox(width: 10),
               Text(

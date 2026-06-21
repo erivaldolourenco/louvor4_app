@@ -132,10 +132,13 @@ class _CreateSongPageState extends State<CreateSongPage> {
                   style: appPrimaryPillButtonStyle(context),
                   onPressed: _isSaving || !_isFormValid ? null : _save,
                   child: _isSaving
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
                         )
                       : const Text('Adicionar Música'),
                 ),

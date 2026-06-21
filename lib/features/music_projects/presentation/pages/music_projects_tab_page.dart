@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../cubit/project_cubit.dart';
 import '../cubit/project_state.dart';
 import '../widgets/project_selector_bottom_sheet.dart';
@@ -40,6 +39,7 @@ class _EmptyProjectSelection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(
       alpha: 0.78,
     );
@@ -51,10 +51,10 @@ class _EmptyProjectSelection extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.folder_open_rounded,
                 size: 54,
-                color: AppColors.textMutedDark,
+                color: cs.onSurfaceVariant,
               ),
               const SizedBox(height: 10),
               Text(

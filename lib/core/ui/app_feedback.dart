@@ -10,6 +10,7 @@ class AppFeedback {
   static void showError(String message) {
     final context = navigatorKey.currentContext;
     if (context == null) return;
+    final cs = Theme.of(context).colorScheme;
 
     final messenger = ScaffoldMessenger.maybeOf(context);
     if (messenger == null) return;
@@ -17,7 +18,7 @@ class AppFeedback {
     messenger.showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.danger,
+        backgroundColor: cs.error,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -42,6 +43,7 @@ class AppFeedback {
   static void showInfo(String message) {
     final context = navigatorKey.currentContext;
     if (context == null) return;
+    final cs = Theme.of(context).colorScheme;
 
     final messenger = ScaffoldMessenger.maybeOf(context);
     if (messenger == null) return;
@@ -49,7 +51,7 @@ class AppFeedback {
     messenger.showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: AppColors.primary,
+        backgroundColor: cs.primary,
         behavior: SnackBarBehavior.floating,
       ),
     );

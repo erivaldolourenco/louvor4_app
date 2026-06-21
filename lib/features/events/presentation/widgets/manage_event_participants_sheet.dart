@@ -101,8 +101,7 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                                   children: [
                                     Text(
                                       'Gerenciar escala',
-                                      style: TextStyle(
-                                        fontSize: 22,
+                                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                         fontWeight: FontWeight.w800,
                                         color: titleColor,
                                       ),
@@ -112,9 +111,8 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                                       event.title,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                         color: subtitleColor,
-                                        fontSize: 14,
                                       ),
                                     ),
                                   ],
@@ -306,7 +304,7 @@ class _SelectableMemberCard extends StatelessWidget {
                     children: [
                       Text(
                         item.member.fullName,
-                        style: TextStyle(
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w700,
                           fontSize: 15,
                           color: titleColor,
@@ -315,7 +313,7 @@ class _SelectableMemberCard extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         item.member.projectRole ?? 'Membro',
-                        style: TextStyle(
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF71717A),
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
@@ -461,7 +459,7 @@ class _SkillOptionButton extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: TextStyle(
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: isSelected ? _selectedTextColor : _defaultTextColor,
               fontWeight: FontWeight.w700,
               fontSize: 15,

@@ -7,7 +7,7 @@ enum ForgotPasswordStatus { initial, loading, channelsLoaded, codeSent, success,
 class ForgotPasswordState extends Equatable {
   final ForgotPasswordStatus status;
   final int step; // 1: email, 2: escolha do canal, 3: código + nova senha
-  final String email;
+  final String identifier;
   final ForgotPasswordChannelsEntity? channels;
   final String selectedChannel; // 'EMAIL' ou 'SMS'
   final String code;
@@ -17,7 +17,7 @@ class ForgotPasswordState extends Equatable {
   const ForgotPasswordState({
     this.status = ForgotPasswordStatus.initial,
     this.step = 1,
-    this.email = '',
+    this.identifier = '',
     this.channels,
     this.selectedChannel = 'EMAIL',
     this.code = '',
@@ -30,7 +30,7 @@ class ForgotPasswordState extends Equatable {
   ForgotPasswordState copyWith({
     ForgotPasswordStatus? status,
     int? step,
-    String? email,
+    String? identifier,
     ForgotPasswordChannelsEntity? channels,
     String? selectedChannel,
     String? code,
@@ -40,7 +40,7 @@ class ForgotPasswordState extends Equatable {
     return ForgotPasswordState(
       status: status ?? this.status,
       step: step ?? this.step,
-      email: email ?? this.email,
+      identifier: identifier ?? this.identifier,
       channels: channels ?? this.channels,
       selectedChannel: selectedChannel ?? this.selectedChannel,
       code: code ?? this.code,
@@ -51,6 +51,6 @@ class ForgotPasswordState extends Equatable {
 
   @override
   List<Object?> get props => [
-    status, step, email, channels, selectedChannel, code, newPassword, errorMessage,
+    status, step, identifier, channels, selectedChannel, code, newPassword, errorMessage,
   ];
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../domain/entities/notification_item_entity.dart';
 
@@ -28,6 +27,7 @@ class NotificationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final hasActions = notification.canRespondToInvite;
     final canDismiss = !notification.canRespondToInvite && onDismiss != null;
@@ -36,10 +36,10 @@ class NotificationCard extends StatelessWidget {
       alpha: isDark ? 0.72 : 0.82,
     );
     final highlightColor = notification.isRead
-        ? (isDark ? AppColors.surfaceDark : Colors.white)
-        : (isDark ? const Color(0xFF0F274F) : const Color(0xFFF4F8FF));
+        ? (isDark ? cs.surface : Colors.white)
+        : (isDark ? Color(0xFF0F274F) : const Color(0xFFF4F8FF));
     final badgeColor = notification.isRead
-        ? AppColors.textMutedDark
+        ? cs.onSurfaceVariant
         : theme.colorScheme.primary;
 
     return AppCardSurface(
@@ -97,11 +97,11 @@ class NotificationCard extends StatelessWidget {
                 height: 1.35,
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
             Text(
               _formatDateTime(notification.createdAt),
               style: theme.textTheme.bodySmall?.copyWith(
-                color: AppColors.textMutedLight,
+                color: cs.onSurfaceVariant,
                 fontWeight: FontWeight.w500,
               ),
             ),

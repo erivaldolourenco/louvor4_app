@@ -124,16 +124,14 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                       const SizedBox(height: 20),
                       Text(
                         'Adicionar ao repertório',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
+                        style: theme.textTheme.titleLarge?.copyWith(
                           color: titleColor,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Selecione músicas avulsas ou medleys para adicionar ao evento.',
-                        style: TextStyle(fontSize: 14, color: subtitleColor),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: subtitleColor),
                       ),
                       const SizedBox(height: 16),
                       // Tab bar
@@ -292,7 +290,7 @@ class _TabLabel extends StatelessWidget {
       height: 38,
       child: Text(
         label,
-        style: TextStyle(
+        style: theme.textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.w700,
           fontSize: 15,
           color: selected
@@ -513,7 +511,7 @@ class _SelectableMedleyCard extends StatelessWidget {
                             medley.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                               fontWeight: FontWeight.w800,
                               fontSize: 15,
                               color: titleColor,
@@ -525,7 +523,7 @@ class _SelectableMedleyCard extends StatelessWidget {
                               medley.description!,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 fontSize: 13,
                                 color: subtitleColor,
                               ),
@@ -550,9 +548,7 @@ class _SelectableMedleyCard extends StatelessWidget {
                             ),
                             child: Text(
                               '$count ${count == 1 ? 'música' : 'músicas'}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
+                              style: Theme.of(context).textTheme.labelMedium?.copyWith(
                                 color: subtitleColor,
                               ),
                             ),
@@ -662,7 +658,7 @@ class _SelectableSongCard extends StatelessWidget {
                             song.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
+                            style: theme.textTheme.bodyLarge?.copyWith(
                               fontWeight: FontWeight.w800,
                               fontSize: 15,
                               color: titleColor,
@@ -743,9 +739,7 @@ class _MetaBadge extends StatelessWidget {
           ],
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
               color: textColor,
             ),
           ),
@@ -773,9 +767,7 @@ class _EmptySongsState extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               'Nenhuma música cadastrada',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: titleColor,
               ),
             ),
@@ -810,9 +802,7 @@ class _EmptyMedleysState extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               'Nenhum medley cadastrado',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: titleColor,
               ),
             ),

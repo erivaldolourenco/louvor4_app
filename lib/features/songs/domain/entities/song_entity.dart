@@ -8,6 +8,7 @@ class SongEntity extends Equatable {
   final String? bpm;
   final String youTubeUrl;
   final String? notes;
+  final String? referenceAudioUrl;
 
   const SongEntity({
     this.id,
@@ -17,6 +18,7 @@ class SongEntity extends Equatable {
     this.bpm,
     required this.youTubeUrl,
     this.notes,
+    this.referenceAudioUrl,
   });
 
   factory SongEntity.fromJson(Map<String, dynamic> json) {
@@ -28,6 +30,7 @@ class SongEntity extends Equatable {
       bpm: _normalizeOptionalValue(json['bpm']),
       youTubeUrl: (json['youTubeUrl'] ?? json['youtubeUrl'] ?? '').toString(),
       notes: _normalizeOptionalValue(json['notes']),
+      referenceAudioUrl: _normalizeOptionalValue(json['referenceAudioUrl']),
     );
   }
 
@@ -40,6 +43,8 @@ class SongEntity extends Equatable {
       if (bpm != null && bpm!.isNotEmpty) 'bpm': bpm,
       'youTubeUrl': youTubeUrl,
       if (notes != null && notes!.isNotEmpty) 'notes': notes,
+      if (referenceAudioUrl != null && referenceAudioUrl!.isNotEmpty)
+        'referenceAudioUrl': referenceAudioUrl,
     };
   }
 
@@ -50,5 +55,5 @@ class SongEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, artist, title, key, bpm, youTubeUrl, notes];
+  List<Object?> get props => [id, artist, title, key, bpm, youTubeUrl, notes, referenceAudioUrl];
 }

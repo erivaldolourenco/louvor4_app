@@ -57,7 +57,7 @@ class EventListCard extends StatelessWidget {
                       height: 10,
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.primaryBright,
+                        color: AppColors.primary,
                       ),
                     ),
                     Expanded(
@@ -109,7 +109,7 @@ class EventListCard extends StatelessWidget {
                                         : AppColors.primarySubtleLight,
                                     child: const Icon(
                                       Icons.music_note,
-                                      color: AppColors.primaryBright,
+                                      color: AppColors.primary,
                                       size: 30,
                                     ),
                                   ),
@@ -122,7 +122,7 @@ class EventListCard extends StatelessWidget {
                                       : AppColors.primarySubtleLight,
                                   child: const Icon(
                                     Icons.music_note,
-                                    color: AppColors.primaryBright,
+                                    color: AppColors.primary,
                                     size: 30,
                                   ),
                                 ),
@@ -135,9 +135,7 @@ class EventListCard extends StatelessWidget {
                             children: [
                               Text(
                                 event.title,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16,
+                                style: theme.textTheme.titleMedium?.copyWith(
                                   color: isDark
                                       ? AppColors.surfaceElevatedLight
                                       : AppColors.surfaceElevatedDark,
@@ -148,7 +146,7 @@ class EventListCard extends StatelessWidget {
                               const SizedBox(height: 6),
                               Text(
                                 '$timeDisplay • ${event.location ?? 'Local não informado'}',
-                                style: TextStyle(
+                                style: theme.textTheme.bodyMedium?.copyWith(
                                   fontSize: 13,
                                   color: isDark
                                       ? AppColors.borderSubtleLight

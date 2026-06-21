@@ -304,16 +304,13 @@ class _InfoChip extends StatelessWidget {
           children: [
             TextSpan(
               text: '$label ',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 color: labelColor,
               ),
             ),
             TextSpan(
               text: value,
-              style: TextStyle(
-                fontSize: 12,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: valueColor,
               ),
