@@ -336,28 +336,51 @@ class _SongsTab extends StatelessWidget {
 
         return Column(
           children: [
-            TextField(
-              controller: searchController,
-              onChanged: onSearchChanged,
-              decoration: InputDecoration(
-                hintText: 'Buscar por título ou artista...',
-                prefixIcon: const Icon(Icons.search_rounded),
-                suffixIcon: searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded),
-                        onPressed: onClearSearch,
-                      )
-                    : null,
-                filled: true,
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 16,
-                ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.card),
-                  borderSide: BorderSide.none,
-                ),
-              ),
+            Builder(
+              builder: (context) {
+                final cs = Theme.of(context).colorScheme;
+                return TextField(
+                  controller: searchController,
+                  onChanged: onSearchChanged,
+                  decoration: InputDecoration(
+                    hintText: 'Buscar por título ou artista...',
+                    hintStyle: TextStyle(color: cs.onSurfaceVariant),
+                    prefixIcon: const Icon(Icons.search_rounded),
+                    suffixIcon: searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear_rounded),
+                            onPressed: onClearSearch,
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: cs.surfaceContainerLow,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 12,
+                      horizontal: 16,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.input),
+                      borderSide: BorderSide(color: cs.outlineVariant),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.input),
+                      borderSide: BorderSide(color: cs.outlineVariant),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.input),
+                      borderSide: BorderSide(color: cs.primary, width: 1.5),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.input),
+                      borderSide: BorderSide(color: cs.error),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppRadius.input),
+                      borderSide: BorderSide(color: cs.error, width: 1.5),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 12),
             Expanded(

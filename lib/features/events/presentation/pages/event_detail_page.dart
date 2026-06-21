@@ -195,10 +195,7 @@ class _EventDetailViewState extends State<_EventDetailView>
                   ),
                 ),
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                    child: _EventDetailTabs(controller: _tabController),
-                  ),
+                  child: _EventDetailTabs(controller: _tabController),
                 ),
               ];
             },
@@ -372,49 +369,15 @@ class _EventDetailTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return AnimatedBuilder(
-      animation: controller.animation ?? controller,
-      builder: (context, child) {
-        final tabIndex =
-            controller.animation?.value.round() ?? controller.index;
-
-        return Container(
-          padding: const EdgeInsets.all(2.5),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight,
-            borderRadius: BorderRadius.circular(AppRadius.input),
-          ),
-          child: TabBar(
-            controller: controller,
-            dividerColor: Colors.transparent,
-            indicatorSize: TabBarIndicatorSize.tab,
-            indicator: BoxDecoration(
-              color: isDark ? AppColors.surfaceDark : Colors.white,
-              borderRadius: BorderRadius.circular(AppRadius.input),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.05),
-                  blurRadius: isDark ? 14 : 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            splashFactory: NoSplash.splashFactory,
-            overlayColor: WidgetStateProperty.all(Colors.transparent),
-            tabs: [
-              _EventDetailTabLabel(label: 'Equipe', selected: tabIndex == 0),
-              _EventDetailTabLabel(label: 'Músicas', selected: tabIndex == 1),
-              _EventDetailTabLabel(
-                label: 'Programação',
-                selected: tabIndex == 2,
-              ),
-            ],
-          ),
-        );
-      },
+    return TabBar(
+      controller: controller,
+      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+      tabs: const [
+        Tab(text: 'Equipe'),
+        Tab(text: 'Músicas'),
+        Tab(text: 'Programação'),
+      ],
     );
   }
 }
@@ -531,35 +494,6 @@ class _EventHeroCard extends StatelessWidget {
             ),
           ],
         ),
-    );
-  }
-}
-
-class _EventDetailTabLabel extends StatelessWidget {
-  final String label;
-  final bool selected;
-
-  const _EventDetailTabLabel({required this.label, required this.selected});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    return Tab(
-      height: 40,
-      child: Text(
-        label,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          fontWeight: FontWeight.w700,
-          fontSize: 13,
-          color: selected
-              ? theme.colorScheme.primary
-              : (isDark
-                    ? AppColors.textMutedDark
-                    : AppColors.textMutedLight),
-        ),
-      ),
     );
   }
 }

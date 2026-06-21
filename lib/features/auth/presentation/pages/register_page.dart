@@ -110,74 +110,65 @@ class _RegisterViewState extends State<_RegisterView> {
                         const SizedBox(height: 24),
                         const Divider(indent: 120, endIndent: 120),
                         const SizedBox(height: 28),
-                        const _FieldLabel(label: 'Nome'),
                         TextFormField(
                           controller: _firstNameController,
                           textInputAction: TextInputAction.next,
                           maxLength: 100,
                           onChanged: (_) => _onFormChanged(),
-                          decoration: appFormFieldDecoration(
-                            context,
-                            hintText: 'Digite seu nome',
-                            prefixIcon: Icons.badge_outlined,
+                          decoration: const InputDecoration(
+                            labelText: 'Nome',
+                            prefixIcon: Icon(Icons.badge_outlined),
                           ),
                           validator: _validateFirstName,
                         ),
                         const SizedBox(height: 12),
-                        const _FieldLabel(label: 'Sobrenome'),
                         TextFormField(
                           controller: _lastNameController,
                           textInputAction: TextInputAction.next,
                           maxLength: 100,
                           onChanged: (_) => _onFormChanged(),
-                          decoration: appFormFieldDecoration(
-                            context,
-                            hintText: 'Digite seu sobrenome',
-                            prefixIcon: Icons.badge_rounded,
+                          decoration: const InputDecoration(
+                            labelText: 'Sobrenome',
+                            prefixIcon: Icon(Icons.badge_rounded),
                           ),
                           validator: _validateLastName,
                         ),
                         const SizedBox(height: 12),
-                        const _FieldLabel(label: 'Usuário'),
                         TextFormField(
                           controller: _usernameController,
                           textInputAction: TextInputAction.next,
                           maxLength: 255,
                           onChanged: (_) => _onFormChanged(),
-                          decoration: appFormFieldDecoration(
-                            context,
-                            hintText: 'Escolha seu usuário',
-                            prefixIcon: Icons.person_outline_rounded,
+                          decoration: const InputDecoration(
+                            labelText: 'Usuário',
+                            prefixIcon: Icon(Icons.person_outline_rounded),
                           ),
                           validator: _validateUsername,
                         ),
                         const SizedBox(height: 12),
-                        const _FieldLabel(label: 'Email'),
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
                           textInputAction: TextInputAction.next,
                           maxLength: 255,
                           onChanged: (_) => _onFormChanged(),
-                          decoration: appFormFieldDecoration(
-                            context,
+                          decoration: const InputDecoration(
+                            labelText: 'Email',
                             hintText: 'voce@email.com',
-                            prefixIcon: Icons.email_outlined,
+                            prefixIcon: Icon(Icons.email_outlined),
                           ),
                           validator: _validateEmail,
                         ),
                         const SizedBox(height: 12),
-                        const _FieldLabel(label: 'Senha'),
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           textInputAction: TextInputAction.next,
                           maxLength: 255,
                           onChanged: (_) => _onFormChanged(),
-                          decoration: appFormFieldDecoration(
-                            context,
-                            hintText: 'Crie uma senha',
-                            prefixIcon: Icons.lock_outline_rounded,
+                          decoration: InputDecoration(
+                            labelText: 'Senha',
+                            prefixIcon: const Icon(Icons.lock_outline_rounded),
                             suffixIcon: IconButton(
                               onPressed: () => setState(
                                 () => _obscurePassword = !_obscurePassword,
@@ -192,17 +183,15 @@ class _RegisterViewState extends State<_RegisterView> {
                           validator: _validatePassword,
                         ),
                         const SizedBox(height: 12),
-                        const _FieldLabel(label: 'Confirmar senha'),
                         TextFormField(
                           controller: _confirmPasswordController,
                           obscureText: _obscureConfirmPassword,
                           textInputAction: TextInputAction.done,
                           maxLength: 255,
                           onChanged: (_) => _onFormChanged(),
-                          decoration: appFormFieldDecoration(
-                            context,
-                            hintText: 'Digite novamente sua senha',
-                            prefixIcon: Icons.lock_reset_rounded,
+                          decoration: InputDecoration(
+                            labelText: 'Confirmar senha',
+                            prefixIcon: const Icon(Icons.lock_reset_rounded),
                             suffixIcon: IconButton(
                               onPressed: () => setState(
                                 () => _obscureConfirmPassword =
@@ -366,21 +355,3 @@ class _RegisterViewState extends State<_RegisterView> {
   }
 }
 
-class _FieldLabel extends StatelessWidget {
-  final String label;
-
-  const _FieldLabel({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).textTheme.bodyMedium?.color,
-        ),
-      ),
-    );
-  }
-}

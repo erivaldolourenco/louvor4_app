@@ -354,29 +354,22 @@ class _DateField extends StatelessWidget {
         ? AppColors.textMutedDark
         : AppColors.textMutedLight;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _FieldLabel(label: label),
-        InkWell(
-          onTap: enabled ? onTap : null,
-          borderRadius: BorderRadius.circular(22),
-          child: InputDecorator(
-            decoration: appFormFieldDecoration(
-              context,
-              hintText: '',
-              prefixIcon: icon,
-            ),
-            child: Text(
-              value,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: value == 'Selecionar data' ? mutedColor : textColor,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+    return InkWell(
+      onTap: enabled ? onTap : null,
+      borderRadius: BorderRadius.circular(22),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon),
+        ),
+        child: Text(
+          value,
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: value == 'Selecionar data' ? mutedColor : textColor,
+            fontWeight: FontWeight.w600,
           ),
         ),
-      ],
+      ),
     );
   }
 }

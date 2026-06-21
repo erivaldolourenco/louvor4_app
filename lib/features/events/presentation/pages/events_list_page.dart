@@ -131,43 +131,14 @@ class _HomeTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.scaffoldDark : Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: isDark ? AppColors.borderDark : AppColors.borderLight,
-          ),
-        ),
-      ),
-      child: TabBar(
-        controller: controller,
-        dividerColor: Colors.transparent,
-        indicatorSize: TabBarIndicatorSize.tab,
-        indicator: const UnderlineTabIndicator(
-          borderSide: BorderSide(color: AppColors.primary, width: 3),
-          borderRadius: BorderRadius.all(Radius.circular(AppRadius.pill)),
-        ),
-        splashFactory: NoSplash.splashFactory,
-        overlayColor: WidgetStateProperty.all(Colors.transparent),
-        labelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w700,
-          fontSize: 15,
-        ),
-        unselectedLabelStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-          fontSize: 15,
-        ),
-        labelColor: AppColors.primary,
-        unselectedLabelColor: isDark
-            ? AppColors.textSubtleDark
-            : AppColors.textMutedDark,
-        tabs: const [
-          Tab(height: 46, text: 'Próximos'),
-          Tab(height: 46, text: 'Passados'),
-        ],
-      ),
+    return TabBar.secondary(
+      controller: controller,
+      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+      tabs: const [
+        Tab(text: 'Próximos'),
+        Tab(text: 'Passados'),
+      ],
     );
   }
 }

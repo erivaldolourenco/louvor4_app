@@ -302,17 +302,13 @@ class _SongsContentState extends State<_SongsContent>
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
           child: Builder(
             builder: (context) {
-              final isDark = Theme.of(context).brightness == Brightness.dark;
-              final borderColor = isDark
-                  ? AppColors.borderStrongDark
-                  : AppColors.borderStrongLight;
-              final fillColor = isDark ? AppColors.surfaceDark : Colors.white;
-
+              final cs = Theme.of(context).colorScheme;
               return TextField(
                 controller: _searchController,
                 onChanged: (value) => setState(() => _searchQuery = value),
                 decoration: InputDecoration(
                   hintText: 'Buscar por título ou artista...',
+                  hintStyle: TextStyle(color: cs.onSurfaceVariant),
                   prefixIcon: const Icon(Icons.search_rounded),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
@@ -324,25 +320,30 @@ class _SongsContentState extends State<_SongsContent>
                         )
                       : null,
                   filled: true,
-                  fillColor: fillColor,
+                  fillColor: cs.surfaceContainerLow,
                   contentPadding: const EdgeInsets.symmetric(
                     vertical: 12,
                     horizontal: 16,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.card),
-                    borderSide: BorderSide(color: borderColor),
+                    borderRadius: BorderRadius.circular(AppRadius.input),
+                    borderSide: BorderSide(color: cs.outlineVariant),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.card),
-                    borderSide: BorderSide(color: borderColor),
+                    borderRadius: BorderRadius.circular(AppRadius.input),
+                    borderSide: BorderSide(color: cs.outlineVariant),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.card),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
-                      width: 1.4,
-                    ),
+                    borderRadius: BorderRadius.circular(AppRadius.input),
+                    borderSide: BorderSide(color: cs.primary, width: 1.5),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.input),
+                    borderSide: BorderSide(color: cs.error),
+                  ),
+                  focusedErrorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.input),
+                    borderSide: BorderSide(color: cs.error, width: 1.5),
                   ),
                 ),
               );
@@ -474,80 +475,14 @@ class _SongsTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Container(
-      color: isDark ? AppColors.scaffoldDark : Colors.white,
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-      child: AnimatedBuilder(
-        animation: controller.animation ?? controller,
-        builder: (context, _) {
-          final tabIndex =
-              controller.animation?.value.round() ?? controller.index;
-
-          return Container(
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? AppColors.surfaceElevatedDark
-                  : AppColors.borderLight,
-              borderRadius: BorderRadius.circular(AppRadius.input),
-            ),
-            child: TabBar(
-              controller: controller,
-              dividerColor: Colors.transparent,
-              indicatorSize: TabBarIndicatorSize.tab,
-              indicator: BoxDecoration(
-                color: isDark ? AppColors.surfaceDark : Colors.white,
-                borderRadius: BorderRadius.circular(11),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(
-                      alpha: isDark ? 0.18 : 0.05,
-                    ),
-                    blurRadius: isDark ? 14 : 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              splashFactory: NoSplash.splashFactory,
-              overlayColor: WidgetStateProperty.all(Colors.transparent),
-              tabs: [
-                Tab(
-                  child: Text(
-                    'Músicas',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: tabIndex == 0
-                          ? FontWeight.w700
-                          : FontWeight.w500,
-                      color: tabIndex == 0
-                          ? (isDark
-                                ? AppColors.surfaceElevatedLight
-                                : AppColors.scaffoldDark)
-                          : AppColors.textMutedLight,
-                    ),
-                  ),
-                ),
-                Tab(
-                  child: Text(
-                    'Medleys',
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontWeight: tabIndex == 1
-                          ? FontWeight.w700
-                          : FontWeight.w500,
-                      color: tabIndex == 1
-                          ? (isDark
-                                ? AppColors.surfaceElevatedLight
-                                : AppColors.scaffoldDark)
-                          : AppColors.textMutedLight,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+    return TabBar(
+      controller: controller,
+      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+      tabs: const [
+        Tab(text: 'Músicas'),
+        Tab(text: 'Medleys'),
+      ],
     );
   }
 }

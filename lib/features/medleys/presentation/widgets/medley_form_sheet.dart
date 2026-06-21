@@ -781,27 +781,32 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
     super.dispose();
   }
 
-  InputDecoration _fieldDecoration(bool isDark, {String? hint, int maxLines = 1}) {
-    final borderColor = isDark ? AppColors.borderSubtleDark : AppColors.borderLight;
+  InputDecoration _fieldDecoration({String? hint, int maxLines = 1}) {
+    final cs = Theme.of(context).colorScheme;
     return InputDecoration(
       hintText: hint,
+      hintStyle: TextStyle(color: cs.onSurfaceVariant),
       filled: true,
-      fillColor: isDark ? AppColors.scaffoldDark : AppColors.surfaceElevatedLight,
+      fillColor: cs.surfaceContainerLow,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.input),
-        borderSide: BorderSide(color: borderColor),
+        borderSide: BorderSide(color: cs.outlineVariant),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.input),
-        borderSide: BorderSide(color: borderColor),
+        borderSide: BorderSide(color: cs.outlineVariant),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.input),
-        borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
+        borderSide: BorderSide(color: cs.primary, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppRadius.input),
-        borderSide: const BorderSide(color: AppColors.dangerBright),
+        borderSide: BorderSide(color: cs.error),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.input),
+        borderSide: BorderSide(color: cs.error, width: 1.5),
       ),
       contentPadding: EdgeInsets.symmetric(
         horizontal: 14,
@@ -929,7 +934,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                       controller: _sequenceCtrl,
                       keyboardType: TextInputType.number,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: _fieldDecoration(isDark, hint: 'Ex: 1, 2, 3…'),
+                      decoration: _fieldDecoration(hint: 'Ex: 1, 2, 3…'),
                       validator: (v) {
                         final n = int.tryParse((v ?? '').trim());
                         if (n == null || n < 1) return 'Informe um número maior que 0.';
@@ -947,7 +952,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                     TextFormField(
                       controller: _keyCtrl,
                       autocorrect: false,
-                      decoration: _fieldDecoration(isDark, hint: 'Ex: C, D#, Ebm, Am'),
+                      decoration: _fieldDecoration(hint: 'Ex: C, D#, Ebm, Am'),
                       validator: (v) {
                         if ((v ?? '').trim().isEmpty) return 'Tom é obrigatório.';
                         if (!_keyRegex.hasMatch(v!.trim())) {
@@ -967,7 +972,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                     TextFormField(
                       controller: _notesCtrl,
                       maxLines: 3,
-                      decoration: _fieldDecoration(isDark, hint: 'Ex: Entrar no refrão...', maxLines: 3),
+                      decoration: _fieldDecoration(hint: 'Ex: Entrar no refrão...', maxLines: 3),
                     ),
                   ],
                 ),

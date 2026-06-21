@@ -127,26 +127,22 @@ class _LoginViewState extends State<_LoginView> {
                     const SizedBox(height: 24),
                     const Divider(indent: 120, endIndent: 120),
                     const SizedBox(height: 28),
-                    const _FieldLabel(label: 'Usuário'),
                     TextField(
                       controller: _userCtrl,
-                      decoration: appFormFieldDecoration(
-                        context,
-                        hintText: 'Digite seu usuário',
-                        prefixIcon: Icons.person_outline_rounded,
+                      decoration: const InputDecoration(
+                        labelText: 'Usuário',
+                        prefixIcon: Icon(Icons.person_outline_rounded),
                       ),
                       onChanged: (v) =>
                           context.read<LoginCubit>().usernameChanged(v),
                     ),
                     const SizedBox(height: 12),
-                    const _FieldLabel(label: 'Senha'),
                     TextField(
                       controller: _passCtrl,
                       obscureText: _obscure,
-                      decoration: appFormFieldDecoration(
-                        context,
-                        hintText: 'Digite sua senha',
-                        prefixIcon: Icons.lock_outline_rounded,
+                      decoration: InputDecoration(
+                        labelText: 'Senha',
+                        prefixIcon: const Icon(Icons.lock_outline_rounded),
                         suffixIcon: IconButton(
                           onPressed: () => setState(() => _obscure = !_obscure),
                           icon: Icon(
@@ -216,21 +212,3 @@ class _LoginViewState extends State<_LoginView> {
   }
 }
 
-class _FieldLabel extends StatelessWidget {
-  final String label;
-
-  const _FieldLabel({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
-      ),
-    );
-  }
-}
