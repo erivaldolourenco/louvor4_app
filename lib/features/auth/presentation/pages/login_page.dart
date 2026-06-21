@@ -11,6 +11,7 @@ import '../../../root/presentation/pages/root_page.dart';
 import '../../data/repositories/impl/auth_repository_impl.dart';
 import '../cubit/login_cubit.dart';
 import '../cubit/login_state.dart';
+import 'forgot_password_page.dart';
 import 'register_page.dart';
 
 class LoginPage extends StatelessWidget {
@@ -160,7 +161,7 @@ class _LoginViewState extends State<_LoginView> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: () => openForgotPasswordPage(context),
                         child: const Text('Esqueceu a senha?'),
                       ),
                     ),
