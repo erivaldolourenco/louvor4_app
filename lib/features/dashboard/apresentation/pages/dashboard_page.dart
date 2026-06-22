@@ -12,7 +12,6 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return RepositoryProvider(
       create: (_) => EventsRepositoryImpl(),
       child: BlocProvider(
@@ -133,7 +132,7 @@ class _DashboardEventCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: cs.surface,
+                    color: cs.onSurface,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -172,7 +171,7 @@ class _DashboardEventCard extends StatelessWidget {
               _MetricBadge(
                 icon: Icons.music_note_rounded,
                 value: repertoireCount.toString(),
-                color: cs.onSecondaryContainer,
+                color: cs.secondary,
               ),
             ],
           ),
@@ -220,7 +219,6 @@ class _MetricBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -231,7 +229,6 @@ class _MetricBadge extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: color,
             fontWeight: FontWeight.w700,
-            fontSize: 18,
           ),
         ),
       ],

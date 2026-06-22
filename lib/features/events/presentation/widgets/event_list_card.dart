@@ -25,7 +25,7 @@ class EventListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-  final cs = theme.colorScheme;
+    final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final timeDisplay = event.time.length >= 5
         ? event.time.substring(0, 5)
@@ -136,9 +136,7 @@ class EventListCard extends StatelessWidget {
                               Text(
                                 event.title,
                                 style: theme.textTheme.titleMedium?.copyWith(
-                                  color: isDark
-                                      ? cs.surfaceContainer
-                                      : cs.surfaceContainer,
+                                  color: cs.onSurface,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -148,9 +146,7 @@ class EventListCard extends StatelessWidget {
                                 '$timeDisplay • ${event.location ?? 'Local não informado'}',
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   fontSize: 13,
-                                  color: isDark
-                                      ? cs.outlineVariant
-                                      : cs.onSurfaceVariant,
+                                  color: cs.onSurfaceVariant,
                                   fontWeight: FontWeight.w500,
                                 ),
                                 maxLines: 1,
@@ -201,9 +197,7 @@ class EventListCard extends StatelessWidget {
                         const SizedBox(width: 6),
                         Icon(
                           Icons.chevron_right_rounded,
-                          color: isDark
-                              ? cs.onSurfaceVariant
-                              : cs.onSurfaceVariant,
+                          color: cs.onSurfaceVariant,
                         ),
                       ],
                     ),
