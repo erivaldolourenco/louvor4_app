@@ -106,9 +106,9 @@ abstract final class AppTheme {
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return TextStyle(color: cs.onSurface, fontWeight: FontWeight.w700, fontSize: 12);
+            return TextStyle(color: cs.onSurface, fontWeight: FontWeight.w700, fontSize: 12, fontFamily: 'Outfit');
           }
-          return TextStyle(color: cs.onSurfaceVariant, fontWeight: FontWeight.w500, fontSize: 12);
+          return TextStyle(color: cs.onSurfaceVariant, fontWeight: FontWeight.w500, fontSize: 12, fontFamily: 'Outfit');
         }),
       ),
 
@@ -221,9 +221,9 @@ abstract final class AppTheme {
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return TextStyle(color: cs.onSurface, fontWeight: FontWeight.w700, fontSize: 12);
+            return TextStyle(color: cs.onSurface, fontWeight: FontWeight.w700, fontSize: 12, fontFamily: 'Outfit');
           }
-          return TextStyle(color: cs.onSurfaceVariant, fontWeight: FontWeight.w500, fontSize: 12);
+          return TextStyle(color: cs.onSurfaceVariant, fontWeight: FontWeight.w500, fontSize: 12, fontFamily: 'Outfit');
         }),
       ),
 

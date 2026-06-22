@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/song_details_sheet.dart';
 import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
@@ -172,7 +173,7 @@ class _EventDetailViewState extends State<_EventDetailView>
                 ),
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                     child: _EventHeroCard(
                       title: event.title,
                       description: event.description,
@@ -343,16 +344,52 @@ class _EventDetailTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    return TabBar(
-      controller: controller,
-      labelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-      unselectedLabelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500),
-      tabs: const [
-        Tab(text: 'Equipe'),
-        Tab(text: 'Músicas'),
-        Tab(text: 'Programação'),
-      ],
+    const tabs = [
+      (assetPath: 'assets/icons/users-round.svg', label: 'Equipe'),
+      (assetPath: 'assets/icons/music.svg', label: 'Músicas'),
+      (assetPath: 'assets/icons/calendar-fold.svg', label: 'Programação'),
+    ];
+
+    return AnimatedBuilder(
+      animation: controller.animation ?? controller,
+      builder: (context, _) {
+        final activeIndex =
+            controller.animation?.value.round() ?? controller.index;
+
+        return TabBar(
+          controller: controller,
+          labelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+          unselectedLabelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500),
+          tabs: [
+            for (var i = 0; i < tabs.length; i++)
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      tabs[i].assetPath,
+                      width: 18,
+                      height: 18,
+                      colorFilter: ColorFilter.mode(
+                        i == activeIndex ? cs.primary : cs.onSurfaceVariant,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        tabs[i].label,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -379,99 +416,78 @@ class _EventHeroCard extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
-    return Card(
-      elevation: 0,
-      color: cs.surfaceContainerLow,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        side: BorderSide(color: cs.outlineVariant),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          title,
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: cs.onSurface,
+            height: 1.2,
+          ),
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+        if (description != null && description!.trim().isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            description!,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: cs.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+          ),
+        ],
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 16,
+          runSpacing: 6,
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            Text(
-              title,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: cs.onSurface,
-                height: 1.15,
-              ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-            if (description != null && description!.trim().isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                description!,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: cs.onSurfaceVariant,
-                  fontStyle: FontStyle.italic,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-            const SizedBox(height: 12),
-            Divider(height: 1, color: cs.outlineVariant),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 16,
-              runSpacing: 8,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                _MetaItem(icon: Icons.calendar_today_rounded, label: date),
-                _MetaItem(icon: Icons.access_time_rounded, label: time),
-                if (onLocationTap != null)
-                  GestureDetector(
-                    onTap: onLocationTap,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: cs.secondaryContainer,
-                        borderRadius: BorderRadius.circular(AppRadius.badge),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.location_on_rounded,
-                            size: 14,
-                            color: cs.onSecondaryContainer,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Ver localização',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: cs.onSecondaryContainer,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            Icons.open_in_new_rounded,
-                            size: 12,
-                            color: cs.onSecondaryContainer,
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                else
-                  _MetaItem(
-                    icon: Icons.location_off_rounded,
-                    label: location,
-                    muted: true,
+            _MetaItem(icon: Icons.calendar_today_rounded, label: date),
+            _MetaItem(icon: Icons.access_time_rounded, label: time),
+            if (onLocationTap != null)
+              GestureDetector(
+                onTap: onLocationTap,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer,
+                    borderRadius: BorderRadius.circular(AppRadius.badge),
                   ),
-              ],
-            ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.location_on_rounded, size: 14, color: cs.onPrimaryContainer),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Ver localização',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: cs.onPrimaryContainer,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(Icons.open_in_new_rounded, size: 11, color: cs.onPrimaryContainer),
+                    ],
+                  ),
+                ),
+              )
+            else
+              _MetaItem(
+                icon: Icons.location_off_rounded,
+                label: location,
+                muted: true,
+              ),
           ],
         ),
-      ),
+      ],
     );
   }
 }
