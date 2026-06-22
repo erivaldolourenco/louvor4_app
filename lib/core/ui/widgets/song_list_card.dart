@@ -110,9 +110,9 @@ class SongListCard extends StatelessWidget {
                       AppCircularActionButton(
                         onPressed: onOpenYoutube,
                         assetPath: 'assets/icons/youtube.svg',
-                        iconColor: cs.error,
-                        backgroundColor: cs.errorContainer,
-                        borderColor: cs.error.withValues(alpha: 0.3),
+                        iconColor: cs.tertiary,
+                        backgroundColor: cs.tertiaryContainer,
+                        borderColor: cs.tertiary.withValues(alpha: 0.3),
                       ),
                     if (!isMedley && onOpenYoutube != null && onEdit != null)
                       const SizedBox(width: 8),

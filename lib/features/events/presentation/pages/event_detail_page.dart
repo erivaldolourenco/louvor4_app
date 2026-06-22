@@ -756,6 +756,7 @@ class _SongsTab extends StatelessWidget {
                             bpm: song.bpm?.toString(),
                             youTubeUrl: song.youTubeUrl ?? '',
                             notes: song.notes,
+                            referenceAudioUrl: song.referenceAudioUrl,
                           ),
                           onOpenYoutube: (song.youTubeUrl != null &&
                                   song.youTubeUrl!.isNotEmpty)
@@ -824,11 +825,7 @@ class _DetailErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-  final cs = theme.colorScheme;
-    final mutedColor = theme.textTheme.bodyMedium?.color?.withValues(
-      alpha: 0.78,
-    );
+    final cs = Theme.of(context).colorScheme;
 
     return Center(
       child: Padding(
@@ -836,12 +833,12 @@ class _DetailErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 48, color: mutedColor),
+            Icon(Icons.error_outline_rounded, size: 48, color: cs.onSurfaceVariant),
             const SizedBox(height: 12),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(color: mutedColor, fontWeight: FontWeight.w500),
+              style: TextStyle(color: cs.onSurfaceVariant, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 14),
             FilledButton.icon(

@@ -210,18 +210,18 @@ class SongDetailsSheet extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: () => _openYouTube(context),
                   style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFFFEF2F2),
-                    foregroundColor: const Color(0xFFDC2626),
+                    backgroundColor: cs.tertiaryContainer,
+                    foregroundColor: cs.onTertiaryContainer,
                     minimumSize: const Size.fromHeight(50),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppRadius.input),
-                      side: const BorderSide(color: Color(0xFFFECACA)),
+                      side: BorderSide(color: cs.tertiary.withValues(alpha: 0.4)),
                     ),
                   ),
                   icon: const Icon(Icons.ondemand_video_rounded),
-                  label: const Text(
+                  label: Text(
                     'Abrir no YouTube',
-                    style: TextStyle(fontWeight: FontWeight.w700),
+                    style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
                   ),
                 ),
               ],
@@ -565,19 +565,17 @@ class _MetaBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color:
-            cs.primaryContainer,
+        color: cs.primaryContainer,
         borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(
         label,
         style: TextStyle(
-          color: isDark ? Color(0xFF93C5FD) : cs.primary,
+          color: cs.onPrimaryContainer,
           fontWeight: FontWeight.w700,
         ),
       ),

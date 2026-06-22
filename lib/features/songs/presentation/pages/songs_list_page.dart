@@ -361,22 +361,14 @@ class _SongsContentState extends State<_SongsContent>
                             Icon(
                               Icons.search_off_rounded,
                               size: 48,
-                              color: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.color
-                                  ?.withValues(alpha: 0.5),
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'Nenhuma música encontrada\npara "$_searchQuery"',
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.color
-                                    ?.withValues(alpha: 0.7),
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -403,6 +395,7 @@ class _SongsContentState extends State<_SongsContent>
                           bpm: song.bpm,
                           youTubeUrl: song.youTubeUrl,
                           notes: song.notes,
+                          referenceAudioUrl: song.referenceAudioUrl,
                         ),
                         onOpenYoutube: () => _openYouTube(song.youTubeUrl),
                         onEdit: song.id == null
@@ -471,10 +464,11 @@ class _SongsTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return TabBar(
       controller: controller,
-      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+      labelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+      unselectedLabelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500),
       tabs: const [
         Tab(text: 'Músicas'),
         Tab(text: 'Medleys'),
@@ -495,7 +489,6 @@ class _MedleysEmpty extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -519,9 +512,7 @@ class _MedleysEmpty extends StatelessWidget {
               'Monte sequências de músicas para usar nas suas escalas.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: isDark
-                    ? cs.onSurfaceVariant
-                    : cs.onSurfaceVariant,
+                color: cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 20),
