@@ -11,6 +11,9 @@ enum NotificationType {
   eventScheduleUpdated,
   projectMemberAdded,
   projectMemberRemoved,
+  projectMemberInvite,
+  projectMemberInviteAccepted,
+  projectMemberInviteDeclined,
   messageReceived,
   systemNotification,
   unknown,
@@ -42,6 +45,12 @@ NotificationType notificationTypeFromString(String? value) {
       return NotificationType.projectMemberAdded;
     case 'PROJECT_MEMBER_REMOVED':
       return NotificationType.projectMemberRemoved;
+    case 'PROJECT_MEMBER_INVITE':
+      return NotificationType.projectMemberInvite;
+    case 'PROJECT_MEMBER_INVITE_ACCEPTED':
+      return NotificationType.projectMemberInviteAccepted;
+    case 'PROJECT_MEMBER_INVITE_DECLINED':
+      return NotificationType.projectMemberInviteDeclined;
     case 'MESSAGE_RECEIVED':
       return NotificationType.messageReceived;
     case 'SYSTEM_NOTIFICATION':

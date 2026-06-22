@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/repositories/notifications_repository.dart';
 import '../../domain/entities/notification_item_entity.dart';
+import '../../domain/entities/notification_type.dart';
 import '../../domain/entities/notifications_page_entity.dart';
 import 'notifications_state.dart';
 
@@ -93,24 +94,39 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     }
   }
 
-  Future<void> acceptInvite(NotificationItemEntity notification) async {
-    final participantId = notification.eventParticipantId;
-    if (participantId == null || participantId.isEmpty) return;
+  Future<void> acceptInvite(NotificationItemEntity notification) {
+    return _respondToInvite(notification, accepted: true);
+  }
+
+  Future<void> declineInvite(NotificationItemEntity notification) {
+    return _respondToInvite(notification, accepted: false);
+  }
+
+  Future<void> _respondToInvite(
+    NotificationItemEntity notification, {
+    required bool accepted,
+  }) async {
+    final action = _resolveInviteAction(notification, accepted: accepted);
+    if (action == null) return;
 
     emit(
       state.copyWith(
-        actionStatus: NotificationsActionStatus.accepting,
+        actionStatus: accepted
+            ? NotificationsActionStatus.accepting
+            : NotificationsActionStatus.declining,
         activeNotificationId: notification.id,
         clearActionMessage: true,
       ),
     );
 
     try {
-      await _repository.acceptEventInvite(participantId);
+      await action();
       emit(
         state.copyWith(
           actionStatus: NotificationsActionStatus.success,
-          actionMessage: 'Convite aceito com sucesso.',
+          actionMessage: accepted
+              ? 'Convite aceito com sucesso.'
+              : 'Convite recusado.',
           clearActiveNotificationId: true,
         ),
       );
@@ -121,7 +137,9 @@ class NotificationsCubit extends Cubit<NotificationsState> {
           actionStatus: NotificationsActionStatus.failure,
           actionMessage: _extractMessage(
             error,
-            fallback: 'Não foi possível aceitar o convite.',
+            fallback: accepted
+                ? 'Não foi possível aceitar o convite.'
+                : 'Não foi possível recusar o convite.',
           ),
           clearActiveNotificationId: true,
         ),
@@ -129,40 +147,21 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     }
   }
 
-  Future<void> declineInvite(NotificationItemEntity notification) async {
-    final participantId = notification.eventParticipantId;
-    if (participantId == null || participantId.isEmpty) return;
-
-    emit(
-      state.copyWith(
-        actionStatus: NotificationsActionStatus.declining,
-        activeNotificationId: notification.id,
-        clearActionMessage: true,
-      ),
-    );
-
-    try {
-      await _repository.declineEventInvite(participantId);
-      emit(
-        state.copyWith(
-          actionStatus: NotificationsActionStatus.success,
-          actionMessage: 'Convite recusado.',
-          clearActiveNotificationId: true,
-        ),
-      );
-      await load(showLoading: false);
-    } catch (error) {
-      emit(
-        state.copyWith(
-          actionStatus: NotificationsActionStatus.failure,
-          actionMessage: _extractMessage(
-            error,
-            fallback: 'Não foi possível recusar o convite.',
-          ),
-          clearActiveNotificationId: true,
-        ),
-      );
+  Future<void> Function()? _resolveInviteAction(
+    NotificationItemEntity notification, {
+    required bool accepted,
+  }) {
+    if (notification.type == NotificationType.projectMemberInvite) {
+      final projectId = notification.projectInviteId;
+      if (projectId == null) return null;
+      return () => _repository.respondProjectInvite(projectId, accepted);
     }
+
+    final participantId = notification.eventParticipantId;
+    if (participantId == null || participantId.isEmpty) return null;
+    return accepted
+        ? () => _repository.acceptEventInvite(participantId)
+        : () => _repository.declineEventInvite(participantId);
   }
 
   Future<void> dismissNotification(NotificationItemEntity notification) async {

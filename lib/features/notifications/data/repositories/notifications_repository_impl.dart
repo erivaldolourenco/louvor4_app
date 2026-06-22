@@ -19,6 +19,11 @@ class NotificationsRepositoryImpl implements NotificationsRepository {
   }
 
   @override
+  Future<void> respondProjectInvite(String projectId, bool accepted) {
+    return _remoteDataSource.respondProjectInvite(projectId, accepted);
+  }
+
+  @override
   Future<void> markAsRead(String notificationId) {
     return _remoteDataSource.markAsRead(notificationId);
   }

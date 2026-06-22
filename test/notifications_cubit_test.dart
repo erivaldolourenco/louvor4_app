@@ -12,6 +12,8 @@ class _FakeNotificationsRepository implements NotificationsRepository {
   int listCalls = 0;
   String? acceptedParticipantId;
   String? declinedParticipantId;
+  String? respondedProjectId;
+  bool? respondedAccepted;
 
   _FakeNotificationsRepository({
     required this.pages,
@@ -42,6 +44,13 @@ class _FakeNotificationsRepository implements NotificationsRepository {
   @override
   Future<int> getUnreadNotificationsCount({int pageSize = 50}) async {
     return unreadCount;
+  }
+
+  @override
+  Future<void> respondProjectInvite(String projectId, bool accepted) async {
+    respondedProjectId = projectId;
+    respondedAccepted = accepted;
+    unreadCount = 0;
   }
 
   @override
@@ -145,6 +154,43 @@ void main() {
 
       await cubit.close();
     });
+
+    test('aceita convite de projeto usando projectId do dataJson', () async {
+      final initialInvite = _notification(
+        id: 'invite-2',
+        type: NotificationType.projectMemberInvite,
+        isRead: false,
+        dataJson: '{"projectId":"project-1","projectName":"Louvor IEQCP"}',
+      );
+
+      final repo = _FakeNotificationsRepository(
+        unreadCount: 1,
+        pages: {
+          0: NotificationsPageEntity(
+            items: [initialInvite],
+            page: 0,
+            size: 20,
+            totalElements: 1,
+            totalPages: 1,
+            first: true,
+            last: true,
+          ),
+        },
+      );
+
+      final cubit = NotificationsCubit(repo);
+      await cubit.load();
+
+      expect(initialInvite.canRespondToInvite, isTrue);
+
+      await cubit.acceptInvite(initialInvite);
+
+      expect(repo.respondedProjectId, 'project-1');
+      expect(repo.respondedAccepted, isTrue);
+      expect(cubit.state.actionStatus, NotificationsActionStatus.success);
+
+      await cubit.close();
+    });
   });
 }
 
@@ -153,6 +199,7 @@ NotificationItemEntity _notification({
   required NotificationType type,
   required bool isRead,
   String? participantId,
+  String? dataJson,
 }) {
   return NotificationItemEntity(
     id: id,
@@ -161,7 +208,7 @@ NotificationItemEntity _notification({
     title: 'Aviso',
     message: 'Mensagem',
     eventParticipantId: participantId,
-    dataJson: null,
+    dataJson: dataJson,
     isRead: isRead,
     createdAt: DateTime(2026, 3, 31, 10),
     readAt: isRead ? DateTime(2026, 3, 31, 11) : null,

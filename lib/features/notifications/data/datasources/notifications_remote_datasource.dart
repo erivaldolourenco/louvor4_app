@@ -48,6 +48,17 @@ class NotificationsRemoteDataSource {
     }
   }
 
+  Future<void> respondProjectInvite(String projectId, bool accepted) async {
+    try {
+      await _dio.post(
+        '/music-project/$projectId/members/invite/respond',
+        data: {'accepted': accepted},
+      );
+    } on DioException catch (error) {
+      throw Exception(_extractApiMessage(error));
+    }
+  }
+
   Future<void> markAsRead(String notificationId) async {
     try {
       await _dio.get('/notifications/$notificationId/read');

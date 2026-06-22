@@ -12,5 +12,7 @@ abstract class NotificationsRepository {
 
   Future<void> declineEventInvite(String participantId);
 
+  Future<void> respondProjectInvite(String projectId, bool accepted);
+
   Future<void> markAsRead(String notificationId);
 }
