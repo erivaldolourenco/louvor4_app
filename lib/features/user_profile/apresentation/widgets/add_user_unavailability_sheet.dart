@@ -161,6 +161,7 @@ class _AddUserUnavailabilitySheetState
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final state = context.watch<UserUnavailabilityCubit>().state;
     final projects = state.projects;
     final isSubmitting =
@@ -310,12 +311,12 @@ class _AddUserUnavailabilitySheetState
                     style: appPrimaryPillButtonStyle(context),
                     onPressed: isSubmitting ? null : _submit,
                     child: isSubmitting
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: cs.onPrimary,
                             ),
                           )
                         : const Text('Salvar'),

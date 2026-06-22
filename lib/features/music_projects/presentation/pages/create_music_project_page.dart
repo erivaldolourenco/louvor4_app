@@ -56,6 +56,7 @@ class _CreateMusicProjectViewState extends State<_CreateMusicProjectView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final state = context.watch<CreateMusicProjectCubit>().state;
     final cubit = context.read<CreateMusicProjectCubit>();
 
@@ -126,12 +127,12 @@ class _CreateMusicProjectViewState extends State<_CreateMusicProjectView> {
                   style: appPrimaryPillButtonStyle(context),
                   onPressed: state.isSubmitting ? null : () => _submit(cubit),
                   child: state.isSubmitting
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: cs.onPrimary,
                           ),
                         )
                       : const Text('Criar projeto'),

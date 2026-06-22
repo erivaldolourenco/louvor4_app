@@ -198,7 +198,7 @@ class _ProjectSkillCard extends StatelessWidget {
     final cubit = context.read<ProjectSkillsCubit>();
     final state = context.watch<ProjectSkillsCubit>().state;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
     final titleColor = theme.textTheme.titleMedium?.color;
     final isDeleting = state.isDeletingSkill(skill.id);
 
@@ -215,9 +215,7 @@ class _ProjectSkillCard extends StatelessWidget {
                 width: 46,
                 height: 46,
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF172554)
-                      : const Color(0xFFEFF6FF),
+                  color: cs.primaryContainer,
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Center(
@@ -225,10 +223,7 @@ class _ProjectSkillCard extends StatelessWidget {
                     skillIconAsset(skill.iconKey),
                     width: 26,
                     height: 26,
-                    colorFilter: const ColorFilter.mode(
-                      Color(0xFF2563EB),
-                      BlendMode.srcIn,
-                    ),
+                    colorFilter: ColorFilter.mode(cs.primary, BlendMode.srcIn),
                   ),
                 ),
               ),
@@ -255,26 +250,18 @@ class _ProjectSkillCard extends StatelessWidget {
                     tooltip: 'Editar função',
                     onPressed: () => _showEditSkillSheet(context, cubit, skill),
                     assetPath: 'assets/icons/wrench.svg',
-                    iconColor: const Color(0xFF0166FF),
-                    backgroundColor: isDark
-                        ? const Color(0xFF172554)
-                        : const Color(0xFFEFF6FF),
-                    borderColor: isDark
-                        ? const Color(0xFF1E3A8A)
-                        : const Color(0xFFBFDBFE),
+                    iconColor: cs.onPrimaryContainer,
+                    backgroundColor: cs.primaryContainer,
+                    borderColor: cs.primary.withValues(alpha: 0.3),
                   ),
                   const SizedBox(width: 6),
                   _CircularSkillActionButton(
                     tooltip: 'Excluir função',
                     onPressed: () => _onDeleteSkill(context, cubit, skill),
                     assetPath: 'assets/icons/trash-2.svg',
-                    iconColor: const Color(0xFFB3261E),
-                    backgroundColor: isDark
-                        ? const Color(0xFF2A1313)
-                        : const Color(0xFFFFF1F2),
-                    borderColor: isDark
-                        ? const Color(0xFF7F1D1D)
-                        : const Color(0xFFFECDD3),
+                    iconColor: cs.error,
+                    backgroundColor: cs.errorContainer,
+                    borderColor: cs.error.withValues(alpha: 0.3),
                   ),
                 ],
               ],

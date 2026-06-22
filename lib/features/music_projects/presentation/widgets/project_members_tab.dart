@@ -110,7 +110,7 @@ class _ProjectMembersTabView extends StatelessWidget {
                             Text(
                               'Membros',
                               style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(fontWeight: FontWeight.w800),
+                                  ?.copyWith(fontWeight: FontWeight.w700),
                             ),
                             const SizedBox(height: 2),
                             Text(
@@ -262,7 +262,7 @@ class _ProjectMemberCard extends StatelessWidget {
                                           .textTheme
                                           .titleMedium
                                           ?.copyWith(
-                                            fontWeight: FontWeight.w800,
+                                            fontWeight: FontWeight.w700,
                                             color: titleColor,
                                           ),
                                     ),
@@ -440,6 +440,7 @@ class _AddProjectMemberSheetState extends State<_AddProjectMemberSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final state = context.watch<ProjectMembersCubit>().state;
     final cubit = context.read<ProjectMembersCubit>();
     final isSubmitting = state.submission == ProjectMembersSubmission.adding;
@@ -506,12 +507,12 @@ class _AddProjectMemberSheetState extends State<_AddProjectMemberSheet> {
                             }
                           },
                     child: isSubmitting
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: cs.onPrimary,
                             ),
                           )
                         : const Text('Adicionar'),
@@ -636,7 +637,7 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
                     Text(
                       'Funções musicais',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: Theme.of(context).textTheme.titleMedium?.color,
                       ),
                     ),
@@ -800,7 +801,7 @@ class _MemberHeader extends StatelessWidget {
                 Text(
                   member.fullName,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: titleColor,
                   ),
                 ),
@@ -853,7 +854,7 @@ class _PermissionCard extends StatelessWidget {
             Text(
               'Permissão no projeto',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: Theme.of(context).textTheme.titleMedium?.color,
               ),
             ),
@@ -913,7 +914,7 @@ class _MemberAvatar extends StatelessWidget {
         initial.toUpperCase(),
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
           color: cs.primary,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           fontSize: 18,
         ),
       ),
@@ -929,20 +930,10 @@ class _RoleBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final (background, foreground) = switch (role) {
-      ProjectMemberRole.owner => (
-        isDark ? const Color(0xFF3F1D0B) : const Color(0xFFFFF7ED),
-        isDark ? const Color(0xFFF59E0B) : const Color(0xFFC2410C),
-      ),
-      ProjectMemberRole.admin => (
-        isDark ? cs.primaryContainer : cs.primaryContainer,
-        isDark ? const Color(0xFF60A5FA) : cs.primary,
-      ),
-      ProjectMemberRole.member => (
-        isDark ? cs.surfaceContainer : cs.surfaceContainerLow,
-        isDark ? cs.outlineVariant : cs.onSurfaceVariant,
-      ),
+      ProjectMemberRole.owner => (cs.tertiaryContainer, cs.onTertiaryContainer),
+      ProjectMemberRole.admin => (cs.primaryContainer, cs.onPrimaryContainer),
+      ProjectMemberRole.member => (cs.surfaceContainerLow, cs.onSurfaceVariant),
     };
 
     return Container(
@@ -1000,33 +991,25 @@ class _LockedOwnerBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF3F1D0B) : const Color(0xFFFFF7ED),
+        color: cs.tertiaryContainer,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isDark ? const Color(0xFF7C2D12) : const Color(0xFFFED7AA),
-        ),
+        border: Border.all(color: cs.tertiary.withValues(alpha: 0.4)),
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.lock_rounded,
-            size: 18,
-            color: isDark ? const Color(0xFFF59E0B) : const Color(0xFFC2410C),
-          ),
+          Icon(Icons.lock_rounded, size: 18, color: cs.onTertiaryContainer),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               'Owner bloqueado para alteração de privilégio administrativo.',
               style: TextStyle(
-                color: isDark
-                    ? const Color(0xFFFDE68A)
-                    : const Color(0xFF9A3412),
+                color: cs.onTertiaryContainer,
                 fontWeight: FontWeight.w700,
               ),
             ),

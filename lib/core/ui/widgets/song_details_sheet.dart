@@ -515,7 +515,7 @@ class _AudioPlayerState extends State<_AudioPlayer> {
             SizedBox(height: 10),
             Container(
               decoration: BoxDecoration(
-                color: isDark ? cs.surface : Colors.white,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(AppRadius.input),
                 border: Border.all(color: borderColor),
               ),

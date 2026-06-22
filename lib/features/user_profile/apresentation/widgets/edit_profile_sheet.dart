@@ -91,6 +91,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
     EditProfileCubit cubit,
     EditProfileState state,
   ) {
+    final cs = Theme.of(context).colorScheme;
     final canEdit = state.user != null;
 
     return Form(
@@ -194,12 +195,12 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                       ? null
                       : () => _submit(context, cubit),
                   child: state.isSubmitting
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: cs.onPrimary,
                           ),
                         )
                       : const Text('Salvar'),

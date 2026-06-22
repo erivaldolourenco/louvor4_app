@@ -133,7 +133,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                                     initial,
                                     style: Theme.of(context).textTheme.displayLarge?.copyWith(
                                       color: cs.primary,
-                                      fontWeight: FontWeight.w800,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                 ),
@@ -163,7 +163,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   widget.name,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: titleColor,
                   ),
                 ),
@@ -306,7 +306,7 @@ class _ProfileSectionTitle extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         style: theme.textTheme.titleSmall?.copyWith(
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w700,
           letterSpacing: 2.4,
           color: theme.textTheme.titleSmall?.color?.withValues(alpha: 0.62),
         ),
@@ -472,7 +472,7 @@ class _ProfileSkillsBlock extends StatelessWidget {
                       skill,
                       style: theme.textTheme.titleSmall?.copyWith(
                         color: cs.primary,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),

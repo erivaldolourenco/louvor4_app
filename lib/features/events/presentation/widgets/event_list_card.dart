@@ -175,9 +175,7 @@ class EventListCard extends StatelessWidget {
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                              color: isDark
-                                                  ? cs.surface
-                                                  : Colors.white,
+                                              color: cs.surface,
                                               width: 1.5,
                                             ),
                                           ),

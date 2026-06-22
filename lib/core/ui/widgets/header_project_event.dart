@@ -40,7 +40,7 @@ class HeaderProjectEvent extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: cs.onSurface,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               fontSize: 20,
             ),
           ),

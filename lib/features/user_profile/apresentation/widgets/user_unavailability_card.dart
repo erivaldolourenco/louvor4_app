@@ -175,17 +175,8 @@ class _ProjectChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = highlighted
-        ? Color(0xFF0166FF)
-        : isDark
-        ? cs.surface
-        : Color(0xFFF8FBFF);
-    final foregroundColor = highlighted
-        ? Colors.white
-        : isDark
-        ? cs.outlineVariant
-        : cs.primaryContainer;
+    final backgroundColor = highlighted ? cs.primary : cs.surfaceContainerLow;
+    final foregroundColor = highlighted ? cs.onPrimary : cs.onSurfaceVariant;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
@@ -193,11 +184,7 @@ class _ProjectChip extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(
-          color: highlighted
-              ? Color(0xFF0166FF)
-              : isDark
-              ? cs.outlineVariant
-              : const Color(0xFFD6E4FF),
+          color: highlighted ? cs.primary : cs.outlineVariant,
         ),
       ),
       child: Row(

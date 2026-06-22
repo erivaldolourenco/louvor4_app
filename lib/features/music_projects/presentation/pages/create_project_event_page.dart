@@ -77,6 +77,7 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final cubit = context.read<CreateProjectEventCubit>();
     final state = context.watch<CreateProjectEventCubit>().state;
 
@@ -224,12 +225,12 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
                   style: appPrimaryPillButtonStyle(context),
                   onPressed: state.isSubmitting ? null : () => _submit(cubit),
                   child: state.isSubmitting
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: cs.onPrimary,
                           ),
                         )
                       : const Text('Adicionar evento'),

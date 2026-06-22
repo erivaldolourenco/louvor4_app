@@ -28,19 +28,16 @@ class NotificationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
     final hasActions = notification.canRespondToInvite;
     final canDismiss = !notification.canRespondToInvite && onDismiss != null;
     final isBusy = isAccepting || isDeclining || isDismissing;
     final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(
-      alpha: isDark ? 0.72 : 0.82,
+      alpha: 0.78,
     );
     final highlightColor = notification.isRead
-        ? (isDark ? cs.surface : Colors.white)
-        : (isDark ? Color(0xFF0F274F) : const Color(0xFFF4F8FF));
-    final badgeColor = notification.isRead
-        ? cs.onSurfaceVariant
-        : theme.colorScheme.primary;
+        ? cs.surface
+        : cs.primaryContainer.withValues(alpha: 0.22);
+    final badgeColor = notification.isRead ? cs.onSurfaceVariant : cs.primary;
 
     return AppCardSurface(
       radius: 18,
@@ -126,12 +123,12 @@ class NotificationCard extends StatelessWidget {
                     child: FilledButton(
                       onPressed: isBusy ? null : onAccept,
                       child: isAccepting
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: cs.onPrimary,
                               ),
                             )
                           : const Text('Aceitar'),

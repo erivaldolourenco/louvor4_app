@@ -41,6 +41,7 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final cubit = context.read<ProjectSkillsCubit>();
     final state = context.watch<ProjectSkillsCubit>().state;
     final isSubmitting = state.submission == ProjectSkillsSubmission.creating;
@@ -141,12 +142,12 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
                             }
                           },
                     child: isSubmitting
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: cs.onPrimary,
                             ),
                           )
                         : Text(isEditing ? 'Salvar alterações' : 'Adicionar função'),

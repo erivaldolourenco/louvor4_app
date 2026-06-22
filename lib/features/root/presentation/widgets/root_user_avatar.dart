@@ -44,7 +44,7 @@ class RootUserAvatar extends StatelessWidget {
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: cs.primary,
                 fontSize: radius * 0.9,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
               ),
             )
           : null,

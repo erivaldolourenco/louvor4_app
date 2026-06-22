@@ -145,7 +145,7 @@ class _EventDetailViewState extends State<_EventDetailView>
                     if (state.isProjectAdmin)
                       PopupMenuButton<_EventHeaderAction>(
                         tooltip: 'Ações do evento',
-                        color: isDark ? cs.surface : Colors.white,
+                        color: cs.surface,
                         icon: const Icon(Icons.more_vert),
                         onSelected: _onHeaderActionSelected,
                         itemBuilder: (context) => [
@@ -422,7 +422,7 @@ class _EventHeroCard extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: titleColor,
                       height: 1.15,
                     ),
@@ -555,7 +555,7 @@ class _ParticipantsTab extends StatelessWidget {
                 'EQUIPE ESCALADA',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: mutedColor,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: 2,
                 ),
               ),
@@ -688,7 +688,7 @@ class _SongsTab extends StatelessWidget {
                 'REPERTÓRIO DO EVENTO',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   color: mutedColor,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: 2,
                 ),
               ),
@@ -726,7 +726,7 @@ class _SongsTab extends StatelessWidget {
                   'Adicionado por: ${group.key}',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     color: mutedColor,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
@@ -880,7 +880,7 @@ class _RetryTabState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isDark ? cs.surface : Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
           color: isDark ? cs.outline : cs.outlineVariant,
@@ -937,7 +937,7 @@ class _EmptyTabState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isDark ? cs.surface : Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
           color: isDark ? cs.outline : cs.outlineVariant,

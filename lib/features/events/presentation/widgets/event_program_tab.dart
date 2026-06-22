@@ -45,7 +45,7 @@ class EventProgramTab extends StatelessWidget {
                   'PROGRAMAÇÃO DO EVENTO',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     color: mutedColor,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: 2,
                   ),
                 ),
@@ -414,7 +414,7 @@ class _PositionBadge extends StatelessWidget {
         child: Text(
           '$position',
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             color: cs.onSurfaceVariant,
           ),
         ),

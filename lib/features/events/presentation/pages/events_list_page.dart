@@ -444,13 +444,9 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
                                     height: 20,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
-                                      color: isDark
-                                          ? cs.surfaceContainerLow
-                                          : const Color(0xFFDCE6F1),
+                                      color: cs.surfaceContainerLow,
                                       border: Border.all(
-                                        color: isDark
-                                            ? cs.surface
-                                            : Colors.white,
+                                        color: cs.surface,
                                         width: 1.5,
                                       ),
                                     ),

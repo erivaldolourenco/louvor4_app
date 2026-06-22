@@ -132,7 +132,7 @@ class _DashboardEventCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                     color: cs.surface,
                   ),
                 ),
@@ -230,7 +230,7 @@ class _MetricBadge extends StatelessWidget {
           value,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: color,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             fontSize: 18,
           ),
         ),

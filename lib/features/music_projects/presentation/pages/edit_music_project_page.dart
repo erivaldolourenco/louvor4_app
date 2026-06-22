@@ -69,6 +69,7 @@ class _EditMusicProjectViewState extends State<_EditMusicProjectView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final cubit = context.read<EditMusicProjectCubit>();
     final state = context.watch<EditMusicProjectCubit>().state;
     final project = state.project;
@@ -163,12 +164,12 @@ class _EditMusicProjectViewState extends State<_EditMusicProjectView> {
                             ? null
                             : () => _submit(cubit, project.id),
                         child: state.isSubmitting
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: cs.onPrimary,
                                 ),
                               )
                             : const Text('Salvar alterações'),
@@ -235,7 +236,7 @@ class _ProjectImageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark ? cs.outline : Colors.grey.shade200;
+    final borderColor = isDark ? cs.outline : cs.outlineVariant;
     final subtitleColor = Theme.of(
       context,
     ).textTheme.bodySmall?.color?.withValues(alpha: 0.78);
@@ -248,7 +249,7 @@ class _ProjectImageCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
       decoration: BoxDecoration(
-        color: isDark ? cs.surface : Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppRadius.bottomSheet),
         border: Border.all(color: borderColor),
       ),
@@ -275,7 +276,7 @@ class _ProjectImageCard extends StatelessWidget {
                           initials,
                           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                             color: cs.primary,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                           ),
                         )
                       : null,
@@ -286,26 +287,23 @@ class _ProjectImageCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F4CDA),
+                      color: cs.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isDark ? cs.surface : Colors.white,
-                        width: 2,
-                      ),
+                      border: Border.all(color: cs.surface, width: 2),
                     ),
                     child: isBusy
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 16,
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: cs.onPrimary,
                             ),
                           )
-                        : const Icon(
+                        : Icon(
                             Icons.camera_alt_rounded,
                             size: 16,
-                            color: Colors.white,
+                            color: cs.onPrimary,
                           ),
                   ),
                 ),

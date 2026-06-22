@@ -59,6 +59,7 @@ class _EditProfileViewState extends State<_EditProfileView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final cubit = context.read<EditProfileCubit>();
     final state = context.watch<EditProfileCubit>().state;
     final user = state.user;
@@ -171,12 +172,12 @@ class _EditProfileViewState extends State<_EditProfileView> {
                             ? null
                             : () => _submit(cubit),
                         child: state.isSubmitting
-                            ? const SizedBox(
+                            ? SizedBox(
                                 width: 20,
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Colors.white,
+                                  color: cs.onPrimary,
                                 ),
                               )
                             : const Text('Salvar alterações'),

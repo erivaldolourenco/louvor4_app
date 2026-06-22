@@ -98,6 +98,7 @@ class _EditEventViewState extends State<_EditEventView> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final cubit = context.read<EditEventCubit>();
     final state = context.watch<EditEventCubit>().state;
 
@@ -244,12 +245,12 @@ class _EditEventViewState extends State<_EditEventView> {
                   style: appPrimaryPillButtonStyle(context),
                   onPressed: state.isSubmitting ? null : () => _submit(cubit),
                   child: state.isSubmitting
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: cs.onPrimary,
                           ),
                         )
                       : const Text('Salvar alterações'),

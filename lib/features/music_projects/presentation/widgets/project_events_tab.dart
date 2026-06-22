@@ -132,7 +132,7 @@ class _ProjectEventsTabState extends State<ProjectEventsTab>
                         Text(
                           'Eventos',
                           style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.w800),
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -242,14 +242,14 @@ class _ProjectEventCard extends StatelessWidget {
                       Text(
                         month,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: cs.primary,
                         ),
                       ),
                       Text(
                         day,
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           fontSize: 30,
                           height: 1,
                           color: titleColor,
@@ -271,7 +271,7 @@ class _ProjectEventCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.titleMedium
                             ?.copyWith(
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: titleColor,
                             ),
                       ),

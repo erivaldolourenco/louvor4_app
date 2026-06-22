@@ -109,7 +109,7 @@ class ProfilePage extends StatelessWidget {
                             _buildUserInitial(user),
                             style: theme.textTheme.displaySmall?.copyWith(
                               color: cs.primary,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           )
                         : null,
@@ -120,28 +120,23 @@ class ProfilePage extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0F4CDA),
+                        color: cs.primary,
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isDark
-                              ? cs.surface
-                              : Colors.white,
-                          width: 2,
-                        ),
+                        border: Border.all(color: cs.surface, width: 2),
                       ),
                       child: isUploadingImage
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 16,
                               height: 16,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: cs.onPrimary,
                               ),
                             )
-                          : const Icon(
+                          : Icon(
                               Icons.camera_alt_rounded,
                               size: 16,
-                              color: Colors.white,
+                              color: cs.onPrimary,
                             ),
                     ),
                   ),
@@ -179,7 +174,7 @@ class ProfilePage extends StatelessWidget {
     final titleColor = theme.textTheme.titleMedium?.color;
     final borderColor = theme.brightness == Brightness.dark
         ? cs.outlineVariant
-        : Colors.grey.shade300;
+        : cs.outlineVariant;
 
     return SizedBox(
       width: double.infinity,

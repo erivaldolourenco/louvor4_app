@@ -169,7 +169,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
             actions: [
               if (_isAdmin)
                 PopupMenuButton<String>(
-                  color: isDark ? cs.surface : Colors.white,
+                  color: cs.surface,
                   icon: const Icon(
                     Icons.more_vert_rounded,
                     color: Colors.white,

@@ -395,7 +395,7 @@ class _DraftItemTile extends StatelessWidget {
                 '$index',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontSize: 13,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: cs.primary,
                 ),
               ),
@@ -568,7 +568,7 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
                   'Selecionar música',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontSize: 18,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const Spacer(),
@@ -863,7 +863,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: Colors.white,
                           ),
                         ),

@@ -95,6 +95,7 @@ class _EditEventSheetState extends State<_EditEventSheet> {
       ),
       child: BlocBuilder<EditEventCubit, EditEventState>(
         builder: (context, state) {
+          final cs = Theme.of(context).colorScheme;
           return AppFormSheet(
             title: 'Editar evento',
             subtitle:
@@ -250,12 +251,12 @@ class _EditEventSheetState extends State<_EditEventSheet> {
                               ? null
                               : () => _submit(cubit),
                           child: state.isSubmitting
-                              ? const SizedBox(
+                              ? SizedBox(
                                   width: 20,
                                   height: 20,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Colors.white,
+                                    color: cs.onPrimary,
                                   ),
                                 )
                               : const Text('Salvar'),

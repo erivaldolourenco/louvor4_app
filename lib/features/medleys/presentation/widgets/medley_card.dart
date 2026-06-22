@@ -44,7 +44,7 @@ class MedleyCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 if (medley.description != null &&
@@ -215,7 +215,7 @@ class _SongItemCard extends StatelessWidget {
                           '${item.sequence}',
                           style: Theme.of(context).textTheme.labelSmall?.copyWith(
                             fontSize: 10,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: cs.onPrimary,
                           ),
                         ),
@@ -234,7 +234,7 @@ class _SongItemCard extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       if (item.songArtist != null &&
@@ -346,7 +346,7 @@ class _KeyChip extends StatelessWidget {
             TextSpan(
               text: label,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: cs.onSurface,
               ),
             ),

@@ -59,7 +59,7 @@ class _MusicProjectTypeBadgeState extends State<MusicProjectTypeBadge>
       case MusicProjectType.ministry:
         return const Color(0xFF0E7490);
       case MusicProjectType.band:
-        return const Color(0xFF0166FF);
+        return cs.primary;
       case MusicProjectType.singer:
         return const Color(0xFF9333EA);
       case MusicProjectType.unknown:
