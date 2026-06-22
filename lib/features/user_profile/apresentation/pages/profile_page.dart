@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:louvor4_app/core/auth/auth_service.dart';
-import 'package:louvor4_app/core/theme/app_colors.dart';
 import 'package:louvor4_app/core/theme/app_radius.dart';
 import 'package:louvor4_app/core/network/api_client.dart';
 import 'package:louvor4_app/core/theme/app_theme_controller.dart';
@@ -73,6 +72,7 @@ class ProfilePage extends StatelessWidget {
     bool isUploadingImage,
   ) {
     final theme = Theme.of(context);
+  final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final titleColor = theme.textTheme.titleLarge?.color;
     final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(
@@ -102,13 +102,13 @@ class ProfilePage extends StatelessWidget {
                         ? appCachedImageProvider(profileImage)
                         : null,
                     backgroundColor: isDark
-                        ? AppColors.primarySubtleDark
-                        : AppColors.primarySubtleLight,
+                        ? cs.primaryContainer
+                        : cs.primaryContainer,
                     child: !hasProfileImage
                         ? Text(
                             _buildUserInitial(user),
                             style: theme.textTheme.displaySmall?.copyWith(
-                              color: AppColors.primary,
+                              color: cs.primary,
                               fontWeight: FontWeight.w800,
                             ),
                           )
@@ -124,7 +124,7 @@ class ProfilePage extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isDark
-                              ? AppColors.surfaceDark
+                              ? cs.surface
                               : Colors.white,
                           width: 2,
                         ),
@@ -175,9 +175,10 @@ class ProfilePage extends StatelessWidget {
   // Card de Informações Detalhadas
   Widget _buildInfoCard(UserDetailEntity user, BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final titleColor = theme.textTheme.titleMedium?.color;
     final borderColor = theme.brightness == Brightness.dark
-        ? AppColors.borderSubtleDark
+        ? cs.outlineVariant
         : Colors.grey.shade300;
 
     return SizedBox(
@@ -238,7 +239,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                   subtitle: const Text('Ativar tema escuro no aplicativo'),
                   secondary: const Icon(Icons.dark_mode_outlined),
-                  activeThumbColor: AppColors.primary,
+                  activeThumbColor: cs.primary,
                 );
               },
             ),
@@ -260,7 +261,7 @@ class ProfilePage extends StatelessWidget {
               label: const Text('Sair do Aplicativo'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
-                side: const BorderSide(color: AppColors.dangerBorderLight),
+                side: BorderSide(color: cs.error.withValues(alpha: 0.35)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
@@ -275,6 +276,7 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildInfoField(BuildContext context, String label, String value) {
     final theme = Theme.of(context);
+  final cs = theme.colorScheme;
     final labelColor = theme.textTheme.bodySmall?.color?.withValues(
       alpha: 0.78,
     );

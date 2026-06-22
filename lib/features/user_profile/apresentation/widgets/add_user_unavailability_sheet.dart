@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:louvor4_app/core/theme/app_colors.dart';
 import 'package:louvor4_app/core/theme/app_radius.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/app_form_sheet.dart';
@@ -349,10 +348,11 @@ class _DateField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+  final cs = theme.colorScheme;
     final textColor = theme.textTheme.bodyLarge?.color;
     final mutedColor = theme.brightness == Brightness.dark
-        ? AppColors.textMutedDark
-        : AppColors.textMutedLight;
+        ? cs.onSurfaceVariant
+        : cs.onSurfaceVariant;
 
     return InkWell(
       onTap: enabled ? onTap : null,
@@ -460,21 +460,22 @@ class _InlineError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.dangerSubtleDark : AppColors.dangerSubtleLight,
+        color: isDark ? cs.errorContainer : cs.errorContainer,
         borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? AppColors.dangerBorderDark : AppColors.dangerBorderLight,
+          color: cs.error.withValues(alpha: 0.35),
         ),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? AppColors.dangerTextDark : AppColors.dangerTextLight,
+          color: cs.error,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -489,21 +490,19 @@ class _InlineInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.scaffoldDark : AppColors.surfaceElevatedLight,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(
-          color: isDark ? AppColors.borderSubtleDark : AppColors.borderStrongLight,
-        ),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? AppColors.borderSubtleLight : AppColors.textSubtleDark,
+          color: cs.onSurfaceVariant,
           fontWeight: FontWeight.w600,
         ),
       ),

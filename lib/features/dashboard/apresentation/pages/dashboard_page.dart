@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../events/data/impl/events_repository_impl.dart';
@@ -13,6 +12,7 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return RepositoryProvider(
       create: (_) => EventsRepositoryImpl(),
       child: BlocProvider(
@@ -103,6 +103,7 @@ class _DashboardEventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return AppCardSurface(
       radius: 18,
       padding: const EdgeInsets.all(16),
@@ -113,12 +114,12 @@ class _DashboardEventCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.primarySubtleLight,
+              color: cs.primaryContainer,
               borderRadius: BorderRadius.circular(AppRadius.input),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.calendar_month_rounded,
-              color: AppColors.primary,
+              color: cs.primary,
             ),
           ),
           const SizedBox(width: 14),
@@ -132,7 +133,7 @@ class _DashboardEventCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: AppColors.scaffoldDark,
+                    color: cs.surface,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -141,7 +142,7 @@ class _DashboardEventCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textMutedLight,
+                    color: cs.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -165,13 +166,13 @@ class _DashboardEventCard extends StatelessWidget {
               _MetricBadge(
                 icon: Icons.groups_2_rounded,
                 value: participantsCount.toString(),
-                color: AppColors.primary,
+                color: cs.primary,
               ),
               const SizedBox(height: 8),
               _MetricBadge(
                 icon: Icons.music_note_rounded,
                 value: repertoireCount.toString(),
-                color: AppColors.warning,
+                color: cs.onSecondaryContainer,
               ),
             ],
           ),
@@ -189,16 +190,17 @@ class _InfoChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 16, color: AppColors.textMutedLight),
+        Icon(icon, size: 16, color: cs.onSurfaceVariant),
         const SizedBox(width: 4),
         Text(
           label,
           style: Theme.of(
             context,
-          ).textTheme.bodySmall?.copyWith(color: AppColors.textMutedLight),
+          ).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
         ),
       ],
     );
@@ -218,6 +220,7 @@ class _MetricBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [

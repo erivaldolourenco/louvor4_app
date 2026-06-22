@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/features/events/presentation/pages/event_detail_page.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
@@ -99,6 +98,7 @@ class _ProjectEventsTabState extends State<ProjectEventsTab>
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
+  final cs = theme.colorScheme;
     final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
       alpha: 0.78,
     );
@@ -199,6 +199,7 @@ class _ProjectEventCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final titleColor = theme.textTheme.titleMedium?.color;
@@ -242,7 +243,7 @@ class _ProjectEventCard extends StatelessWidget {
                         month,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w800,
-                          color: AppColors.primary,
+                          color: cs.primary,
                         ),
                       ),
                       Text(
@@ -277,10 +278,10 @@ class _ProjectEventCard extends StatelessWidget {
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.schedule_rounded,
                             size: 15,
-                            color: AppColors.textSubtleLight,
+                            color: cs.onSurfaceVariant,
                           ),
                           const SizedBox(width: 4),
                           Text(
@@ -288,14 +289,14 @@ class _ProjectEventCard extends StatelessWidget {
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.textSubtleLight,
+                                  color: cs.onSurfaceVariant,
                                 ),
                           ),
                           const SizedBox(width: 10),
-                          const Icon(
+                          Icon(
                             Icons.place_outlined,
                             size: 15,
-                            color: AppColors.textSubtleLight,
+                            color: cs.onSurfaceVariant,
                           ),
                           const SizedBox(width: 4),
                           Expanded(
@@ -304,7 +305,7 @@ class _ProjectEventCard extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: AppColors.textSubtleLight),
+                                  ?.copyWith(color: cs.onSurfaceVariant),
                             ),
                           ),
                         ],
@@ -324,8 +325,8 @@ class _ProjectEventCard extends StatelessWidget {
                           'assets/icons/users-round.svg',
                           width: 18,
                           height: 18,
-                          colorFilter: const ColorFilter.mode(
-                            AppColors.primary,
+                          colorFilter: ColorFilter.mode(
+                            cs.primary,
                             BlendMode.srcIn,
                           ),
                         ),
@@ -333,7 +334,7 @@ class _ProjectEventCard extends StatelessWidget {
                         Text(
                           '${event.participantsCount}',
                           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: AppColors.primary,
+                            color: cs.primary,
                           ),
                         ),
                       ],

@@ -249,7 +249,6 @@ class _ProjectTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-
     const tabs = [
       (assetPath: 'assets/icons/calendar-fold.svg', label: 'Eventos'),
       (assetPath: 'assets/icons/users-round.svg', label: 'Membros'),

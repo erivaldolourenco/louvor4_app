@@ -5,7 +5,6 @@ import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 import 'package:louvor4_app/features/root/presentation/widgets/root_home_header.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_radius.dart';
 import '../../domain/entities/event_entity.dart';
 import '../cubit/events_cubit.dart';
@@ -285,13 +284,14 @@ class _NoMoreEventsIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: Center(
         child: Text(
           'Não há mais eventos',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: AppColors.textMutedDark,
+            color: cs.onSurfaceVariant,
           ),
         ),
       ),
@@ -305,11 +305,12 @@ class _EventsLoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+  final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final lineColor = isDark
-        ? AppColors.surfaceElevatedDark
+        ? cs.surfaceContainer
         : const Color(0xFFE5EDF6);
-    final cardFill = isDark ? AppColors.scaffoldDark : AppColors.surfaceElevatedLight;
+    final cardFill = isDark ? cs.surface : cs.surfaceContainer;
 
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -366,6 +367,7 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return IntrinsicHeight(
@@ -380,9 +382,9 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
                 Container(
                   width: 10,
                   height: 10,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.primary,
+                    color: cs.primary,
                   ),
                 ),
                 Expanded(child: Container(width: 2, color: lineColor)),
@@ -443,11 +445,11 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: isDark
-                                          ? AppColors.surfaceSubtleDark
+                                          ? cs.surfaceContainerLow
                                           : const Color(0xFFDCE6F1),
                                       border: Border.all(
                                         color: isDark
-                                            ? AppColors.surfaceDark
+                                            ? cs.surface
                                             : Colors.white,
                                         width: 1.5,
                                       ),
@@ -488,6 +490,7 @@ class _EventsErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
@@ -495,10 +498,10 @@ class _EventsErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.cloud_off_rounded,
               size: 48,
-              color: AppColors.textMutedLight,
+              color: cs.onSurfaceVariant,
             ),
             const SizedBox(height: 10),
             Text(
@@ -506,8 +509,8 @@ class _EventsErrorState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: isDark
-                    ? AppColors.textMutedDark
-                    : AppColors.textSubtleDark,
+                    ? cs.onSurfaceVariant
+                    : cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 14),
@@ -528,6 +531,7 @@ class _EventsEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
@@ -535,10 +539,10 @@ class _EventsEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.event_busy_rounded,
               size: 48,
-              color: AppColors.textMutedDark,
+              color: cs.onSurfaceVariant,
             ),
             const SizedBox(height: 10),
             Text(
@@ -553,8 +557,8 @@ class _EventsEmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: isDark
-                    ? AppColors.textMutedDark
-                    : AppColors.textMutedLight,
+                    ? cs.onSurfaceVariant
+                    : cs.onSurfaceVariant,
               ),
             ),
           ],
@@ -569,6 +573,7 @@ class _PastEventsEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
@@ -576,10 +581,10 @@ class _PastEventsEmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.history_rounded,
               size: 48,
-              color: AppColors.textMutedDark,
+              color: cs.onSurfaceVariant,
             ),
             const SizedBox(height: 10),
             Text(
@@ -594,8 +599,8 @@ class _PastEventsEmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: isDark
-                    ? AppColors.textMutedDark
-                    : AppColors.textMutedLight,
+                    ? cs.onSurfaceVariant
+                    : cs.onSurfaceVariant,
               ),
             ),
           ],
@@ -649,6 +654,7 @@ class EventDateHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+  final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
 
     return Row(
@@ -663,7 +669,7 @@ class EventDateHeader extends StatelessWidget {
               fontWeight: FontWeight.w600,
               fontSize: 22,
               height: 1,
-              color: isDark ? AppColors.borderLight : AppColors.textSubtleDark,
+              color: isDark ? cs.outlineVariant : cs.onSurfaceVariant,
             ),
           ),
         ),
@@ -673,7 +679,7 @@ class EventDateHeader extends StatelessWidget {
             '${_getMonthName(date.month)} • ${_getWeekDay(date)}',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
-              color: isDark ? AppColors.borderLight : AppColors.textSubtleDark,
+              color: isDark ? cs.outlineVariant : cs.onSurfaceVariant,
             ),
           ),
         ),
@@ -682,7 +688,7 @@ class EventDateHeader extends StatelessWidget {
           _getRelativeTime(date),
           style: theme.textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w600,
-            color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+            color: isDark ? cs.onSurfaceVariant : cs.onSurfaceVariant,
           ),
         ),
       ],
@@ -715,6 +721,7 @@ class EventTimelineColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       width: 28,
@@ -726,8 +733,8 @@ class EventTimelineColumn extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   color: isDark
-                      ? AppColors.textSubtleDark
-                      : AppColors.borderStrongLight,
+                      ? cs.onSurfaceVariant
+                      : cs.outline,
                 ),
               ),
             ),

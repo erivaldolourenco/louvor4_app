@@ -10,7 +10,6 @@ import 'package:louvor4_app/features/user_profile/data/impl/user_repository_impl
 import 'package:louvor4_app/features/user_profile/data/user_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/utils/formatters.dart';
@@ -104,6 +103,7 @@ class _EventDetailViewState extends State<_EventDetailView>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+  final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final titleColor = theme.textTheme.headlineSmall?.color;
     final bodyColor = theme.textTheme.bodyMedium?.color;
@@ -145,10 +145,10 @@ class _EventDetailViewState extends State<_EventDetailView>
                     if (state.isProjectAdmin)
                       PopupMenuButton<_EventHeaderAction>(
                         tooltip: 'Ações do evento',
-                        color: isDark ? AppColors.surfaceDark : Colors.white,
+                        color: isDark ? cs.surface : Colors.white,
                         icon: const Icon(Icons.more_vert),
                         onSelected: _onHeaderActionSelected,
-                        itemBuilder: (context) => const [
+                        itemBuilder: (context) => [
                           PopupMenuItem(
                             value: _EventHeaderAction.edit,
                             child: ListTile(
@@ -163,11 +163,11 @@ class _EventDetailViewState extends State<_EventDetailView>
                               contentPadding: EdgeInsets.zero,
                               leading: Icon(
                                 Icons.delete_outline,
-                                color: AppColors.danger,
+                                color: cs.error,
                               ),
                               title: Text(
                                 'Deletar evento',
-                                style: TextStyle(color: AppColors.danger),
+                                style: TextStyle(color: cs.error),
                               ),
                             ),
                           ),
@@ -267,6 +267,7 @@ class _EventDetailViewState extends State<_EventDetailView>
   }
 
   Future<bool> _onRemoveSong(String eventSongId) async {
+    final cs = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -283,7 +284,7 @@ class _EventDetailViewState extends State<_EventDetailView>
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.danger,
+                backgroundColor: cs.error,
               ),
               child: const Text('Remover'),
             ),
@@ -314,7 +315,7 @@ class _EventDetailViewState extends State<_EventDetailView>
       SnackBar(
         content: Text(state.actionErrorMessage ?? 'Erro ao remover música'),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.danger,
+        backgroundColor: cs.error,
       ),
     );
     return false;
@@ -337,6 +338,7 @@ class _EventDetailViewState extends State<_EventDetailView>
   }
 
   Future<void> _onEditEvent() async {
+    final cs = Theme.of(context).colorScheme;
     final event = context.read<EventDetailCubit>().state.event;
     if (event == null) return;
 
@@ -351,10 +353,10 @@ class _EventDetailViewState extends State<_EventDetailView>
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Text('Evento atualizado com sucesso.'),
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.success,
+        backgroundColor: cs.primaryContainer,
       ),
     );
   }
@@ -405,6 +407,7 @@ class _EventHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 4, 0, 8),
@@ -463,10 +466,10 @@ class _EventHeroCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.primarySubtleDark : AppColors.primarySubtleLight,
+                        color: isDark ? cs.primaryContainer : cs.primaryContainer,
                         borderRadius: BorderRadius.circular(AppRadius.badge),
                         border: Border.all(
-                          color: isDark ? AppColors.primaryBorderDark : AppColors.primaryBorderLight,
+                          color: isDark ? cs.primary.withValues(alpha: 0.30) : cs.primary.withValues(alpha: 0.30),
                         ),
                       ),
                       child: Row(
@@ -475,14 +478,14 @@ class _EventHeroCard extends StatelessWidget {
                           Icon(
                             Icons.location_on_rounded,
                             size: 14,
-                            color: AppColors.primary,
+                            color: cs.primary,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             'Localização',
                             style: Theme.of(context).textTheme.labelMedium?.copyWith(
                               fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
+                              color: cs.primary,
                             ),
                           ),
                         ],
@@ -779,6 +782,7 @@ class _DetailLoadingState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ListView(
@@ -787,7 +791,7 @@ class _DetailLoadingState extends StatelessWidget {
         Container(
           height: 200,
           decoration: BoxDecoration(
-            color: isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight,
+            color: isDark ? cs.surfaceContainer : cs.outlineVariant,
             borderRadius: BorderRadius.circular(18),
           ),
         ),
@@ -795,7 +799,7 @@ class _DetailLoadingState extends StatelessWidget {
         Container(
           height: 140,
           decoration: BoxDecoration(
-            color: isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight,
+            color: isDark ? cs.surfaceContainer : cs.outlineVariant,
             borderRadius: BorderRadius.circular(18),
           ),
         ),
@@ -803,7 +807,7 @@ class _DetailLoadingState extends StatelessWidget {
         Container(
           height: 52,
           decoration: BoxDecoration(
-            color: isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight,
+            color: isDark ? cs.surfaceContainer : cs.outlineVariant,
             borderRadius: BorderRadius.circular(AppRadius.input),
           ),
         ),
@@ -821,6 +825,7 @@ class _DetailErrorState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+  final cs = theme.colorScheme;
     final mutedColor = theme.textTheme.bodyMedium?.color?.withValues(
       alpha: 0.78,
     );
@@ -866,6 +871,7 @@ class _RetryTabState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final titleColor = theme.textTheme.titleMedium?.color;
@@ -874,10 +880,10 @@ class _RetryTabState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
+        color: isDark ? cs.surface : Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
-          color: isDark ? AppColors.borderStrongDark : AppColors.borderLight,
+          color: isDark ? cs.outline : cs.outlineVariant,
         ),
       ),
       child: Column(
@@ -920,6 +926,7 @@ class _EmptyTabState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final titleColor = theme.textTheme.titleMedium?.color;
@@ -930,10 +937,10 @@ class _EmptyTabState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
+        color: isDark ? cs.surface : Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
-          color: isDark ? AppColors.borderStrongDark : AppColors.borderLight,
+          color: isDark ? cs.outline : cs.outlineVariant,
         ),
       ),
       child: Column(

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/widgets/app_cached_network_image.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
@@ -39,6 +38,7 @@ class EditMusicProjectPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return BlocProvider(
       create: (_) => EditMusicProjectCubit(repository)..loadProject(projectId),
       child: const _EditMusicProjectView(),
@@ -233,8 +233,9 @@ class _ProjectImageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark ? AppColors.borderStrongDark : Colors.grey.shade200;
+    final borderColor = isDark ? cs.outline : Colors.grey.shade200;
     final subtitleColor = Theme.of(
       context,
     ).textTheme.bodySmall?.color?.withValues(alpha: 0.78);
@@ -247,7 +248,7 @@ class _ProjectImageCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
+        color: isDark ? cs.surface : Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.bottomSheet),
         border: Border.all(color: borderColor),
       ),
@@ -267,13 +268,13 @@ class _ProjectImageCard extends StatelessWidget {
                       ? appCachedImageProvider(imageUrl)
                       : null,
                   backgroundColor: isDark
-                      ? AppColors.primarySubtleDark
-                      : AppColors.primarySubtleLight,
+                      ? cs.primaryContainer
+                      : cs.primaryContainer,
                   child: !hasLocalImage && !hasNetworkImage
                       ? Text(
                           initials,
                           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: AppColors.primary,
+                            color: cs.primary,
                             fontWeight: FontWeight.w800,
                           ),
                         )
@@ -288,7 +289,7 @@ class _ProjectImageCard extends StatelessWidget {
                       color: const Color(0xFF0F4CDA),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isDark ? AppColors.surfaceDark : Colors.white,
+                        color: isDark ? cs.surface : Colors.white,
                         width: 2,
                       ),
                     ),
@@ -336,6 +337,7 @@ class _FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
@@ -355,21 +357,22 @@ class _InlineErrorMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.dangerSubtleDark : AppColors.dangerSubtleLight,
+        color: isDark ? cs.errorContainer : cs.errorContainer,
         borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? AppColors.dangerBorderDark : AppColors.dangerBorderLight,
+          color: cs.error.withValues(alpha: 0.35),
         ),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? AppColors.dangerTextDark : AppColors.dangerTextLight,
+          color: cs.error,
           fontWeight: FontWeight.w600,
         ),
       ),

@@ -23,12 +23,8 @@ class RootNavigationDrawer extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final username = _buildUsername();
-    final drawerBackground = theme.brightness == Brightness.dark
-        ? cs.surface
-        : Colors.white;
-    final secondaryTextColor = theme.brightness == Brightness.dark
-        ? cs.onSurfaceVariant
-        : cs.onSurfaceVariant;
+    final drawerBackground = cs.surface;
+    final secondaryTextColor = cs.onSurfaceVariant;
 
     return Drawer(
       backgroundColor: drawerBackground,

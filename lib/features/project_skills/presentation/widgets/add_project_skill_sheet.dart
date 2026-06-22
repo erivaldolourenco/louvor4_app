@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
@@ -176,6 +175,7 @@ class _IconPickerGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+  final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final icons = skillIconLabels.entries.toList();
 
@@ -201,18 +201,18 @@ class _IconPickerGrid extends StatelessWidget {
             decoration: BoxDecoration(
               color: isSelected
                   ? (isDark
-                        ? AppColors.primarySubtleDark
-                        : AppColors.primarySubtleLight)
+                        ? cs.primaryContainer
+                        : cs.primaryContainer)
                   : (isDark
-                        ? AppColors.surfaceElevatedDark
-                        : AppColors.surfaceElevatedLight),
+                        ? cs.surfaceContainer
+                        : cs.surfaceContainer),
               borderRadius: BorderRadius.circular(AppRadius.input),
               border: Border.all(
                 color: isSelected
-                    ? AppColors.primary
+                    ? cs.primary
                     : (isDark
-                          ? AppColors.borderSubtleDark
-                          : AppColors.borderLight),
+                          ? cs.outlineVariant
+                          : cs.outlineVariant),
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -225,10 +225,10 @@ class _IconPickerGrid extends StatelessWidget {
                   height: 32,
                   colorFilter: ColorFilter.mode(
                     isSelected
-                        ? AppColors.primary
+                        ? cs.primary
                         : (isDark
-                              ? AppColors.textMutedDark
-                              : AppColors.textMutedLight),
+                              ? cs.onSurfaceVariant
+                              : cs.onSurfaceVariant),
                     BlendMode.srcIn,
                   ),
                 ),
@@ -239,10 +239,10 @@ class _IconPickerGrid extends StatelessWidget {
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: isSelected
-                        ? AppColors.primary
+                        ? cs.primary
                         : (isDark
-                              ? AppColors.textMutedDark
-                              : AppColors.textMutedLight),
+                              ? cs.onSurfaceVariant
+                              : cs.onSurfaceVariant),
                   ),
                 ),
               ],
@@ -280,21 +280,22 @@ class _InlineError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.dangerSubtleDark : AppColors.dangerSubtleLight,
+        color: isDark ? cs.errorContainer : cs.errorContainer,
         borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? AppColors.dangerBorderDark : AppColors.dangerBorderLight,
+          color: cs.error.withValues(alpha: 0.35),
         ),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? AppColors.dangerTextDark : AppColors.dangerTextLight,
+          color: cs.error,
           fontWeight: FontWeight.w600,
         ),
       ),

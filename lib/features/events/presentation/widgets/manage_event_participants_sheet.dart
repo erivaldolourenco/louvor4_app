@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
@@ -44,11 +43,9 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
     final titleColor = theme.textTheme.titleLarge?.color;
-    final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(
-      alpha: 0.78,
-    );
+    final subtitleColor = cs.onSurfaceVariant;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
@@ -58,7 +55,7 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
       builder: (context, scrollController) {
         return DecoratedBox(
           decoration: BoxDecoration(
-            color: isDark ? AppColors.surfaceDark : AppColors.surfaceElevatedLight,
+            color: cs.surface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
           ),
           child: SafeArea(
@@ -85,9 +82,7 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                           width: 44,
                           height: 5,
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.borderSubtleDark
-                                : AppColors.borderSubtleLight,
+                            color: cs.outlineVariant,
                             borderRadius: BorderRadius.circular(AppRadius.pill),
                           ),
                         ),
@@ -128,22 +123,16 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                               width: double.infinity,
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: isDark
-                                    ? AppColors.dangerSubtleDark
-                                    : AppColors.dangerSubtleLight,
+                                color: cs.errorContainer,
                                 borderRadius: BorderRadius.circular(AppRadius.card),
                                 border: Border.all(
-                                  color: isDark
-                                      ? AppColors.dangerBorderDark
-                                      : AppColors.dangerBorderLight,
+                                  color: cs.error.withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Text(
                                 state.errorMessage!,
                                 style: TextStyle(
-                                  color: isDark
-                                      ? AppColors.dangerTextDark
-                                      : AppColors.dangerTextLight,
+                                  color: cs.onErrorContainer,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -192,14 +181,10 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.scaffoldDark
-                                : Colors.white,
+                            color: cs.surface,
                             border: Border(
                               top: BorderSide(
-                                color: isDark
-                                    ? AppColors.borderSubtleDark
-                                    : AppColors.borderLight,
+                                color: cs.outlineVariant,
                               ),
                             ),
                           ),
@@ -228,7 +213,6 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                                             height: 20,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              color: Colors.white,
                                             ),
                                           ),
                                         )
@@ -257,15 +241,13 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
 class _SelectableMemberCard extends StatelessWidget {
   final SelectableEventMember item;
   final Map<String, String> skillsMap;
-  static const _primaryColor = Color(0xFF0F4CDA);
-  static const _primarySoftColor = Color(0xFFEFF6FF);
 
   const _SelectableMemberCard({required this.item, required this.skillsMap});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
     final titleColor = theme.textTheme.titleMedium?.color;
     final cubit = context.read<ManageEventParticipantsCubit>();
 
@@ -273,18 +255,16 @@ class _SelectableMemberCard extends StatelessWidget {
       duration: const Duration(milliseconds: 180),
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppRadius.cardLarge),
         border: Border.all(
-          color: item.isSelected
-              ? _primaryColor
-              : (isDark ? AppColors.borderStrongDark : AppColors.borderLight),
+          color: item.isSelected ? cs.primary : cs.outlineVariant,
           width: item.isSelected ? 1.4 : 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.04),
-            blurRadius: isDark ? 18 : 14,
+            color: cs.shadow.withValues(alpha: 0.06),
+            blurRadius: 14,
             offset: const Offset(0, 8),
           ),
         ],
@@ -314,7 +294,7 @@ class _SelectableMemberCard extends StatelessWidget {
                       Text(
                         item.member.projectRole ?? 'Membro',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: isDark ? const Color(0xFFA1A1AA) : const Color(0xFF71717A),
+                          color: cs.onSurfaceVariant,
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -324,7 +304,6 @@ class _SelectableMemberCard extends StatelessWidget {
                 ),
                 Checkbox(
                   value: item.isSelected,
-                  activeColor: _primaryColor,
                   onChanged: (value) =>
                       cubit.toggleMember(item.member.id, value ?? false),
                 ),
@@ -343,9 +322,7 @@ class _SelectableMemberCard extends StatelessWidget {
                   children: [
                     Divider(
                       height: 1,
-                      color: isDark
-                          ? AppColors.borderSubtleDark
-                          : AppColors.borderLight,
+                      color: cs.outlineVariant,
                     ),
                     const SizedBox(height: 14),
                     Text(
@@ -394,8 +371,6 @@ class _SelectableMemberCard extends StatelessWidget {
                         value,
                       ),
                       contentPadding: EdgeInsets.zero,
-                      activeThumbColor: _primaryColor,
-                      activeTrackColor: _primarySoftColor,
                       title: const Text('Permite adicionar músicas'),
                     ),
                   ],
@@ -414,10 +389,6 @@ class _SkillOptionButton extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  static const _primaryColor = Color(0xFF4F6AF6);
-  static const _selectedTextColor = Colors.white;
-  static const _defaultTextColor = Color(0xFF475569);
-
   const _SkillOptionButton({
     required this.label,
     required this.isSelected,
@@ -426,11 +397,9 @@ class _SkillOptionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Material(
-      color: isSelected
-          ? _primaryColor
-          : (isDark ? AppColors.scaffoldDark : Colors.white),
+      color: isSelected ? cs.primary : cs.surface,
       borderRadius: BorderRadius.circular(AppRadius.pill),
       child: InkWell(
         onTap: onTap,
@@ -441,16 +410,12 @@ class _SkillOptionButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.pill),
             border: Border.all(
-              color: isSelected
-                  ? _primaryColor
-                  : (isDark
-                        ? AppColors.borderSubtleDark
-                        : const Color(0xFFD7DCE5)),
+              color: isSelected ? cs.primary : cs.outlineVariant,
             ),
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: _primaryColor.withValues(alpha: 0.28),
+                      color: cs.primary.withValues(alpha: 0.28),
                       blurRadius: 14,
                       offset: const Offset(0, 6),
                     ),
@@ -460,7 +425,7 @@ class _SkillOptionButton extends StatelessWidget {
           child: Text(
             label,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: isSelected ? _selectedTextColor : _defaultTextColor,
+              color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
               fontWeight: FontWeight.w700,
               fontSize: 15,
             ),
@@ -478,20 +443,17 @@ class _MemberAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final hasImage = UrlUtils.isValidNetworkUrl(imageUrl);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return CircleAvatar(
       radius: 24,
-      backgroundColor: isDark
-          ? AppColors.surfaceElevatedDark
-          : AppColors.borderLight,
+      backgroundColor: cs.surfaceContainerLow,
       backgroundImage: hasImage ? appCachedImageProvider(imageUrl) : null,
       child: hasImage
           ? null
           : Icon(
               Icons.person_rounded,
-              color: isDark ? AppColors.textMutedDark : AppColors.textSubtleDark,
+              color: cs.onSurfaceVariant,
             ),
     );
   }

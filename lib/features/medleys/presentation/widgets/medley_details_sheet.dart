@@ -8,7 +8,6 @@ import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../../core/ui/app_feedback.dart';
 import '../../../../../core/ui/widgets/app_card_surface.dart';
@@ -39,9 +38,7 @@ class _MedleyDetailsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-    final mutedColor =
-        cs.onSurfaceVariant;
+    final mutedColor = cs.onSurfaceVariant;
     final count = medley.items.length;
     final hasNotes = medley.notes != null && medley.notes!.isNotEmpty;
     final hasAudio = medley.referenceAudioUrl != null &&
@@ -66,15 +63,13 @@ class _MedleyDetailsSheet extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? AppColors.warningSubtleDark
-                        : AppColors.warningSubtleLight,
+                    color: cs.secondaryContainer,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.queue_music_rounded,
-                      color: AppColors.warning,
+                      color: cs.onSecondaryContainer,
                       size: 28,
                     ),
                   ),
@@ -174,7 +169,6 @@ class _MedleyDetailsSheet extends StatelessWidget {
                           for (int i = 0; i < medley.items.length; i++) ...[
                             _SongItemCard(
                               item: medley.items[i],
-                              isDark: isDark,
                             ),
                             if (i < medley.items.length - 1)
                               const SizedBox(height: 8),
@@ -196,9 +190,8 @@ class _MedleyDetailsSheet extends StatelessWidget {
 
 class _SongItemCard extends StatelessWidget {
   final MedleyItemEntity item;
-  final bool isDark;
 
-  const _SongItemCard({required this.item, required this.isDark});
+  const _SongItemCard({required this.item});
 
   Future<void> _openYouTube() async {
     final url = item.youTubeUrl;
@@ -227,9 +220,7 @@ class _SongItemCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark
-            ? cs.surfaceContainerLow
-            : cs.surfaceContainerHigh,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: cs.outlineVariant,
@@ -257,9 +248,7 @@ class _SongItemCard extends StatelessWidget {
                           width: 60,
                           height: 60,
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? cs.surface
-                                : cs.primaryContainer,
+                            color: cs.surfaceContainerLow,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
@@ -284,10 +273,10 @@ class _SongItemCard extends StatelessWidget {
                         ),
                         child: Text(
                           '${item.sequence}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                            color: cs.onPrimary,
                           ),
                         ),
                       ),
@@ -326,7 +315,7 @@ class _SongItemCard extends StatelessWidget {
                 ),
                 if (item.key != null && item.key!.isNotEmpty) ...[
                   const SizedBox(width: 10),
-                  _KeyChip(label: item.key!, isDark: isDark),
+                  _KeyChip(label: item.key!),
                 ],
               ],
             ),
@@ -467,13 +456,9 @@ class _AudioPlayerState extends State<_AudioPlayer> {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final mutedColor =
-        cs.onSurfaceVariant;
-    final borderColor =
-        cs.outlineVariant;
-    final bgColor =
-        isDark ? cs.surfaceContainerLow : cs.surfaceContainerHigh;
+    final mutedColor = cs.onSurfaceVariant;
+    final borderColor = cs.outlineVariant;
+    final bgColor = cs.surfaceContainerLow;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -658,7 +643,7 @@ class _AudioPlayerState extends State<_AudioPlayer> {
             SizedBox(height: 10),
             Container(
               decoration: BoxDecoration(
-                color: isDark ? cs.surface : Colors.white,
+                color: cs.surface,
                 borderRadius: BorderRadius.circular(AppRadius.input),
                 border: Border.all(color: borderColor),
               ),
@@ -706,6 +691,7 @@ class _YoutubeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(20),
@@ -713,15 +699,15 @@ class _YoutubeButton extends StatelessWidget {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: const Color(0xFFFEF2F2),
+          color: cs.errorContainer,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFFECACA)),
+          border: Border.all(color: cs.error.withValues(alpha: 0.3)),
         ),
-        child: const Center(
+        child: Center(
           child: Icon(
             Icons.ondemand_video_rounded,
             size: 18,
-            color: Color(0xFFDC2626),
+            color: cs.error,
           ),
         ),
       ),
@@ -731,23 +717,19 @@ class _YoutubeButton extends StatelessWidget {
 
 class _KeyChip extends StatelessWidget {
   final String label;
-  final bool isDark;
 
-  const _KeyChip({required this.label, required this.isDark});
+  const _KeyChip({required this.label});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final mutedColor =
-        cs.onSurfaceVariant;
+    final mutedColor = cs.onSurfaceVariant;
     final strongColor = cs.onSurfaceVariant;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isDark
-            ? cs.surfaceContainerLow
-            : cs.surfaceContainerHigh,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.badge),
         border: Border.all(
           color: cs.outlineVariant,

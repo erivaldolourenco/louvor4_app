@@ -10,7 +10,7 @@ abstract final class AppTheme {
       primary: AppColors.primary,
       onPrimary: Colors.white,
       error: AppColors.danger,
-      onError: AppColors.onDanger,
+      onError: Colors.white,
     );
 
     return ThemeData(
@@ -124,8 +124,8 @@ abstract final class AppTheme {
     final cs = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
-      error: AppColors.dangerBright,
-      onError: AppColors.onDanger,
+      error: AppColors.danger,
+      onError: Colors.white,
     );
 
     return ThemeData(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
@@ -495,6 +494,7 @@ class _MedleysEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
@@ -502,10 +502,10 @@ class _MedleysEmpty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.queue_music_rounded,
               size: 56,
-              color: AppColors.textMutedDark,
+              color: cs.onSurfaceVariant,
             ),
             const SizedBox(height: 12),
             Text(
@@ -520,8 +520,8 @@ class _MedleysEmpty extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: isDark
-                    ? AppColors.textMutedDark
-                    : AppColors.textMutedLight,
+                    ? cs.onSurfaceVariant
+                    : cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 20),

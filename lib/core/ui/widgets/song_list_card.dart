@@ -176,7 +176,6 @@ class _Thumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-
     if (isMedley) {
       return Container(
         width: 64,

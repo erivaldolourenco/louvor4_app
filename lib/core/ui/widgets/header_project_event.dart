@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
 import 'app_cached_network_image.dart';
 import '../../utils/url_utils.dart';
 
@@ -20,12 +19,13 @@ class HeaderProjectEvent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return SliverAppBar(
       expandedHeight: 64,
       pinned: true,
       stretch: true,
-      backgroundColor: AppColors.scaffoldDark,
-      foregroundColor: Colors.white,
+      backgroundColor: cs.surface,
+      foregroundColor: cs.onSurface,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
@@ -39,7 +39,7 @@ class HeaderProjectEvent extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Colors.white,
+              color: cs.onSurface,
               fontWeight: FontWeight.w800,
               fontSize: 20,
             ),
@@ -50,7 +50,7 @@ class HeaderProjectEvent extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.white70,
+                color: cs.onSurface.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -65,9 +65,9 @@ class HeaderProjectEvent extends StatelessWidget {
               AppCachedNetworkImage(imageUrl: backgroundImageUrl!, fit: BoxFit.cover)
             else
               Container(
-                color: AppColors.scaffoldDark,
-                child: const Center(
-                  child: Icon(Icons.multitrack_audio_rounded, color: Colors.white70, size: 58),
+                color: cs.surface,
+                child: Center(
+                  child: Icon(Icons.multitrack_audio_rounded, color: cs.onSurface.withValues(alpha: 0.7), size: 58),
                 ),
               ),
             const DecoratedBox(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_circular_action_button.dart';
@@ -291,7 +290,7 @@ class _MedleyFormPageState extends State<_MedleyFormPage> {
                       '${_draftItems.length} ${_draftItems.length == 1 ? 'música' : 'músicas'}',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontSize: 13,
-                        color: AppColors.textMutedLight,
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -331,7 +330,6 @@ class _MedleyFormPageState extends State<_MedleyFormPage> {
                           height: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            color: Colors.white,
                           ),
                         )
                       : Text(_isEditing ? 'Salvar alterações' : 'Criar Medley'),
@@ -372,14 +370,15 @@ class _DraftItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.scaffoldDark : AppColors.surfaceElevatedLight,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? AppColors.borderDark : AppColors.borderLight,
+          color: cs.outlineVariant,
         ),
       ),
       child: Row(
@@ -388,9 +387,7 @@ class _DraftItemTile extends StatelessWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: isDark
-                  ? AppColors.primarySubtleDark
-                  : AppColors.primarySubtleLight,
+              color: cs.primaryContainer,
               borderRadius: BorderRadius.circular(AppRadius.badge),
             ),
             child: Center(
@@ -399,7 +396,7 @@ class _DraftItemTile extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontSize: 13,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.primary,
+                  color: cs.primary,
                 ),
               ),
             ),
@@ -432,21 +429,17 @@ class _DraftItemTile extends StatelessWidget {
           AppCircularActionButton(
             onPressed: onEdit,
             assetPath: 'assets/icons/settings-2.svg',
-            iconColor: onEdit != null ? AppColors.primary : AppColors.textMutedDark,
-            backgroundColor: onEdit != null
-                ? AppColors.primarySubtleLight
-                : AppColors.surfaceElevatedLight,
-            borderColor: onEdit != null ? AppColors.primaryBorderLight : AppColors.borderLight,
+            iconColor: onEdit != null ? cs.primary : cs.onSurfaceVariant,
+            backgroundColor: onEdit != null ? cs.primaryContainer : cs.surfaceContainerLow,
+            borderColor: onEdit != null ? cs.primary.withValues(alpha: 0.3) : cs.outlineVariant,
           ),
           const SizedBox(width: 8),
           AppCircularActionButton(
             onPressed: onRemove,
             assetPath: 'assets/icons/trash-2.svg',
-            iconColor: onRemove != null ? AppColors.dangerBright : AppColors.textMutedDark,
-            backgroundColor: onRemove != null
-                ? AppColors.dangerSubtleLight
-                : AppColors.surfaceElevatedLight,
-            borderColor: onRemove != null ? AppColors.dangerBorderLight : AppColors.borderLight,
+            iconColor: onRemove != null ? cs.error : cs.onSurfaceVariant,
+            backgroundColor: onRemove != null ? cs.errorContainer : cs.surfaceContainerLow,
+            borderColor: onRemove != null ? cs.error.withValues(alpha: 0.3) : cs.outlineVariant,
           ),
         ],
       ),
@@ -461,17 +454,18 @@ class _MiniTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.surfaceSubtleLight,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(
         label,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textSubtleDark),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
       ),
     );
   }
@@ -541,10 +535,7 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sheetColor = isDark ? AppColors.surfaceDark : Colors.white;
-    final borderColor = isDark ? AppColors.borderDark : AppColors.borderLight;
-
+    final cs = Theme.of(context).colorScheme;
     final filtered = widget.songs.where((s) {
       final q = _query.toLowerCase();
       return s.title.toLowerCase().contains(q) ||
@@ -553,7 +544,7 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
 
     return Container(
       decoration: BoxDecoration(
-        color: sheetColor,
+        color: cs.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.bottomSheet)),
       ),
       child: Column(
@@ -564,7 +555,7 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: isDark ? AppColors.borderSubtleDark : AppColors.borderStrongLight,
+                color: cs.outlineVariant,
                 borderRadius: BorderRadius.circular(AppRadius.pill),
               ),
             ),
@@ -606,21 +597,19 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
                       )
                     : null,
                 filled: true,
-                fillColor: isDark
-                    ? AppColors.scaffoldDark
-                    : AppColors.surfaceSubtleLight,
+                fillColor: cs.surfaceContainerLow,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide(color: borderColor),
+                  borderSide: BorderSide(color: cs.outlineVariant),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide(color: borderColor),
+                  borderSide: BorderSide(color: cs.outlineVariant),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: const BorderSide(
-                    color: AppColors.primary,
+                  borderSide: BorderSide(
+                    color: cs.primary,
                     width: 1.4,
                   ),
                 ),
@@ -634,72 +623,73 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
           Expanded(
             child: filtered.isEmpty
                 ? Center(
-                    child: Text(
-                      _query.isEmpty ? 'Nenhuma música no catálogo.' : 'Nenhuma música encontrada.',
-                      style: const TextStyle(color: AppColors.textMutedDark),
+                    child: Builder(
+                      builder: (context) => Text(
+                        _query.isEmpty ? 'Nenhuma música no catálogo.' : 'Nenhuma música encontrada.',
+                        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      ),
                     ),
                   )
-                : ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
-                    itemCount: filtered.length,
-                    separatorBuilder: (_, _) => Divider(
-                      height: 1,
-                      color: isDark
-                          ? AppColors.surfaceElevatedDark
-                          : AppColors.surfaceSubtleLight,
-                    ),
-                    itemBuilder: (ctx, i) {
-                      final song = filtered[i];
-                      return ListTile(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 4,
+                : Builder(
+                    builder: (context) {
+                      final cs = Theme.of(context).colorScheme;
+                      return ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+                        itemCount: filtered.length,
+                        separatorBuilder: (_, _) => Divider(
+                          height: 1,
+                          color: cs.outlineVariant,
                         ),
-                        leading: Container(
-                          width: 42,
-                          height: 42,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.surfaceElevatedDark
-                                : AppColors.surfaceSubtleLight,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Icon(
-                            Icons.music_note_rounded,
-                            color: AppColors.textMutedLight,
-                            size: 20,
-                          ),
-                        ),
-                        title: Text(
-                          song.title,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(
-                          song.artist,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.primarySubtleDark
-                                : AppColors.primarySubtleLight,
-                            borderRadius: BorderRadius.circular(AppRadius.badge),
-                          ),
-                          child: Text(
-                            song.key,
-                            style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
-                              color: AppColors.primary,
+                        itemBuilder: (ctx, i) {
+                          final song = filtered[i];
+                          return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 4,
                             ),
-                          ),
-                        ),
-                        onTap: () => Navigator.of(ctx).pop(song),
+                            leading: Container(
+                              width: 42,
+                              height: 42,
+                              decoration: BoxDecoration(
+                                color: cs.surfaceContainerLow,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.music_note_rounded,
+                                color: cs.onSurfaceVariant,
+                                size: 20,
+                              ),
+                            ),
+                            title: Text(
+                              song.title,
+                              style: const TextStyle(fontWeight: FontWeight.w700),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(
+                              song.artist,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            trailing: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: cs.primaryContainer,
+                                borderRadius: BorderRadius.circular(AppRadius.badge),
+                              ),
+                              child: Text(
+                                song.key,
+                                style: Theme.of(ctx).textTheme.labelMedium?.copyWith(
+                                  color: cs.primary,
+                                ),
+                              ),
+                            ),
+                            onTap: () => Navigator.of(ctx).pop(song),
+                          );
+                        },
                       );
                     },
                   ),
@@ -817,13 +807,12 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     final thumbnailUrl = YoutubeUtils.getThumbnail(widget.youTubeUrl);
     final hasThumb = widget.youTubeUrl != null && widget.youTubeUrl!.isNotEmpty;
-    final dialogBg = isDark ? AppColors.surfaceDark : Colors.white;
 
     return Dialog(
-      backgroundColor: dialogBg,
+      backgroundColor: cs.surface,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.cardLarge),
@@ -844,9 +833,9 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                       ? Image.network(
                           thumbnailUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => _ThumbFallback(isDark: isDark),
+                          errorBuilder: (context, error, stackTrace) => const _ThumbFallback(),
                         )
-                      : _ThumbFallback(isDark: isDark),
+                      : const _ThumbFallback(),
                   // gradient
                   DecoratedBox(
                     decoration: BoxDecoration(
@@ -899,7 +888,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                     top: 8,
                     right: 8,
                     child: Material(
-                      color: Colors.black.withValues(alpha: 0.35),
+                      color: cs.shadow.withValues(alpha: 0.35),
                       shape: const CircleBorder(),
                       child: InkWell(
                         customBorder: const CircleBorder(),
@@ -1018,16 +1007,15 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
 }
 
 class _ThumbFallback extends StatelessWidget {
-  final bool isDark;
-
-  const _ThumbFallback({required this.isDark});
+  const _ThumbFallback();
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
-      color: isDark ? AppColors.surfaceElevatedDark : AppColors.primarySubtleLight,
-      child: const Center(
-        child: Icon(Icons.music_note_rounded, color: AppColors.primary, size: 48),
+      color: cs.primaryContainer,
+      child: Center(
+        child: Icon(Icons.music_note_rounded, color: cs.primary, size: 48),
       ),
     );
   }

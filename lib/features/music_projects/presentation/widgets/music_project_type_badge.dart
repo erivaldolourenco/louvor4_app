@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../domain/entities/music_project_entity.dart';
 import '../utils/music_project_ui_utils.dart';
@@ -55,7 +54,7 @@ class _MusicProjectTypeBadgeState extends State<MusicProjectTypeBadge>
     super.dispose();
   }
 
-  Color _badgeColor(MusicProjectType type) {
+  Color _badgeColor(MusicProjectType type, ColorScheme cs) {
     switch (type) {
       case MusicProjectType.ministry:
         return const Color(0xFF0E7490);
@@ -64,13 +63,14 @@ class _MusicProjectTypeBadgeState extends State<MusicProjectTypeBadge>
       case MusicProjectType.singer:
         return const Color(0xFF9333EA);
       case MusicProjectType.unknown:
-        return AppColors.textSubtleDark;
+        return cs.onSurfaceVariant;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final color = _badgeColor(widget.type);
+    final cs = Theme.of(context).colorScheme;
+    final color = _badgeColor(widget.type, cs);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),

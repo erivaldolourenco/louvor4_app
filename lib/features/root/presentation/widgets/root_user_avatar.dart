@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
-import '../../../../../core/theme/app_colors.dart';
-
 class RootUserAvatar extends StatelessWidget {
   final UserDetailEntity? user;
   final double radius;
@@ -17,12 +15,10 @@ class RootUserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final cs = Theme.of(context).colorScheme;
     final profileImage = user?.profileImage?.trim();
     final hasProfileImage = profileImage != null && profileImage.isNotEmpty;
-    final backgroundColor = theme.brightness == Brightness.dark
-        ? AppColors.primarySubtleDark
-        : const Color(0xFFE8F0FF);
+    final backgroundColor = cs.primaryContainer;
 
     if (isLoading) {
       return CircleAvatar(
@@ -46,7 +42,7 @@ class RootUserAvatar extends StatelessWidget {
           ? Text(
               _buildInitial(),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.primary,
+                color: cs.primary,
                 fontSize: radius * 0.9,
                 fontWeight: FontWeight.w800,
               ),

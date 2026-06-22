@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_entity.dart';
 
-import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import 'app_cached_network_image.dart';
 import 'app_card_surface.dart';
@@ -74,7 +73,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
     final titleColor = theme.textTheme.titleLarge?.color;
     final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(
       alpha: 0.74,
@@ -121,7 +120,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                       child: AspectRatio(
                         aspectRatio: 1,
                         child: Container(
-                          color: isDark ? AppColors.primarySubtleDark : AppColors.primarySubtleLight,
+                          color: cs.primaryContainer,
                           child: hasImage
                               ? Image(
                                   image: appCachedImageProvider(
@@ -133,7 +132,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                                   child: Text(
                                     initial,
                                     style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                                      color: AppColors.primary,
+                                      color: cs.primary,
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
@@ -145,7 +144,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                       top: 10,
                       right: 10,
                       child: Material(
-                        color: Colors.black.withValues(alpha: 0.18),
+                        color: cs.shadow.withValues(alpha: 0.18),
                         shape: const CircleBorder(),
                         child: IconButton(
                           tooltip: 'Fechar',
@@ -228,7 +227,6 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                                     height: 18,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      color: Colors.white,
                                     ),
                                   )
                                 : const Text('Aceitar'),
@@ -325,23 +323,23 @@ class _ProfilePermissionPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
 
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF132033) : AppColors.primarySubtleLight,
+          color: cs.primaryContainer,
           borderRadius: BorderRadius.circular(AppRadius.pill),
           border: Border.all(
-            color: isDark ? const Color(0xFF1E3A5F) : AppColors.primaryBorderLight,
+            color: cs.primary.withValues(alpha: 0.3),
           ),
         ),
         child: Text(
           value,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: AppColors.primary,
+            color: cs.primary,
             fontWeight: FontWeight.w700,
           ),
         ),
@@ -357,18 +355,17 @@ class _ProfileInfoPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Align(
       alignment: Alignment.centerLeft,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceElevatedLight,
+          color: cs.surfaceContainer,
           borderRadius: BorderRadius.circular(AppRadius.pill),
           border: Border.all(
-            color: isDark ? AppColors.borderSubtleDark : const Color(0xFFD9DEE8),
+            color: cs.outlineVariant,
           ),
         ),
         child: Text(
@@ -389,32 +386,24 @@ class _ProfileStatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     late final Color backgroundColor;
     late final Color foregroundColor;
 
     switch (status) {
       case EventParticipantStatus.accepted:
-        backgroundColor = isDark
-            ? const Color(0xFF123227)
-            : const Color(0xFFDCFCE7);
-        foregroundColor = isDark
-            ? const Color(0xFF86EFAC)
-            : const Color(0xFF166534);
+        backgroundColor = cs.primaryContainer;
+        foregroundColor = cs.onPrimaryContainer;
       case EventParticipantStatus.pending:
-        backgroundColor = isDark
-            ? const Color(0xFF3F2A13)
-            : const Color(0xFFFEF3C7);
-        foregroundColor = isDark
-            ? const Color(0xFFFCD34D)
-            : const Color(0xFF92400E);
+        backgroundColor = cs.secondaryContainer;
+        foregroundColor = cs.onSecondaryContainer;
       case EventParticipantStatus.declined:
-        backgroundColor = isDark ? AppColors.dangerSubtleDark : AppColors.dangerSubtleLight;
-        foregroundColor = isDark ? AppColors.dangerTextDark : AppColors.dangerTextLight;
+        backgroundColor = cs.errorContainer;
+        foregroundColor = cs.onErrorContainer;
       case EventParticipantStatus.unknown:
-        backgroundColor = isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight;
-        foregroundColor = isDark ? AppColors.borderSubtleLight : AppColors.textSubtleDark;
+        backgroundColor = cs.surfaceContainer;
+        foregroundColor = cs.onSurfaceVariant;
     }
 
     return Align(
@@ -445,9 +434,8 @@ class _ProfileSkillsBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -459,7 +447,7 @@ class _ProfileSkillsBlock extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
-              color: isDark ? AppColors.borderSubtleDark : const Color(0xFFD9DEE8),
+              color: cs.outlineVariant,
               style: BorderStyle.solid,
             ),
           ),
@@ -474,16 +462,16 @@ class _ProfileSkillsBlock extends StatelessWidget {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF132033) : AppColors.primarySubtleLight,
+                      color: cs.primaryContainer,
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                        color: isDark ? const Color(0xFF1E3A5F) : AppColors.primaryBorderLight,
+                        color: cs.primary.withValues(alpha: 0.3),
                       ),
                     ),
                     child: Text(
                       skill,
                       style: theme.textTheme.titleSmall?.copyWith(
-                        color: AppColors.primary,
+                        color: cs.primary,
                         fontWeight: FontWeight.w800,
                       ),
                     ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_entity.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_radius.dart';
 
 class EventParticipantCard extends StatelessWidget {
@@ -24,12 +23,12 @@ class EventParticipantCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
     final titleColor = theme.textTheme.titleMedium?.color;
     final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
       alpha: 0.78,
     );
-    final badge = _statusBadge(theme);
+    final badge = _statusBadge(cs);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -45,14 +44,12 @@ class EventParticipantCard extends StatelessWidget {
             child: Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: isDark
-                      ? AppColors.primarySubtleDark
-                      : AppColors.primarySubtleLight,
+                  backgroundColor: cs.primaryContainer,
                   backgroundImage: profileImage != null
                       ? appCachedImageProvider(profileImage)
                       : null,
                   child: profileImage == null
-                      ? const Icon(Icons.person, color: AppColors.primary)
+                      ? Icon(Icons.person, color: cs.primary)
                       : null,
                 ),
                 const SizedBox(width: 15),
@@ -99,49 +96,31 @@ class EventParticipantCard extends StatelessWidget {
     );
   }
 
-  _ParticipantStatusBadge _statusBadge(ThemeData theme) {
-    final isDark = theme.brightness == Brightness.dark;
-
+  _ParticipantStatusBadge _statusBadge(ColorScheme cs) {
     switch (status) {
       case EventParticipantStatus.accepted:
         return _ParticipantStatusBadge(
           label: 'Aceito',
-          backgroundColor: isDark
-              ? AppColors.successSubtleDark
-              : const Color(0xFFDCFCE7),
-          foregroundColor: isDark
-              ? const Color(0xFF86EFAC)
-              : const Color(0xFF166534),
+          backgroundColor: cs.primaryContainer,
+          foregroundColor: cs.onPrimaryContainer,
         );
       case EventParticipantStatus.pending:
         return _ParticipantStatusBadge(
           label: 'Pendente',
-          backgroundColor: isDark
-              ? AppColors.warningSubtleDark
-              : const Color(0xFFFEF3C7),
-          foregroundColor: isDark
-              ? const Color(0xFFFCD34D)
-              : const Color(0xFF92400E),
+          backgroundColor: cs.secondaryContainer,
+          foregroundColor: cs.onSecondaryContainer,
         );
       case EventParticipantStatus.declined:
         return _ParticipantStatusBadge(
           label: 'Recusado',
-          backgroundColor: isDark
-              ? AppColors.dangerSubtleDark
-              : AppColors.dangerSubtleLight,
-          foregroundColor: isDark
-              ? AppColors.dangerTextDark
-              : AppColors.dangerTextLight,
+          backgroundColor: cs.errorContainer,
+          foregroundColor: cs.onErrorContainer,
         );
       case EventParticipantStatus.unknown:
         return _ParticipantStatusBadge(
           label: 'Sem status',
-          backgroundColor: isDark
-              ? AppColors.surfaceElevatedDark
-              : AppColors.borderLight,
-          foregroundColor: isDark
-              ? AppColors.borderSubtleLight
-              : AppColors.textSubtleDark,
+          backgroundColor: cs.surfaceContainer,
+          foregroundColor: cs.onSurfaceVariant,
         );
     }
   }

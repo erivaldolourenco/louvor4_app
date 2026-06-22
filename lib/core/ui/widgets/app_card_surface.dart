@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 
 BoxDecoration appCardDecoration(
@@ -20,7 +19,7 @@ BoxDecoration appCardDecoration(
     ),
     boxShadow: boxShadow ?? [
       BoxShadow(
-        color: isDark ? AppColors.shadowDark : AppColors.shadowLight,
+        color: isDark ? cs.shadow.withValues(alpha: 0.28) : cs.shadow.withValues(alpha: 0.10),
         blurRadius: isDark ? 22 : 18,
         offset: const Offset(0, 5),
       ),

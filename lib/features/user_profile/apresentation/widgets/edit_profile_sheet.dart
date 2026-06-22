@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../data/user_repository.dart';
@@ -256,18 +255,19 @@ class _InlineErrorMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.dangerSubtleLight,
+        color: cs.errorContainer,
         borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(color: AppColors.dangerBorderLight),
+        border: Border.all(color: cs.error.withValues(alpha: 0.35)),
       ),
       child: Text(
         message,
-        style: const TextStyle(
-          color: AppColors.dangerTextLight,
+        style: TextStyle(
+          color: cs.error,
           fontWeight: FontWeight.w600,
         ),
       ),

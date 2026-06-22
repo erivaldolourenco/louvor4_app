@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 
 class AppFormSheet extends StatelessWidget {
@@ -20,8 +19,8 @@ class AppFormSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final sheetColor = theme.colorScheme.surface;
     final titleColor = theme.textTheme.titleLarge?.color;
     final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(
       alpha: 0.78,
@@ -39,11 +38,11 @@ class AppFormSheet extends StatelessWidget {
         children: [
           DecoratedBox(
             decoration: BoxDecoration(
-              color: sheetColor,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(AppRadius.sheet),
               boxShadow: [
                 BoxShadow(
-                  color: isDark ? AppColors.shadowDark : AppColors.sheetShadowLight,
+                  color: cs.shadow.withValues(alpha: isDark ? 0.28 : 0.12),
                   blurRadius: isDark ? 28 : 24,
                   offset: const Offset(0, 8),
                 ),
@@ -60,7 +59,7 @@ class AppFormSheet extends StatelessWidget {
                       Text(
                         title,
                         style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w700,
                           color: titleColor,
                         ),
                       ),
@@ -90,19 +89,17 @@ class AppFormSheet extends StatelessWidget {
                   width: 84,
                   height: 84,
                   decoration: BoxDecoration(
-                    color: isDark ? AppColors.scaffoldDark : AppColors.surfaceLight,
+                    color: cs.surface,
                     borderRadius: BorderRadius.circular(AppRadius.sheet),
                     boxShadow: [
                       BoxShadow(
-                        color: isDark
-                            ? AppColors.iconContainerShadowDark
-                            : AppColors.iconContainerShadowLight,
+                        color: cs.shadow.withValues(alpha: isDark ? 0.22 : 0.10),
                         blurRadius: isDark ? 22 : 18,
                         offset: const Offset(0, 6),
                       ),
                     ],
                   ),
-                  child: Icon(icon, size: 38, color: AppColors.primary),
+                  child: Icon(icon, size: 38, color: cs.primary),
                 ),
               ),
             ),
@@ -124,40 +121,37 @@ InputDecoration appFormFieldDecoration(
   ),
 }) {
   final theme = Theme.of(context);
-  final isDark = theme.brightness == Brightness.dark;
-  final fillColor = isDark ? AppColors.scaffoldDark : AppColors.inputFillLight;
-  final borderColor = isDark ? AppColors.borderSubtleDark : AppColors.inputBorderLight;
-  final hintColor = isDark ? AppColors.textMutedDark : AppColors.hintLight;
+  final cs = theme.colorScheme;
 
   return InputDecoration(
     hintText: hintText,
-    hintStyle: TextStyle(color: hintColor),
+    hintStyle: TextStyle(color: cs.onSurfaceVariant),
     alignLabelWithHint: alignLabelWithHint,
     prefixIcon: prefixIcon == null
         ? null
-        : Icon(prefixIcon, color: theme.colorScheme.primary),
+        : Icon(prefixIcon, color: cs.primary),
     suffixIcon: suffixIcon,
     filled: true,
-    fillColor: fillColor,
+    fillColor: cs.surfaceContainerLow,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppRadius.input),
-      borderSide: BorderSide(color: borderColor),
+      borderSide: BorderSide(color: cs.outlineVariant),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppRadius.input),
-      borderSide: BorderSide(color: borderColor),
+      borderSide: BorderSide(color: cs.outlineVariant),
     ),
     focusedBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppRadius.input),
-      borderSide: const BorderSide(color: AppColors.primary, width: 1.4),
+      borderSide: BorderSide(color: cs.primary, width: 1.4),
     ),
     errorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppRadius.input),
-      borderSide: const BorderSide(color: AppColors.dangerBright),
+      borderSide: BorderSide(color: cs.error),
     ),
     focusedErrorBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppRadius.input),
-      borderSide: const BorderSide(color: AppColors.dangerBright, width: 1.4),
+      borderSide: BorderSide(color: cs.error, width: 1.4),
     ),
     contentPadding: contentPadding,
     counterText: '',
@@ -165,42 +159,46 @@ InputDecoration appFormFieldDecoration(
 }
 
 ButtonStyle appPrimaryPillButtonStyle(BuildContext context) {
+  final cs = Theme.of(context).colorScheme;
   final isDark = Theme.of(context).brightness == Brightness.dark;
   return FilledButton.styleFrom(
     minimumSize: const Size.fromHeight(56),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.input)),
-    backgroundColor: AppColors.primary,
-    foregroundColor: AppColors.onPrimary,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadius.input),
+    ),
+    backgroundColor: cs.primary,
+    foregroundColor: cs.onPrimary,
     elevation: isDark ? 0 : 6,
-    shadowColor: isDark ? Colors.transparent : AppColors.primaryButtonShadow,
+    shadowColor: isDark ? Colors.transparent : cs.primary.withValues(alpha: 0.30),
   );
 }
 
 ButtonStyle appSecondaryPillButtonStyle(BuildContext context) {
-  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final cs = Theme.of(context).colorScheme;
   return OutlinedButton.styleFrom(
     minimumSize: const Size.fromHeight(56),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.input)),
-    side: BorderSide(
-      color: isDark ? AppColors.borderSubtleDark : AppColors.secondaryButtonBorderLight,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadius.input),
     ),
-    foregroundColor: isDark ? AppColors.secondaryButtonFgDark : AppColors.primary,
-    backgroundColor: isDark ? AppColors.scaffoldDark : AppColors.secondaryButtonBgLight,
+    side: BorderSide(color: cs.outline),
+    foregroundColor: cs.primary,
+    backgroundColor: Colors.transparent,
   );
 }
 
-// Compact variant for inline Row use — avoids the infinite-width minimum that
-// Size.fromHeight sets, which crashes when the button is not wrapped in Expanded.
 ButtonStyle appPrimaryPillButtonStyleCompact(BuildContext context) {
+  final cs = Theme.of(context).colorScheme;
   final isDark = Theme.of(context).brightness == Brightness.dark;
   return FilledButton.styleFrom(
     minimumSize: const Size(0, 44),
     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.input)),
-    backgroundColor: AppColors.primary,
-    foregroundColor: AppColors.onPrimary,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadius.input),
+    ),
+    backgroundColor: cs.primary,
+    foregroundColor: cs.onPrimary,
     elevation: isDark ? 0 : 6,
-    shadowColor: isDark ? Colors.transparent : AppColors.primaryButtonShadow,
+    shadowColor: isDark ? Colors.transparent : cs.primary.withValues(alpha: 0.30),
     padding: const EdgeInsets.symmetric(horizontal: 16),
   );
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../../core/utils/youtube_utils.dart';
 import '../../../../core/ui/app_feedback.dart';
@@ -181,7 +180,7 @@ class EventProgramTab extends StatelessWidget {
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             style: FilledButton.styleFrom(
-              backgroundColor: AppColors.danger,
+              backgroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
             child: const Text('Remover'),
           ),
@@ -223,7 +222,7 @@ class _ProgramItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
     final isMusic = item is MusicProgramItemEntity;
     final isMedley = item is MedleyProgramItemEntity;
     final music = isMusic ? item as MusicProgramItemEntity : null;
@@ -237,31 +236,29 @@ class _ProgramItemCard extends StatelessWidget {
             : Icons.text_fields_rounded;
 
     final iconColor = isMusic
-        ? AppColors.primary
+        ? cs.primary
         : isMedley
             ? const Color(0xFF0891B2)
             : const Color(0xFF7C3AED);
 
     final iconBgColor = isMusic
-        ? (isDark ? AppColors.primarySubtleDark : AppColors.primarySubtleLight)
+        ? cs.primaryContainer
         : isMedley
-            ? (isDark ? const Color(0xFF0C2233) : const Color(0xFFE0F2FE))
-            : (isDark ? const Color(0xFF1E1B3A) : const Color(0xFFF5F3FF));
+            ? cs.surfaceContainerLow
+            : cs.surfaceContainerLow;
 
     final isEditable = text != null;
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
-          color: isDark ? AppColors.borderDark : const Color(0xFFE5EDF6),
+          color: cs.outlineVariant,
         ),
         boxShadow: [
           BoxShadow(
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.15)
-                : AppColors.primary.withValues(alpha: 0.04),
+            color: cs.shadow.withValues(alpha: 0.06),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -272,7 +269,7 @@ class _ProgramItemCard extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _PositionBadge(position: position, isDark: isDark),
+            _PositionBadge(position: position),
             const SizedBox(width: 10),
             if (isMusic && music!.songYouTubeUrl != null && music.songYouTubeUrl!.isNotEmpty)
               ClipRRect(
@@ -325,9 +322,7 @@ class _ProgramItemCard extends StatelessWidget {
                     Text(
                       music!.songArtist,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark
-                            ? AppColors.textMutedDark
-                            : AppColors.textMutedLight,
+                        color: cs.onSurfaceVariant,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -336,9 +331,7 @@ class _ProgramItemCard extends StatelessWidget {
                     Text(
                       medley.songs.map((s) => s.title).join(' • '),
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark
-                            ? AppColors.textMutedDark
-                            : AppColors.textMutedLight,
+                        color: cs.onSurfaceVariant,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -349,9 +342,7 @@ class _ProgramItemCard extends StatelessWidget {
                     Text(
                       text.description!,
                       style: theme.textTheme.bodySmall?.copyWith(
-                        color: isDark
-                            ? AppColors.textMutedDark
-                            : AppColors.textMutedLight,
+                        color: cs.onSurfaceVariant,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -367,19 +358,15 @@ class _ProgramItemCard extends StatelessWidget {
                   children: [
                     _SmallIconButton(
                       icon: Icons.edit_outlined,
-                      color: AppColors.primary,
-                      bgColor: isDark
-                          ? AppColors.primarySubtleDark
-                          : AppColors.primarySubtleLight,
+                      color: cs.primary,
+                      bgColor: cs.primaryContainer,
                       onPressed: onEdit,
                     ),
                     const SizedBox(width: 4),
                     _SmallIconButton(
                       icon: Icons.delete_outline_rounded,
-                      color: AppColors.dangerBright,
-                      bgColor: isDark
-                          ? AppColors.dangerSubtleDark
-                          : AppColors.dangerSubtleLight,
+                      color: cs.error,
+                      bgColor: cs.errorContainer,
                       onPressed: onDelete,
                     ),
                   ],
@@ -393,9 +380,7 @@ class _ProgramItemCard extends StatelessWidget {
                   child: Icon(
                     Icons.drag_handle_rounded,
                     size: 22,
-                    color: isDark
-                        ? AppColors.textSubtleDark
-                        : AppColors.textMutedDark,
+                    color: cs.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -409,20 +394,20 @@ class _ProgramItemCard extends StatelessWidget {
 
 class _PositionBadge extends StatelessWidget {
   final int position;
-  final bool isDark;
 
-  const _PositionBadge({required this.position, required this.isDark});
+  const _PositionBadge({required this.position});
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: 28,
       height: 28,
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceElevatedDark : AppColors.surfaceSubtleLight,
+        color: cs.surfaceContainer,
         borderRadius: BorderRadius.circular(AppRadius.badge),
         border: Border.all(
-          color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
+          color: cs.outlineVariant,
         ),
       ),
       child: Center(
@@ -430,9 +415,7 @@ class _PositionBadge extends StatelessWidget {
           '$position',
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
             fontWeight: FontWeight.w800,
-            color: isDark
-                ? AppColors.textMutedDark
-                : AppColors.textSubtleDark,
+            color: cs.onSurfaceVariant,
           ),
         ),
       ),
@@ -488,7 +471,6 @@ class _EmptyProgramState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final titleColor = theme.textTheme.titleMedium?.color;
     final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
       alpha: 0.78,
@@ -497,10 +479,10 @@ class _EmptyProgramState extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 18),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
-          color: isDark ? AppColors.borderStrongDark : AppColors.borderLight,
+          color: Theme.of(context).colorScheme.outline,
         ),
       ),
       child: Column(

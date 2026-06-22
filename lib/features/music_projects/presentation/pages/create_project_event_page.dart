@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
@@ -37,6 +36,7 @@ class CreateProjectEventPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return BlocProvider(
       create: (_) => CreateProjectEventCubit(repository),
       child: _CreateProjectEventView(projectId: projectId),
@@ -318,6 +318,7 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(
@@ -337,22 +338,23 @@ class _InlineErrorMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.dangerSubtleDark : AppColors.dangerSubtleLight,
+        color: isDark ? cs.errorContainer : cs.errorContainer,
         borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? AppColors.dangerBorderDark : AppColors.dangerBorderLight,
+          color: cs.error.withValues(alpha: 0.35),
         ),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? AppColors.dangerTextDark : AppColors.dangerTextLight,
+          color: cs.error,
           fontWeight: FontWeight.w600,
         ),
       ),

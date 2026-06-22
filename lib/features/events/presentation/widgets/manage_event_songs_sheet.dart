@@ -4,7 +4,6 @@ import 'package:louvor4_app/features/medleys/data/impl/medley_repository_impl.da
 import 'package:louvor4_app/features/medleys/domain/entities/medley_entity.dart';
 import 'package:louvor4_app/features/songs/domain/entities/song_entity.dart';
 
-import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
@@ -74,7 +73,7 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
     final titleColor = theme.textTheme.titleLarge?.color;
     final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.78);
 
@@ -86,7 +85,7 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
         bottom: MediaQuery.of(context).viewInsets.bottom + 16,
       ),
       child: Material(
-        color: isDark ? AppColors.surfaceDark : Colors.white,
+        color: cs.surface,
         borderRadius: BorderRadius.circular(AppRadius.cardLarge),
         child: SafeArea(
           top: false,
@@ -114,9 +113,7 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                           width: 42,
                           height: 5,
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.borderSubtleDark
-                                : AppColors.borderSubtleLight,
+                            color: cs.outlineVariant,
                             borderRadius: BorderRadius.circular(AppRadius.pill),
                           ),
                         ),
@@ -135,7 +132,7 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                       ),
                       const SizedBox(height: 16),
                       // Tab bar
-                      _SheetTabBar(controller: _tabController, isDark: isDark),
+                      _SheetTabBar(controller: _tabController),
                       const SizedBox(height: 14),
                       // Error banner
                       if (state.errorMessage != null)
@@ -196,7 +193,6 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                                           height: 20,
                                           child: CircularProgressIndicator(
                                             strokeWidth: 2,
-                                            color: Colors.white,
                                           ),
                                         )
                                       : Text(
@@ -228,12 +224,12 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
 
 class _SheetTabBar extends StatelessWidget {
   final TabController controller;
-  final bool isDark;
 
-  const _SheetTabBar({required this.controller, required this.isDark});
+  const _SheetTabBar({required this.controller});
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return AnimatedBuilder(
       animation: controller.animation ?? controller,
       builder: (context, _) {
@@ -241,7 +237,7 @@ class _SheetTabBar extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(2.5),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.surfaceElevatedDark : AppColors.borderLight,
+            color: cs.surfaceContainer,
             borderRadius: BorderRadius.circular(AppRadius.input),
           ),
           child: TabBar(
@@ -249,12 +245,12 @@ class _SheetTabBar extends StatelessWidget {
             dividerColor: Colors.transparent,
             indicatorSize: TabBarIndicatorSize.tab,
             indicator: BoxDecoration(
-              color: isDark ? AppColors.surfaceDark : Colors.white,
+              color: cs.surface,
               borderRadius: BorderRadius.circular(AppRadius.input),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.05),
-                  blurRadius: isDark ? 14 : 10,
+                  color: cs.shadow.withValues(alpha: 0.08),
+                  blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
               ],
@@ -262,8 +258,8 @@ class _SheetTabBar extends StatelessWidget {
             splashFactory: NoSplash.splashFactory,
             overlayColor: WidgetStateProperty.all(Colors.transparent),
             tabs: [
-              _TabLabel(label: 'Músicas', selected: idx == 0, isDark: isDark),
-              _TabLabel(label: 'Medleys', selected: idx == 1, isDark: isDark),
+              _TabLabel(label: 'Músicas', selected: idx == 0),
+              _TabLabel(label: 'Medleys', selected: idx == 1),
             ],
           ),
         );
@@ -275,17 +271,16 @@ class _SheetTabBar extends StatelessWidget {
 class _TabLabel extends StatelessWidget {
   final String label;
   final bool selected;
-  final bool isDark;
 
   const _TabLabel({
     required this.label,
     required this.selected,
-    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     return Tab(
       height: 38,
       child: Text(
@@ -293,9 +288,7 @@ class _TabLabel extends StatelessWidget {
         style: theme.textTheme.bodyLarge?.copyWith(
           fontWeight: FontWeight.w700,
           fontSize: 15,
-          color: selected
-              ? theme.colorScheme.primary
-              : (isDark ? AppColors.textMutedDark : AppColors.textMutedLight),
+          color: selected ? cs.primary : cs.onSurfaceVariant,
         ),
       ),
     );
@@ -471,8 +464,8 @@ class _SelectableMedleyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final titleColor = theme.textTheme.titleMedium?.color;
     final subtitleColor =
         theme.textTheme.bodySmall?.color?.withValues(alpha: 0.78);
@@ -490,18 +483,10 @@ class _SelectableMedleyCard extends StatelessWidget {
             onTap: enabled ? onTap : null,
             child: Ink(
               decoration: BoxDecoration(
-                color: isSelected
-                    ? (isDark
-                          ? AppColors.primarySubtleDark
-                          : AppColors.primarySubtleLight)
-                    : (isDark ? AppColors.surfaceDark : Colors.white),
+                color: isSelected ? cs.primaryContainer : cs.surface,
                 borderRadius: BorderRadius.circular(AppRadius.card),
                 border: Border.all(
-                  color: isSelected
-                      ? AppColors.primary
-                      : (isDark
-                            ? AppColors.borderStrongDark
-                            : AppColors.borderLight),
+                  color: isSelected ? cs.primary : cs.outlineVariant,
                   width: isSelected ? 1.6 : 1,
                 ),
               ),
@@ -513,16 +498,12 @@ class _SelectableMedleyCard extends StatelessWidget {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? AppColors.surfaceElevatedDark
-                            : AppColors.surfaceSubtleLight,
+                        color: cs.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(AppRadius.input),
                       ),
                       child: Icon(
                         Icons.queue_music_rounded,
-                        color: isSelected
-                            ? AppColors.primary
-                            : subtitleColor,
+                        color: isSelected ? cs.primary : subtitleColor,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -559,14 +540,10 @@ class _SelectableMedleyCard extends StatelessWidget {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: isDark
-                                  ? AppColors.scaffoldDark
-                                  : AppColors.surfaceElevatedLight,
+                              color: cs.surfaceContainerLow,
                               borderRadius: BorderRadius.circular(AppRadius.pill),
                               border: Border.all(
-                                color: isDark
-                                    ? AppColors.borderSubtleDark
-                                    : AppColors.borderLight,
+                                color: cs.outlineVariant,
                               ),
                             ),
                             child: Text(
@@ -616,7 +593,7 @@ class _SelectableSongCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
     final titleColor = theme.textTheme.titleMedium?.color;
     final subtitleColor =
         theme.textTheme.bodySmall?.color?.withValues(alpha: 0.78);
@@ -633,18 +610,10 @@ class _SelectableSongCard extends StatelessWidget {
             onTap: enabled ? onTap : null,
             child: Ink(
               decoration: BoxDecoration(
-                color: isSelected
-                    ? (isDark
-                          ? AppColors.primarySubtleDark
-                          : AppColors.primarySubtleLight)
-                    : (isDark ? AppColors.surfaceDark : Colors.white),
+                color: isSelected ? cs.primaryContainer : cs.surface,
                 borderRadius: BorderRadius.circular(AppRadius.card),
                 border: Border.all(
-                  color: isSelected
-                      ? AppColors.primary
-                      : (isDark
-                            ? AppColors.borderStrongDark
-                            : AppColors.borderLight),
+                  color: isSelected ? cs.primary : cs.outlineVariant,
                   width: isSelected ? 1.6 : 1,
                 ),
               ),
@@ -662,9 +631,7 @@ class _SelectableSongCard extends StatelessWidget {
                         errorBuilder: (_, _, _) => Container(
                           width: 72,
                           height: 72,
-                          color: isDark
-                              ? AppColors.surfaceElevatedDark
-                              : AppColors.borderLight,
+                          color: cs.surfaceContainerLow,
                           child: Icon(
                             Icons.music_note_rounded,
                             color: subtitleColor,
@@ -742,15 +709,15 @@ class _MetaBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     final textColor = Theme.of(context).textTheme.bodySmall?.color;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.scaffoldDark : AppColors.surfaceElevatedLight,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.pill),
         border: Border.all(
-          color: isDark ? AppColors.borderSubtleDark : AppColors.borderLight,
+          color: cs.outlineVariant,
         ),
       ),
       child: Row(
@@ -849,21 +816,21 @@ class _InlineErrorMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.dangerSubtleDark : AppColors.dangerSubtleLight,
+        color: cs.errorContainer,
         borderRadius: BorderRadius.circular(AppRadius.input),
         border: Border.all(
-          color: isDark ? AppColors.dangerBorderDark : AppColors.dangerBorderLight,
+          color: cs.error.withValues(alpha: 0.3),
         ),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? AppColors.dangerTextDark : AppColors.dangerTextLight,
+          color: cs.onErrorContainer,
           fontWeight: FontWeight.w600,
         ),
       ),
