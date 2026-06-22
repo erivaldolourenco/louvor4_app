@@ -45,10 +45,9 @@ class ProfilePage extends StatelessWidget {
               if (state.status == UserStatus.success && state.user != null) {
                 final user = state.user!;
                 return SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
                   child: Column(
                     children: [
-                      const SizedBox(height: 40),
                       _buildTopCard(context, user, state.isUploadingImage),
                       const SizedBox(height: 16),
                       _buildInfoCard(user, context),
@@ -65,19 +64,13 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // Card de Identificação
   Widget _buildTopCard(
     BuildContext context,
     UserDetailEntity user,
     bool isUploadingImage,
   ) {
     final theme = Theme.of(context);
-  final cs = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-    final titleColor = theme.textTheme.titleLarge?.color;
-    final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(
-      alpha: 0.78,
-    );
+    final cs = theme.colorScheme;
     final profileImage = user.profileImage?.trim();
     final hasProfileImage = profileImage != null && profileImage.isNotEmpty;
 
@@ -101,14 +94,12 @@ class ProfilePage extends StatelessWidget {
                     foregroundImage: hasProfileImage
                         ? appCachedImageProvider(profileImage)
                         : null,
-                    backgroundColor: isDark
-                        ? cs.primaryContainer
-                        : cs.primaryContainer,
+                    backgroundColor: cs.primaryContainer,
                     child: !hasProfileImage
                         ? Text(
                             _buildUserInitial(user),
                             style: theme.textTheme.displaySmall?.copyWith(
-                              color: cs.primary,
+                              color: cs.onPrimaryContainer,
                               fontWeight: FontWeight.w700,
                             ),
                           )
@@ -146,20 +137,23 @@ class ProfilePage extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Toque na imagem para alterar',
-              style: theme.textTheme.bodySmall?.copyWith(color: subtitleColor),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: 20),
             Text(
               '${user.firstName} ${user.lastName}',
               style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: titleColor,
+                fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               _buildProfileSubtitle(user),
-              style: theme.textTheme.bodyLarge?.copyWith(color: subtitleColor),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -167,14 +161,9 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // Card de Informações Detalhadas
   Widget _buildInfoCard(UserDetailEntity user, BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final titleColor = theme.textTheme.titleMedium?.color;
-    final borderColor = theme.brightness == Brightness.dark
-        ? cs.outlineVariant
-        : cs.outlineVariant;
 
     return SizedBox(
       width: double.infinity,
@@ -186,10 +175,8 @@ class ProfilePage extends StatelessWidget {
           children: [
             Text(
               'Informações pessoais',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: titleColor,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 24),
@@ -201,25 +188,21 @@ class ProfilePage extends StatelessWidget {
               'Telefone',
               user.phoneNumber ?? 'Não informado',
             ),
-
             const SizedBox(height: 12),
-
             OutlinedButton.icon(
               onPressed: () => _onEditProfile(context),
               icon: const Icon(Icons.edit_outlined, size: 20),
-              label: const Text('Editar'),
+              label: const Text('Editar perfil'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
-                side: BorderSide(color: borderColor),
+                side: BorderSide(color: cs.outlineVariant),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
-                foregroundColor: titleColor,
+                foregroundColor: cs.onSurface,
               ),
             ),
-
-            const SizedBox(height: 12),
-
+            const SizedBox(height: 4),
             AnimatedBuilder(
               animation: AppThemeController.instance,
               builder: (context, _) {
@@ -230,18 +213,16 @@ class ProfilePage extends StatelessWidget {
                   contentPadding: EdgeInsets.zero,
                   title: Text(
                     'Modo escuro',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   subtitle: const Text('Ativar tema escuro no aplicativo'),
                   secondary: const Icon(Icons.dark_mode_outlined),
-                  activeThumbColor: cs.primary,
                 );
               },
             ),
-
-            const SizedBox(height: 12),
-
-            // Botão Sair
+            const SizedBox(height: 4),
             OutlinedButton.icon(
               onPressed: () async {
                 await AuthService.instance.logout(ApiClient.dio);
@@ -252,15 +233,15 @@ class ProfilePage extends StatelessWidget {
                   );
                 }
               },
-              icon: const Icon(Icons.logout, size: 20, color: Colors.redAccent),
-              label: const Text('Sair do Aplicativo'),
+              icon: const Icon(Icons.logout_rounded, size: 20),
+              label: const Text('Sair do aplicativo'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size(double.infinity, 50),
-                side: BorderSide(color: cs.error.withValues(alpha: 0.35)),
+                side: BorderSide(color: cs.error.withValues(alpha: 0.5)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
-                foregroundColor: Colors.redAccent,
+                foregroundColor: cs.error,
               ),
             ),
           ],
@@ -271,28 +252,24 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildInfoField(BuildContext context, String label, String value) {
     final theme = Theme.of(context);
-  final cs = theme.colorScheme;
-    final labelColor = theme.textTheme.bodySmall?.color?.withValues(
-      alpha: 0.78,
-    );
-    final valueColor = theme.textTheme.bodyLarge?.color;
+    final cs = theme.colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
             style: theme.textTheme.labelMedium?.copyWith(
-              color: labelColor,
+              color: cs.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
             style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: valueColor,
+              fontWeight: FontWeight.w700,
+              color: cs.onSurface,
             ),
           ),
         ],
@@ -332,7 +309,7 @@ class ProfilePage extends StatelessWidget {
     if (!context.mounted || updatedUser == null) return;
 
     context.read<UserCubit>().updateLocalUser(updatedUser);
-    AppFeedback.showSuccess('Seu usuario foi atualizado!');
+    AppFeedback.showSuccess('Perfil atualizado com sucesso.');
   }
 
   String _buildUserInitial(UserDetailEntity user) {
@@ -348,9 +325,7 @@ class ProfilePage extends StatelessWidget {
         ? '@${user.username.trim()}'
         : '@nao_informado';
     final planName = user.planName?.trim();
-    if (planName == null || planName.isEmpty) {
-      return username;
-    }
-    return '$username - $planName';
+    if (planName == null || planName.isEmpty) return username;
+    return '$username · $planName';
   }
 }

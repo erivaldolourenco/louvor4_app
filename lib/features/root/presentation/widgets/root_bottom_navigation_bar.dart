@@ -32,25 +32,25 @@ class RootBottomNavigationBar extends StatelessWidget {
         ),
         NavigationDestination(
           label: 'Projetos',
-          icon: _SvgIcon('assets/icons/music.svg', cs.onSurfaceVariant),
-          selectedIcon: _SvgIcon('assets/icons/music.svg', cs.onPrimaryContainer),
+          icon: _SvgIcon('assets/icons/square-library.svg', cs.onSurfaceVariant),
+          selectedIcon: _SvgIcon('assets/icons/square-library.svg', cs.onPrimaryContainer),
         ),
         NavigationDestination(
           label: 'Músicas',
-          icon: _SvgIcon('assets/icons/audio-lines.svg', cs.onSurfaceVariant),
-          selectedIcon: _SvgIcon('assets/icons/audio-lines.svg', cs.onPrimaryContainer),
+          icon: _SvgIcon('assets/icons/list-music.svg', cs.onSurfaceVariant),
+          selectedIcon: _SvgIcon('assets/icons/list-music.svg', cs.onPrimaryContainer),
         ),
         NavigationDestination(
           label: 'Avisos',
           icon: Badge(
             isLabelVisible: showBadge,
             label: Text(badgeLabel),
-            child: const Icon(Icons.notifications_none_rounded),
+            child: _SvgIcon('assets/icons/bell.svg', cs.onSurfaceVariant),
           ),
           selectedIcon: Badge(
             isLabelVisible: showBadge,
             label: Text(badgeLabel),
-            child: const Icon(Icons.notifications_rounded),
+            child: _SvgIcon('assets/icons/bell.svg', cs.onPrimaryContainer),
           ),
         ),
       ],
