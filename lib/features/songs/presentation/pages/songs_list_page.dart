@@ -387,6 +387,7 @@ class _SongsContentState extends State<_SongsContent>
                         musicKey: song.key,
                         bpm: song.bpm,
                         youTubeUrl: song.youTubeUrl,
+                        hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
                         onTap: () => showSongDetailsModal(
                           context,
                           title: song.title,

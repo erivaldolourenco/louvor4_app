@@ -12,6 +12,7 @@ class SongListCard extends StatelessWidget {
   final String? bpm;
   final String? youTubeUrl;
   final bool isMedley;
+  final bool hasAudio;
   final VoidCallback? onTap;
   final VoidCallback? onOpenYoutube;
   final VoidCallback? onEdit;
@@ -27,6 +28,7 @@ class SongListCard extends StatelessWidget {
     this.bpm,
     this.youTubeUrl,
     this.isMedley = false,
+    this.hasAudio = false,
     this.onTap,
     this.onOpenYoutube,
     this.onEdit,
@@ -79,6 +81,10 @@ class SongListCard extends StatelessWidget {
                             color: cs.onSurfaceVariant,
                           ),
                         ),
+                      ],
+                      if (hasAudio) ...[
+                        const SizedBox(height: 6),
+                        _AudioTag(),
                       ],
                     ],
                   ),
@@ -229,6 +235,36 @@ class _KeyBpm extends StatelessWidget {
           _InfoChip(label: 'BPM', value: bpm!),
         ],
       ],
+    );
+  }
+}
+
+class _AudioTag extends StatelessWidget {
+  const _AudioTag();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      decoration: BoxDecoration(
+        color: cs.secondaryContainer,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.headphones_rounded, size: 11, color: cs.onSecondaryContainer),
+          const SizedBox(width: 3),
+          Text(
+            'Áudio',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: cs.onSecondaryContainer,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

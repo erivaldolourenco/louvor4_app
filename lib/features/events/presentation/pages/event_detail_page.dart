@@ -748,6 +748,7 @@ class _SongsTab extends StatelessWidget {
                           musicKey: song.key,
                           bpm: song.bpm?.toString(),
                           youTubeUrl: song.youTubeUrl,
+                          hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
                           onTap: () => showSongDetailsModal(
                             context,
                             title: song.title,
