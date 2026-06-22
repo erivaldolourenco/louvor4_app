@@ -79,14 +79,14 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                     padding: EdgeInsets.symmetric(vertical: 40),
                     child: Center(child: CircularProgressIndicator()),
                   )
-                : _buildContent(context, cubit, state),
+                : _buildForm(context, cubit, state),
           );
         },
       ),
     );
   }
 
-  Widget _buildContent(
+  Widget _buildForm(
     BuildContext context,
     EditProfileCubit cubit,
     EditProfileState state,
@@ -99,14 +99,13 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const _FieldLabel(label: 'Nome'),
           TextFormField(
             controller: _firstNameController,
             enabled: canEdit && !state.isSubmitting,
-            decoration: appFormFieldDecoration(
-              context,
-              hintText: 'Seu nome',
-              prefixIcon: Icons.badge_outlined,
+            textInputAction: TextInputAction.next,
+            decoration: const InputDecoration(
+              labelText: 'Nome',
+              prefixIcon: Icon(Icons.badge_outlined),
             ),
             validator: (value) {
               if ((value ?? '').trim().isEmpty) {
@@ -115,15 +114,14 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               return null;
             },
           ),
-          const SizedBox(height: 14),
-          const _FieldLabel(label: 'Sobrenome'),
+          const SizedBox(height: 12),
           TextFormField(
             controller: _lastNameController,
             enabled: canEdit && !state.isSubmitting,
-            decoration: appFormFieldDecoration(
-              context,
-              hintText: 'Seu sobrenome',
-              prefixIcon: Icons.badge_rounded,
+            textInputAction: TextInputAction.next,
+            decoration: const InputDecoration(
+              labelText: 'Sobrenome',
+              prefixIcon: Icon(Icons.badge_rounded),
             ),
             validator: (value) {
               if ((value ?? '').trim().isEmpty) {
@@ -132,16 +130,15 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               return null;
             },
           ),
-          const SizedBox(height: 14),
-          const _FieldLabel(label: 'Email'),
+          const SizedBox(height: 12),
           TextFormField(
             controller: _emailController,
             enabled: false,
             keyboardType: TextInputType.emailAddress,
-            decoration: appFormFieldDecoration(
-              context,
-              hintText: 'voce@email.com',
-              prefixIcon: Icons.email_outlined,
+            textInputAction: TextInputAction.next,
+            decoration: const InputDecoration(
+              labelText: 'Email',
+              prefixIcon: Icon(Icons.email_outlined),
             ),
             validator: (value) {
               final text = (value ?? '').trim();
@@ -153,17 +150,17 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               return null;
             },
           ),
-          const SizedBox(height: 14),
-          const _FieldLabel(label: 'Telefone'),
+          const SizedBox(height: 12),
           TextFormField(
             controller: _phoneController,
             enabled: canEdit && !state.isSubmitting,
             keyboardType: TextInputType.phone,
-            decoration: appFormFieldDecoration(
-              context,
-              hintText: '82999999999',
-              prefixIcon: Icons.phone_outlined,
+            textInputAction: TextInputAction.done,
+            decoration: const InputDecoration(
+              labelText: 'Telefone',
+              prefixIcon: Icon(Icons.phone_outlined),
             ),
+            onFieldSubmitted: (_) => _submit(context, cubit),
             validator: (value) {
               if ((value ?? '').trim().isEmpty) {
                 return 'Informe seu telefone.';
@@ -230,25 +227,6 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   }
 }
 
-class _FieldLabel extends StatelessWidget {
-  final String label;
-
-  const _FieldLabel({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
-      ),
-    );
-  }
-}
-
 class _InlineErrorMessage extends StatelessWidget {
   final String message;
 
@@ -256,7 +234,8 @@ class _InlineErrorMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -267,8 +246,8 @@ class _InlineErrorMessage extends StatelessWidget {
       ),
       child: Text(
         message,
-        style: TextStyle(
-          color: cs.error,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: cs.onErrorContainer,
           fontWeight: FontWeight.w600,
         ),
       ),

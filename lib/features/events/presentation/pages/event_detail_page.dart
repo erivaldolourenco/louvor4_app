@@ -327,21 +327,34 @@ class _EventDetailViewState extends State<_EventDetailView>
     return AnimatedBuilder(
       animation: _tabController,
       builder: (context, _) {
+        final cs = Theme.of(context).colorScheme;
         return switch (_tabController.index) {
           0 => FloatingActionButton(
               heroTag: 'event_detail_fab',
               onPressed: () => _onManageSchedule(state),
-              child: const Icon(Icons.settings_rounded),
+              shape: const CircleBorder(),
+              backgroundColor: cs.primary,
+              foregroundColor: cs.onPrimary,
+              elevation: 4,
+              child: const Icon(Icons.settings_rounded, size: 28),
             ),
           1 => FloatingActionButton(
               heroTag: 'event_detail_fab',
               onPressed: () => _onAddSongs(state),
-              child: const Icon(Icons.add_rounded),
+              shape: const CircleBorder(),
+              backgroundColor: cs.primary,
+              foregroundColor: cs.onPrimary,
+              elevation: 4,
+              child: const Icon(Icons.add_rounded, size: 28),
             ),
           2 => FloatingActionButton(
               heroTag: 'event_detail_fab',
               onPressed: _onAddProgramItem,
-              child: const Icon(Icons.add_rounded),
+              shape: const CircleBorder(),
+              backgroundColor: cs.primary,
+              foregroundColor: cs.onPrimary,
+              elevation: 4,
+              child: const Icon(Icons.add_rounded, size: 28),
             ),
           _ => const SizedBox.shrink(),
         };

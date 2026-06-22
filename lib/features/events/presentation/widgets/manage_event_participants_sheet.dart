@@ -44,8 +44,6 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final titleColor = theme.textTheme.titleLarge?.color;
-    final subtitleColor = cs.onSurfaceVariant;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.92,
@@ -96,9 +94,9 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                                   children: [
                                     Text(
                                       'Gerenciar escala',
-                                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      style: theme.textTheme.titleLarge?.copyWith(
                                         fontWeight: FontWeight.w700,
-                                        color: titleColor,
+                                        color: cs.onSurface,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
@@ -106,8 +104,8 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                                       event.title,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        color: subtitleColor,
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: cs.onSurfaceVariant,
                                       ),
                                     ),
                                   ],
@@ -248,7 +246,6 @@ class _SelectableMemberCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final titleColor = theme.textTheme.titleMedium?.color;
     final cubit = context.read<ManageEventParticipantsCubit>();
 
     return AnimatedContainer(
@@ -284,18 +281,16 @@ class _SelectableMemberCard extends StatelessWidget {
                     children: [
                       Text(
                         item.member.fullName,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
-                          fontSize: 15,
-                          color: titleColor,
+                          color: cs.onSurface,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
                         item.member.projectRole ?? 'Membro',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        style: theme.textTheme.bodySmall?.copyWith(
                           color: cs.onSurfaceVariant,
-                          fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -327,9 +322,9 @@ class _SelectableMemberCard extends StatelessWidget {
                     const SizedBox(height: 14),
                     Text(
                       'Função no evento',
-                      style: TextStyle(
+                      style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: titleColor,
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -355,9 +350,9 @@ class _SelectableMemberCard extends StatelessWidget {
                     const SizedBox(height: 14),
                     Text(
                       'Permissões no evento',
-                      style: TextStyle(
+                      style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: titleColor,
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -424,10 +419,9 @@ class _SkillOptionButton extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
               fontWeight: FontWeight.w700,
-              fontSize: 15,
             ),
           ),
         ),
@@ -464,20 +458,21 @@ class _SheetEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = Theme.of(context).textTheme.bodyLarge?.color;
-    final iconColor = Theme.of(
-      context,
-    ).textTheme.bodySmall?.color?.withValues(alpha: 0.78);
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.group_off_rounded, size: 40, color: iconColor),
+        Icon(Icons.group_off_rounded, size: 40, color: cs.onSurfaceVariant),
         const SizedBox(height: 12),
         Text(
           'Nenhum membro encontrado para este projeto.',
           textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.w700, color: titleColor),
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: cs.onSurface,
+          ),
         ),
       ],
     );

@@ -21,10 +21,6 @@ class AppFormSheet extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final titleColor = theme.textTheme.titleLarge?.color;
-    final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(
-      alpha: 0.78,
-    );
 
     return Padding(
       padding: EdgeInsets.only(
@@ -60,7 +56,7 @@ class AppFormSheet extends StatelessWidget {
                         title,
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: titleColor,
+                          color: cs.onSurface,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -68,7 +64,7 @@ class AppFormSheet extends StatelessWidget {
                         subtitle,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           height: 1.4,
-                          color: subtitleColor,
+                          color: cs.onSurfaceVariant,
                         ),
                       ),
                       const SizedBox(height: 24),

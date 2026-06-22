@@ -194,10 +194,10 @@ class ProfilePage extends StatelessWidget {
               icon: const Icon(Icons.edit_outlined, size: 20),
               label: const Text('Editar perfil'),
               style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
+                minimumSize: const Size.fromHeight(56),
                 side: BorderSide(color: cs.outlineVariant),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  borderRadius: BorderRadius.circular(AppRadius.input),
                 ),
                 foregroundColor: cs.onSurface,
               ),
@@ -236,10 +236,10 @@ class ProfilePage extends StatelessWidget {
               icon: const Icon(Icons.logout_rounded, size: 20),
               label: const Text('Sair do aplicativo'),
               style: OutlinedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 50),
+                minimumSize: const Size.fromHeight(56),
                 side: BorderSide(color: cs.error.withValues(alpha: 0.5)),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  borderRadius: BorderRadius.circular(AppRadius.input),
                 ),
                 foregroundColor: cs.error,
               ),
