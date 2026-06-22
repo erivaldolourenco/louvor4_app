@@ -19,13 +19,14 @@ class HeaderProjectEvent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     return SliverAppBar(
       expandedHeight: 64,
       pinned: true,
       stretch: true,
-      backgroundColor: cs.surface,
-      foregroundColor: cs.onSurface,
+      backgroundColor: cs.primary,
+      foregroundColor: cs.onPrimary,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
@@ -38,8 +39,8 @@ class HeaderProjectEvent extends StatelessWidget {
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: cs.onSurface,
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: cs.onPrimary,
               fontWeight: FontWeight.w700,
               fontSize: 20,
             ),
@@ -49,8 +50,8 @@ class HeaderProjectEvent extends StatelessWidget {
               subtitle!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: cs.onSurface.withValues(alpha: 0.7),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: cs.onPrimary.withValues(alpha: 0.85),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -65,9 +66,13 @@ class HeaderProjectEvent extends StatelessWidget {
               AppCachedNetworkImage(imageUrl: backgroundImageUrl!, fit: BoxFit.cover)
             else
               Container(
-                color: cs.surface,
+                color: cs.primaryContainer,
                 child: Center(
-                  child: Icon(Icons.multitrack_audio_rounded, color: cs.onSurface.withValues(alpha: 0.7), size: 58),
+                  child: Icon(
+                    Icons.multitrack_audio_rounded,
+                    color: cs.onPrimaryContainer.withValues(alpha: 0.5),
+                    size: 58,
+                  ),
                 ),
               ),
             const DecoratedBox(

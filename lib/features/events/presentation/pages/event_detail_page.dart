@@ -102,12 +102,7 @@ class _EventDetailViewState extends State<_EventDetailView>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-  final cs = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
-    final titleColor = theme.textTheme.headlineSmall?.color;
-    final bodyColor = theme.textTheme.bodyMedium?.color;
-    final mutedColor = bodyColor?.withValues(alpha: isDark ? 0.82 : 0.72);
+    final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
       body: BlocBuilder<EventDetailCubit, EventDetailState>(
@@ -181,8 +176,6 @@ class _EventDetailViewState extends State<_EventDetailView>
                     child: _EventHeroCard(
                       title: event.title,
                       description: event.description,
-                      titleColor: titleColor,
-                      mutedColor: mutedColor,
                       date: formatDate(event.date),
                       time: formatTime(event.time),
                       location: event.location?.trim().isNotEmpty == true
@@ -204,7 +197,6 @@ class _EventDetailViewState extends State<_EventDetailView>
               children: [
                 _ParticipantsTab(
                   state: state,
-                  mutedColor: mutedColor,
                   onManageSchedule: () => _onManageSchedule(state),
                   onRefresh: () => context
                       .read<EventDetailCubit>()
@@ -212,7 +204,6 @@ class _EventDetailViewState extends State<_EventDetailView>
                 ),
                 _SongsTab(
                   state: state,
-                  mutedColor: mutedColor,
                   onAddSongs: () => _onAddSongs(state),
                   onRemoveSong: _onRemoveSong,
                   onRefresh: () => context
@@ -221,7 +212,6 @@ class _EventDetailViewState extends State<_EventDetailView>
                 ),
                 EventProgramTab(
                   isAdmin: state.isProjectAdmin,
-                  mutedColor: mutedColor,
                 ),
               ],
             ),
@@ -300,24 +290,13 @@ class _EventDetailViewState extends State<_EventDetailView>
     );
     if (!mounted) return false;
 
-    final state = context.read<EventDetailCubit>().state;
     if (removed) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Música removida.'),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AppFeedback.showSuccess('Música removida.');
       return true;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(state.actionErrorMessage ?? 'Erro ao remover música'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: cs.error,
-      ),
-    );
+    final state = context.read<EventDetailCubit>().state;
+    AppFeedback.showError(state.actionErrorMessage ?? 'Erro ao remover música.');
     return false;
   }
 
@@ -338,7 +317,6 @@ class _EventDetailViewState extends State<_EventDetailView>
   }
 
   Future<void> _onEditEvent() async {
-    final cs = Theme.of(context).colorScheme;
     final event = context.read<EventDetailCubit>().state.event;
     if (event == null) return;
 
@@ -352,13 +330,7 @@ class _EventDetailViewState extends State<_EventDetailView>
     await context.read<EventDetailCubit>().load(widget.eventId, force: true);
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Evento atualizado com sucesso.'),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: cs.primaryContainer,
-      ),
-    );
+    AppFeedback.showSuccess('Evento atualizado com sucesso.');
   }
 }
 
@@ -371,10 +343,11 @@ class _EventDetailTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return TabBar(
       controller: controller,
-      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+      labelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+      unselectedLabelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500),
       tabs: const [
         Tab(text: 'Equipe'),
         Tab(text: 'Músicas'),
@@ -387,8 +360,6 @@ class _EventDetailTabs extends StatelessWidget {
 class _EventHeroCard extends StatelessWidget {
   final String title;
   final String? description;
-  final Color? titleColor;
-  final Color? mutedColor;
   final String date;
   final String time;
   final String location;
@@ -397,8 +368,6 @@ class _EventHeroCard extends StatelessWidget {
   const _EventHeroCard({
     required this.title,
     required this.description,
-    required this.titleColor,
-    required this.mutedColor,
     required this.date,
     required this.time,
     required this.location,
@@ -407,109 +376,101 @@ class _EventHeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 4, 0, 8),
       child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: titleColor,
-                      height: 1.15,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (description != null && description!.trim().isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      description!,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: mutedColor,
-                        fontSize: 15,
-                        fontStyle: FontStyle.italic,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '$date · $time',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: mutedColor,
+                  title,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                    height: 1.15,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                if (onLocationTap != null) ...[
-                  const SizedBox(height: 3),
-                  GestureDetector(
-                    onTap: onLocationTap,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: isDark ? cs.primaryContainer : cs.primaryContainer,
-                        borderRadius: BorderRadius.circular(AppRadius.badge),
-                        border: Border.all(
-                          color: isDark ? cs.primary.withValues(alpha: 0.30) : cs.primary.withValues(alpha: 0.30),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.location_on_rounded,
-                            size: 14,
-                            color: cs.primary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Localização',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: cs.primary,
-                            ),
-                          ),
-                        ],
-                      ),
+                if (description != null && description!.trim().isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    description!,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: cs.onSurfaceVariant,
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ],
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 16),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '$date · $time',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+              if (onLocationTap != null) ...[
+                const SizedBox(height: 3),
+                GestureDetector(
+                  onTap: onLocationTap,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: cs.primaryContainer,
+                      borderRadius: BorderRadius.circular(AppRadius.badge),
+                      border: Border.all(
+                        color: cs.primary.withValues(alpha: 0.30),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.location_on_rounded, size: 14, color: cs.primary),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Localização',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: cs.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
 
 class _ParticipantsTab extends StatelessWidget {
   final EventDetailState state;
-  final Color? mutedColor;
   final VoidCallback onManageSchedule;
   final VoidCallback onRefresh;
 
   const _ParticipantsTab({
     required this.state,
-    required this.mutedColor,
     required this.onManageSchedule,
     required this.onRefresh,
   });
@@ -552,22 +513,18 @@ class _ParticipantsTab extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'EQUIPE ESCALADA',
+                'Equipe escalada',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: mutedColor,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w700,
-                  letterSpacing: 2,
                 ),
               ),
             ),
             if (state.isProjectAdmin)
-              FilledButton(
+              FilledButton.tonal(
                 onPressed: onManageSchedule,
-                style: appPrimaryPillButtonStyleCompact(context),
-                child: const Text(
-                  'Gerenciar Escala',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
+                style: appTonalPillButtonStyleCompact(context),
+                child: const Text('Gerenciar escala'),
               ),
           ],
         ),
@@ -627,14 +584,12 @@ class _ParticipantsTab extends StatelessWidget {
 
 class _SongsTab extends StatelessWidget {
   final EventDetailState state;
-  final Color? mutedColor;
   final VoidCallback onAddSongs;
   final Future<bool> Function(String eventSongId) onRemoveSong;
   final VoidCallback onRefresh;
 
   const _SongsTab({
     required this.state,
-    required this.mutedColor,
     required this.onAddSongs,
     required this.onRemoveSong,
     required this.onRefresh,
@@ -685,21 +640,17 @@ class _SongsTab extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                'REPERTÓRIO DO EVENTO',
+                'Repertório',
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: mutedColor,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w700,
-                  letterSpacing: 2,
                 ),
               ),
             ),
-            FilledButton(
+            FilledButton.tonal(
               onPressed: onAddSongs,
-              style: appPrimaryPillButtonStyleCompact(context),
-              child: const Text(
-                'Nova Música',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
+              style: appTonalPillButtonStyleCompact(context),
+              child: const Text('Nova música'),
             ),
           ],
         ),
@@ -725,7 +676,7 @@ class _SongsTab extends StatelessWidget {
                 child: Text(
                   'Adicionado por: ${group.key}',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: mutedColor,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -785,7 +736,6 @@ class _DetailLoadingState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 28, 16, 16),
@@ -793,7 +743,7 @@ class _DetailLoadingState extends StatelessWidget {
         Container(
           height: 200,
           decoration: BoxDecoration(
-            color: isDark ? cs.surfaceContainer : cs.outlineVariant,
+            color: cs.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(18),
           ),
         ),
@@ -801,7 +751,7 @@ class _DetailLoadingState extends StatelessWidget {
         Container(
           height: 140,
           decoration: BoxDecoration(
-            color: isDark ? cs.surfaceContainer : cs.outlineVariant,
+            color: cs.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(18),
           ),
         ),
@@ -809,7 +759,7 @@ class _DetailLoadingState extends StatelessWidget {
         Container(
           height: 52,
           decoration: BoxDecoration(
-            color: isDark ? cs.surfaceContainer : cs.outlineVariant,
+            color: cs.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(AppRadius.input),
           ),
         ),
@@ -869,35 +819,30 @@ class _RetryTabState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final titleColor = theme.textTheme.titleMedium?.color;
-    final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(alpha: 0.78);
+    final cs = theme.colorScheme;
 
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: cs.surfaceContainer,
         borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(
-          color: isDark ? cs.outline : cs.outlineVariant,
-        ),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 30, color: subtitleColor),
+          Icon(icon, size: 30, color: cs.onSurfaceVariant),
           const SizedBox(height: 10),
           Text(
             title,
-            style: TextStyle(color: titleColor, fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(fontSize: 13, color: subtitleColor),
+            style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
@@ -924,36 +869,29 @@ class _EmptyTabState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final titleColor = theme.textTheme.titleMedium?.color;
-    final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
-      alpha: 0.78,
-    );
+    final cs = theme.colorScheme;
 
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: cs.surfaceContainer,
         borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(
-          color: isDark ? cs.outline : cs.outlineVariant,
-        ),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 30, color: subtitleColor),
+          Icon(icon, size: 30, color: cs.onSurfaceVariant),
           const SizedBox(height: 10),
           Text(
             title,
-            style: TextStyle(color: titleColor, fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 4),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(fontSize: 13, color: subtitleColor),
+            style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
           ),
         ],
       ),

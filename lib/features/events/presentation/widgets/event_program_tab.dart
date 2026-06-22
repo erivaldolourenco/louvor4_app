@@ -13,9 +13,8 @@ import '../cubit/event_program_state.dart';
 
 class EventProgramTab extends StatelessWidget {
   final bool isAdmin;
-  final Color? mutedColor;
 
-  const EventProgramTab({super.key, required this.isAdmin, this.mutedColor});
+  const EventProgramTab({super.key, required this.isAdmin});
 
   @override
   Widget build(BuildContext context) {
@@ -42,22 +41,18 @@ class EventProgramTab extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'PROGRAMAÇÃO DO EVENTO',
+                  'Programação',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: mutedColor,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: 2,
                   ),
                 ),
               ),
               if (isAdmin)
-                FilledButton(
+                FilledButton.tonal(
                   onPressed: () => _showTextItemDialog(context),
-                  style: appPrimaryPillButtonStyleCompact(context),
-                  child: const Text(
-                    'Adicionar',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
+                  style: appTonalPillButtonStyleCompact(context),
+                  child: const Text('Adicionar'),
                 ),
             ],
           ),
@@ -238,14 +233,14 @@ class _ProgramItemCard extends StatelessWidget {
     final iconColor = isMusic
         ? cs.primary
         : isMedley
-            ? const Color(0xFF0891B2)
-            : const Color(0xFF7C3AED);
+            ? cs.secondary
+            : cs.tertiary;
 
     final iconBgColor = isMusic
         ? cs.primaryContainer
         : isMedley
-            ? cs.surfaceContainerLow
-            : cs.surfaceContainerLow;
+            ? cs.secondaryContainer
+            : cs.tertiaryContainer;
 
     final isEditable = text != null;
 
@@ -471,33 +466,28 @@ class _EmptyProgramState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final titleColor = theme.textTheme.titleMedium?.color;
-    final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
-      alpha: 0.78,
-    );
+    final cs = theme.colorScheme;
 
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 18),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: cs.surfaceContainer,
         borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline,
-        ),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         children: [
-          Icon(Icons.list_alt_rounded, size: 30, color: subtitleColor),
+          Icon(Icons.list_alt_rounded, size: 30, color: cs.onSurfaceVariant),
           const SizedBox(height: 10),
           Text(
             'Sem programação',
-            style: TextStyle(color: titleColor, fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 4),
           Text(
             'A programação deste evento está vazia.',
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(fontSize: 13, color: subtitleColor),
+            style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
           ),
           if (isAdmin) ...[
             const SizedBox(height: 16),

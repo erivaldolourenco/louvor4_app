@@ -202,3 +202,18 @@ ButtonStyle appPrimaryPillButtonStyleCompact(BuildContext context) {
     padding: const EdgeInsets.symmetric(horizontal: 16),
   );
 }
+
+ButtonStyle appTonalPillButtonStyleCompact(BuildContext context) {
+  final cs = Theme.of(context).colorScheme;
+  return FilledButton.styleFrom(
+    minimumSize: const Size(0, 36),
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadius.input),
+    ),
+    backgroundColor: cs.secondaryContainer,
+    foregroundColor: cs.onSecondaryContainer,
+    elevation: 0,
+    padding: const EdgeInsets.symmetric(horizontal: 14),
+  );
+}
