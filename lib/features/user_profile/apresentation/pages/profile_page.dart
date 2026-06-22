@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:louvor4_app/core/auth/auth_service.dart';
-import 'package:louvor4_app/core/theme/app_radius.dart';
 import 'package:louvor4_app/core/network/api_client.dart';
 import 'package:louvor4_app/core/theme/app_theme_controller.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
+import 'package:louvor4_app/core/ui/widgets/app_form_sheet.dart';
+import 'package:louvor4_app/core/ui/widgets/fade_slide_in.dart';
+import 'package:louvor4_app/core/ui/widgets/spring_tap.dart';
 import 'package:louvor4_app/features/auth/presentation/pages/login_page.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 
@@ -48,9 +50,18 @@ class ProfilePage extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
                   child: Column(
                     children: [
-                      _buildTopCard(context, user, state.isUploadingImage),
+                      FadeSlideIn(
+                        child: _buildTopCard(
+                          context,
+                          user,
+                          state.isUploadingImage,
+                        ),
+                      ),
                       const SizedBox(height: 16),
-                      _buildInfoCard(user, context),
+                      FadeSlideIn(
+                        delay: const Duration(milliseconds: 90),
+                        child: _buildInfoCard(user, context),
+                      ),
                     ],
                   ),
                 );
@@ -81,54 +92,72 @@ class ProfilePage extends StatelessWidget {
         radius: 24,
         child: Column(
           children: [
-            InkWell(
+            SpringTap(
               onTap: isUploadingImage
                   ? null
                   : () => _onChangeProfileImage(context),
-              borderRadius: BorderRadius.circular(999),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  CircleAvatar(
-                    radius: 50,
-                    foregroundImage: hasProfileImage
-                        ? appCachedImageProvider(profileImage)
-                        : null,
-                    backgroundColor: cs.primaryContainer,
-                    child: !hasProfileImage
-                        ? Text(
-                            _buildUserInitial(user),
-                            style: theme.textTheme.displaySmall?.copyWith(
-                              color: cs.onPrimaryContainer,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          )
-                        : null,
+                  SizedBox(
+                    width: 112,
+                    height: 112,
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: isUploadingImage ? 1 : 0,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        color: cs.primary,
+                      ),
+                    ),
+                  ),
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 320),
+                    switchInCurve: Curves.easeOutBack,
+                    switchOutCurve: Curves.easeIn,
+                    transitionBuilder: (child, animation) => FadeTransition(
+                      opacity: animation,
+                      child: ScaleTransition(scale: animation, child: child),
+                    ),
+                    child: CircleAvatar(
+                      key: ValueKey(
+                        hasProfileImage ? profileImage : 'placeholder',
+                      ),
+                      radius: 50,
+                      foregroundImage: hasProfileImage
+                          ? appCachedImageProvider(profileImage)
+                          : null,
+                      backgroundColor: cs.primaryContainer,
+                      child: !hasProfileImage
+                          ? Text(
+                              _buildUserInitial(user),
+                              style: theme.textTheme.displaySmall?.copyWith(
+                                color: cs.onPrimaryContainer,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            )
+                          : null,
+                    ),
                   ),
                   Positioned(
                     right: 0,
                     bottom: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: cs.primary,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: cs.surface, width: 2),
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: isUploadingImage ? 0.4 : 1,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: cs.primary,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: cs.surface, width: 2),
+                        ),
+                        child: Icon(
+                          Icons.camera_alt_rounded,
+                          size: 16,
+                          color: cs.onPrimary,
+                        ),
                       ),
-                      child: isUploadingImage
-                          ? SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: cs.onPrimary,
-                              ),
-                            )
-                          : Icon(
-                              Icons.camera_alt_rounded,
-                              size: 16,
-                              color: cs.onPrimary,
-                            ),
                     ),
                   ),
                 ],
@@ -163,7 +192,6 @@ class ProfilePage extends StatelessWidget {
 
   Widget _buildInfoCard(UserDetailEntity user, BuildContext context) {
     final theme = Theme.of(context);
-    final cs = theme.colorScheme;
 
     return SizedBox(
       width: double.infinity,
@@ -193,14 +221,7 @@ class ProfilePage extends StatelessWidget {
               onPressed: () => _onEditProfile(context),
               icon: const Icon(Icons.edit_outlined, size: 20),
               label: const Text('Editar perfil'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(56),
-                side: BorderSide(color: cs.outlineVariant),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                ),
-                foregroundColor: cs.onSurface,
-              ),
+              style: appSecondaryPillButtonStyle(context),
             ),
             const SizedBox(height: 4),
             AnimatedBuilder(
@@ -235,14 +256,7 @@ class ProfilePage extends StatelessWidget {
               },
               icon: const Icon(Icons.logout_rounded, size: 20),
               label: const Text('Sair do aplicativo'),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(56),
-                side: BorderSide(color: cs.error.withValues(alpha: 0.5)),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                ),
-                foregroundColor: cs.error,
-              ),
+              style: appDestructivePillButtonStyle(context),
             ),
           ],
         ),

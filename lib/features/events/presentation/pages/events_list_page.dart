@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
+import 'package:louvor4_app/core/ui/widgets/fade_slide_in.dart';
 import 'package:louvor4_app/features/root/presentation/widgets/root_home_header.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 
@@ -20,6 +21,57 @@ Map<DateTime, List<EventEntity>> _groupEventsByDate(
     grouped.putIfAbsent(dayKey, () => []).add(event);
   }
   return grouped;
+}
+
+/// Constrói as seções de eventos (cabeçalho de data + cards) com uma
+/// animação de entrada em stagger (fade + slide), limitada a um atraso
+/// máximo para não deixar os últimos itens lentos em listas grandes.
+///
+/// Quando [highlightFirst] é true, o primeiro evento da primeira seção
+/// (o mais iminente) recebe destaque visual no card.
+List<Widget> _buildStaggeredSections(
+  List<MapEntry<DateTime, List<EventEntity>>> sections, {
+  bool highlightFirst = false,
+}) {
+  var staggerIndex = 0;
+  const maxStaggerSteps = 8;
+  const stepDelay = Duration(milliseconds: 45);
+
+  Duration nextDelay() {
+    final delay = stepDelay * staggerIndex.clamp(0, maxStaggerSteps);
+    staggerIndex++;
+    return delay;
+  }
+
+  final children = <Widget>[];
+  for (var sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
+    final section = sections[sectionIndex];
+    children.add(
+      FadeSlideIn(delay: nextDelay(), child: EventDateHeader(date: section.key)),
+    );
+    children.add(const SizedBox(height: 10));
+    children.addAll(
+      List.generate(section.value.length, (index) {
+        final event = section.value[index];
+        final isNext = highlightFirst && sectionIndex == 0 && index == 0;
+        return FadeSlideIn(
+          delay: nextDelay(),
+          child: EventTimelineItemWrapper(
+            child: EventListCard(
+              event: event,
+              isFirstInGroup: index == 0,
+              isLastInGroup: index == section.value.length - 1,
+              showTimelineRail: false,
+              bottomSpacing: 0,
+              isNext: isNext,
+            ),
+          ),
+        );
+      }),
+    );
+    children.add(const SizedBox(height: 18));
+  }
+  return children;
 }
 
 class EventsListPage extends StatelessWidget {
@@ -64,6 +116,7 @@ class _EventsListViewState extends State<_EventsListView>
   late final TabController _tabController;
   final ScrollController _pastScrollController = ScrollController();
   bool _pastLoaded = false;
+  bool _scrolled = false;
 
   @override
   void initState() {
@@ -97,6 +150,14 @@ class _EventsListViewState extends State<_EventsListView>
     }
   }
 
+  bool _handleContentScroll(ScrollNotification notification) {
+    final scrolled = notification.metrics.pixels > 4;
+    if (scrolled != _scrolled) {
+      setState(() => _scrolled = scrolled);
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,17 +165,21 @@ class _EventsListViewState extends State<_EventsListView>
         onAvatarTap: widget.onOpenDrawer,
         user: widget.user,
         isLoadingUser: widget.isLoadingUser,
+        elevated: _scrolled,
       ),
       body: Column(
         children: [
           _HomeTabBar(controller: _tabController),
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _UpcomingTab(),
-                _PastTab(scrollController: _pastScrollController),
-              ],
+            child: NotificationListener<ScrollNotification>(
+              onNotification: _handleContentScroll,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _UpcomingTab(),
+                  _PastTab(scrollController: _pastScrollController),
+                ],
+              ),
             ),
           ),
         ],
@@ -173,25 +238,7 @@ class _UpcomingTab extends StatelessWidget {
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            children: [
-              for (final section in sections) ...[
-                EventDateHeader(date: section.key),
-                const SizedBox(height: 10),
-                ...List.generate(section.value.length, (index) {
-                  final event = section.value[index];
-                  return EventTimelineItemWrapper(
-                    child: EventListCard(
-                      event: event,
-                      isFirstInGroup: index == 0,
-                      isLastInGroup: index == section.value.length - 1,
-                      showTimelineRail: false,
-                      bottomSpacing: 0,
-                    ),
-                  );
-                }),
-                const SizedBox(height: 18),
-              ],
-            ],
+            children: _buildStaggeredSections(sections, highlightFirst: true),
           ),
         );
       },
@@ -238,23 +285,7 @@ class _PastTab extends StatelessWidget {
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             children: [
-              for (final section in sections) ...[
-                EventDateHeader(date: section.key),
-                const SizedBox(height: 10),
-                ...List.generate(section.value.length, (index) {
-                  final event = section.value[index];
-                  return EventTimelineItemWrapper(
-                    child: EventListCard(
-                      event: event,
-                      isFirstInGroup: index == 0,
-                      isLastInGroup: index == section.value.length - 1,
-                      showTimelineRail: false,
-                      bottomSpacing: 0,
-                    ),
-                  );
-                }),
-                const SizedBox(height: 18),
-              ],
+              ..._buildStaggeredSections(sections),
               if (state.pastEventsStatus == PastEventsStatus.loadingMore)
                 const _LoadMoreIndicator(),
               if (!state.pastEventsHasMore && state.pastEvents.isNotEmpty)

@@ -7,26 +7,29 @@ class RootHomeHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onAvatarTap;
   final UserDetailEntity? user;
   final bool isLoadingUser;
+  final bool elevated;
 
   const RootHomeHeader({
     super.key,
     required this.onAvatarTap,
     required this.user,
     required this.isLoadingUser,
+    this.elevated = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final surfaceColor =
-        theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface;
+    final cs = theme.colorScheme;
+    final surfaceColor = theme.appBarTheme.backgroundColor ?? cs.surface;
 
     return AppBar(
       automaticallyImplyLeading: false,
       backgroundColor: surfaceColor,
-      surfaceTintColor: surfaceColor,
-      elevation: 0,
+      surfaceTintColor: cs.surfaceTint,
+      elevation: elevated ? 3 : 0,
       scrolledUnderElevation: 0,
+      shadowColor: cs.shadow,
       centerTitle: true,
       toolbarHeight: 68,
       leadingWidth: 68,

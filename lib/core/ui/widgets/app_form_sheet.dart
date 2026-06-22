@@ -182,6 +182,19 @@ ButtonStyle appSecondaryPillButtonStyle(BuildContext context) {
   );
 }
 
+ButtonStyle appDestructivePillButtonStyle(BuildContext context) {
+  final cs = Theme.of(context).colorScheme;
+  return OutlinedButton.styleFrom(
+    minimumSize: const Size.fromHeight(56),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadius.input),
+    ),
+    side: BorderSide(color: cs.error.withValues(alpha: 0.5)),
+    foregroundColor: cs.error,
+    backgroundColor: Colors.transparent,
+  );
+}
+
 ButtonStyle appPrimaryPillButtonStyleCompact(BuildContext context) {
   final cs = Theme.of(context).colorScheme;
   final isDark = Theme.of(context).brightness == Brightness.dark;
