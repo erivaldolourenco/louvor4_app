@@ -34,29 +34,7 @@ class EventProgramTab extends StatelessWidget {
           );
         }
 
-        final header = Padding(
-          padding: const EdgeInsets.fromLTRB(0, 2, 0, 12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  'Programação',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              if (isAdmin)
-                FilledButton.tonal(
-                  onPressed: () => _showTextItemDialog(context),
-                  style: appTonalPillButtonStyleCompact(context),
-                  child: const Text('Adicionar'),
-                ),
-            ],
-          ),
-        );
+        const header = SizedBox(height: 4);
 
         if (state.items.isEmpty) {
           return ListView(
@@ -116,43 +94,7 @@ class EventProgramTab extends StatelessWidget {
   Future<void> _showTextItemDialog(
     BuildContext context, {
     TextProgramItemEntity? item,
-  }) async {
-    final cubit = context.read<EventProgramCubit>();
-
-    final result = await showDialog<({String title, String description})>(
-      context: context,
-      builder: (_) => _TextItemDialog(item: item),
-    );
-    if (result == null) return;
-
-    final bool success;
-    if (item == null) {
-      success = await cubit.createTextItem(
-        CreateTextProgramItemInputEntity(
-          title: result.title,
-          description: result.description.isEmpty ? null : result.description,
-        ),
-      );
-    } else {
-      success = await cubit.updateTextItem(
-        item.id,
-        UpdateTextProgramItemInputEntity(
-          title: result.title,
-          description: result.description.isEmpty ? null : result.description,
-        ),
-      );
-    }
-
-    if (success) {
-      AppFeedback.showSuccess(
-        item == null ? 'Item adicionado à programação.' : 'Item atualizado.',
-      );
-    } else {
-      AppFeedback.showError(
-        cubit.state.actionError ?? 'Erro ao salvar item.',
-      );
-    }
-  }
+  }) => showProgramTextItemDialog(context, item: item);
 
   Future<void> _confirmDelete(
     BuildContext context,
@@ -190,6 +132,47 @@ class EventProgramTab extends StatelessWidget {
     } else {
       AppFeedback.showError(cubit.state.actionError ?? 'Erro ao remover item.');
     }
+  }
+}
+
+Future<void> showProgramTextItemDialog(
+  BuildContext context, {
+  TextProgramItemEntity? item,
+}) async {
+  final cubit = context.read<EventProgramCubit>();
+
+  final result = await showDialog<({String title, String description})>(
+    context: context,
+    builder: (_) => _TextItemDialog(item: item),
+  );
+  if (result == null) return;
+
+  final bool success;
+  if (item == null) {
+    success = await cubit.createTextItem(
+      CreateTextProgramItemInputEntity(
+        title: result.title,
+        description: result.description.isEmpty ? null : result.description,
+      ),
+    );
+  } else {
+    success = await cubit.updateTextItem(
+      item.id,
+      UpdateTextProgramItemInputEntity(
+        title: result.title,
+        description: result.description.isEmpty ? null : result.description,
+      ),
+    );
+  }
+
+  if (success) {
+    AppFeedback.showSuccess(
+      item == null ? 'Item adicionado à programação.' : 'Item atualizado.',
+    );
+  } else {
+    AppFeedback.showError(
+      cubit.state.actionError ?? 'Erro ao salvar item.',
+    );
   }
 }
 

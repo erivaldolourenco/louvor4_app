@@ -12,10 +12,10 @@ import 'package:louvor4_app/features/user_profile/data/user_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_radius.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../data/event_program_repository.dart';
 import '../../data/events_repository.dart';
+
 import '../../data/impl/event_program_repository_impl.dart';
 import '../../data/impl/events_repository_impl.dart';
 import '../cubit/event_detail_cubit.dart';
@@ -106,6 +106,14 @@ class _EventDetailViewState extends State<_EventDetailView>
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
+      floatingActionButton: BlocBuilder<EventDetailCubit, EventDetailState>(
+        builder: (context, state) {
+          if (state.status != EventDetailStatus.success ||
+              state.event == null ||
+              !state.isProjectAdmin) return const SizedBox.shrink();
+          return _buildFab(state);
+        },
+      ),
       body: BlocBuilder<EventDetailCubit, EventDetailState>(
         builder: (context, state) {
           if (state.status == EventDetailStatus.loading) {
@@ -198,14 +206,12 @@ class _EventDetailViewState extends State<_EventDetailView>
               children: [
                 _ParticipantsTab(
                   state: state,
-                  onManageSchedule: () => _onManageSchedule(state),
                   onRefresh: () => context
                       .read<EventDetailCubit>()
                       .load(widget.eventId, force: true),
                 ),
                 _SongsTab(
                   state: state,
-                  onAddSongs: () => _onAddSongs(state),
                   onRemoveSong: _onRemoveSong,
                   onRefresh: () => context
                       .read<EventDetailCubit>()
@@ -317,6 +323,35 @@ class _EventDetailViewState extends State<_EventDetailView>
     }
   }
 
+  Widget _buildFab(EventDetailState state) {
+    return AnimatedBuilder(
+      animation: _tabController,
+      builder: (context, _) {
+        return switch (_tabController.index) {
+          0 => FloatingActionButton(
+              heroTag: 'event_detail_fab',
+              onPressed: () => _onManageSchedule(state),
+              child: const Icon(Icons.settings_rounded),
+            ),
+          1 => FloatingActionButton(
+              heroTag: 'event_detail_fab',
+              onPressed: () => _onAddSongs(state),
+              child: const Icon(Icons.add_rounded),
+            ),
+          2 => FloatingActionButton(
+              heroTag: 'event_detail_fab',
+              onPressed: _onAddProgramItem,
+              child: const Icon(Icons.add_rounded),
+            ),
+          _ => const SizedBox.shrink(),
+        };
+      },
+    );
+  }
+
+  Future<void> _onAddProgramItem() =>
+      showProgramTextItemDialog(context);
+
   Future<void> _onEditEvent() async {
     final event = context.read<EventDetailCubit>().state.event;
     if (event == null) return;
@@ -349,7 +384,7 @@ class _EventDetailTabs extends StatelessWidget {
     const tabs = [
       (assetPath: 'assets/icons/users-round.svg', label: 'Equipe'),
       (assetPath: 'assets/icons/music.svg', label: 'Músicas'),
-      (assetPath: 'assets/icons/calendar-fold.svg', label: 'Programação'),
+      (assetPath: 'assets/icons/clipboard-clock.svg', label: 'Roteiro'),
     ];
 
     return AnimatedBuilder(
@@ -530,12 +565,10 @@ class _MetaItem extends StatelessWidget {
 
 class _ParticipantsTab extends StatelessWidget {
   final EventDetailState state;
-  final VoidCallback onManageSchedule;
   final VoidCallback onRefresh;
 
   const _ParticipantsTab({
     required this.state,
-    required this.onManageSchedule,
     required this.onRefresh,
   });
 
@@ -572,27 +605,7 @@ class _ParticipantsTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 2, 16, 36),
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Text(
-                'Equipe escalada',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            if (state.isProjectAdmin)
-              FilledButton.tonal(
-                onPressed: onManageSchedule,
-                style: appTonalPillButtonStyleCompact(context),
-                child: const Text('Gerenciar escala'),
-              ),
-          ],
-        ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 4),
         if (state.participantsLoadFailed && state.participants.isEmpty)
           _RetryTabState(
             icon: Icons.group_off_rounded,
@@ -648,13 +661,11 @@ class _ParticipantsTab extends StatelessWidget {
 
 class _SongsTab extends StatelessWidget {
   final EventDetailState state;
-  final VoidCallback onAddSongs;
   final Future<bool> Function(String eventSongId) onRemoveSong;
   final VoidCallback onRefresh;
 
   const _SongsTab({
     required this.state,
-    required this.onAddSongs,
     required this.onRemoveSong,
     required this.onRefresh,
   });
@@ -699,26 +710,7 @@ class _SongsTab extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 2, 16, 36),
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Text(
-                'Repertório',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            FilledButton.tonal(
-              onPressed: onAddSongs,
-              style: appTonalPillButtonStyleCompact(context),
-              child: const Text('Nova música'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 4),
         if (state.songsLoadFailed && state.songs.isEmpty)
           _RetryTabState(
             icon: Icons.music_off_rounded,
@@ -757,7 +749,6 @@ class _SongsTab extends StatelessWidget {
                               : null,
                         )
                       : SongListCard(
-                          dismissKey: song.id,
                           title: song.title,
                           artist: song.artist ?? 'Desconhecido',
                           musicKey: song.key,
@@ -778,7 +769,7 @@ class _SongsTab extends StatelessWidget {
                                   song.youTubeUrl!.isNotEmpty)
                               ? () => _launchYoutube(song.youTubeUrl!)
                               : null,
-                          onRemove: (state.isProjectAdmin &&
+                          onDelete: (state.isProjectAdmin &&
                                   state.deletingSongId != song.id)
                               ? () => onRemoveSong(song.id)
                               : null,

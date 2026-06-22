@@ -16,6 +16,7 @@ class SongListCard extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onOpenYoutube;
   final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
   final Future<bool> Function()? onRemove;
   final bool isRemoving;
   final String? dismissKey;
@@ -32,13 +33,17 @@ class SongListCard extends StatelessWidget {
     this.onTap,
     this.onOpenYoutube,
     this.onEdit,
+    this.onDelete,
     this.onRemove,
     this.isRemoving = false,
     this.dismissKey,
   });
 
   bool get _hasActions =>
-      isRemoving || (!isMedley && onOpenYoutube != null) || onEdit != null;
+      isRemoving ||
+      (!isMedley && onOpenYoutube != null) ||
+      onEdit != null ||
+      onDelete != null;
 
   @override
   Widget build(BuildContext context) {
@@ -129,6 +134,16 @@ class SongListCard extends StatelessWidget {
                         iconColor: cs.onPrimaryContainer,
                         backgroundColor: cs.primaryContainer,
                         borderColor: cs.primary.withValues(alpha: 0.3),
+                      ),
+                    if (onDelete != null && (onOpenYoutube != null || onEdit != null))
+                      const SizedBox(width: 8),
+                    if (onDelete != null)
+                      AppCircularActionButton(
+                        onPressed: onDelete,
+                        assetPath: 'assets/icons/trash-2.svg',
+                        iconColor: cs.error,
+                        backgroundColor: cs.errorContainer,
+                        borderColor: cs.error.withValues(alpha: 0.3),
                       ),
                   ],
                 ],
