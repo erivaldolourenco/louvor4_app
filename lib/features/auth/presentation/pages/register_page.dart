@@ -288,7 +288,7 @@ class _RegisterViewState extends State<_RegisterView> {
     if (text.isEmpty) return 'Informe seu nome.';
     if (text.length < 3) return 'O nome deve ter no mínimo 3 caracteres.';
     if (text.length > 100) return 'O nome deve ter no máximo 100 caracteres.';
-    if (!RegExp(r'^[A-Za-zÀ-ÖØ-öø-ÿ]+$').hasMatch(text)) {
+    if (!RegExp(r'^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]+)*$').hasMatch(text)) {
       return 'O nome deve conter apenas letras.';
     }
     return null;
@@ -303,7 +303,7 @@ class _RegisterViewState extends State<_RegisterView> {
     if (text.length > 100) {
       return 'O sobrenome deve ter no máximo 100 caracteres.';
     }
-    if (!RegExp(r'^[A-Za-zÀ-ÖØ-öø-ÿ]+$').hasMatch(text)) {
+    if (!RegExp(r'^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:\s+[A-Za-zÀ-ÖØ-öø-ÿ]+)*$').hasMatch(text)) {
       return 'O sobrenome deve conter apenas letras.';
     }
     return null;
