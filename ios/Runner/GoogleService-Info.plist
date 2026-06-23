@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyCT-WH1AK6zXNH7xht3k2u-rtO2K_HhGbc</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1020415586629</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>br.com.louvor4.louvor4App</string>
+	<key>PROJECT_ID</key>
+	<string>louvor4-6edd0</string>
+	<key>STORAGE_BUCKET</key>
+	<string>louvor4-6edd0.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1020415586629:ios:3256d1499792a8b2ce8e2c</string>
+</dict>
+</plist>

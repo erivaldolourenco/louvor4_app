@@ -24,6 +24,13 @@ class ApiClient {
       return 'http://10.0.2.2:8080';
     }
 
+    // iOS Simulator shares the host network, so localhost reaches the Mac directly.
+    if (!kIsWeb &&
+        !kReleaseMode &&
+        defaultTargetPlatform == TargetPlatform.iOS) {
+      return 'http://localhost:8080';
+    }
+
     return 'https://api.louvor4.com.br';
   }
 

@@ -47,7 +47,11 @@ void main() async {
     final bool isLoggedIn = token != null && token.isNotEmpty;
 
     if (isLoggedIn) {
-      unawaited(PushNotificationService.instance.initialize());
+      try {
+        unawaited(PushNotificationService.instance.initialize());
+      } catch (e) {
+        debugPrint('PushNotificationService não inicializado: $e');
+      }
     }
 
     runApp(Louvor4App(isLoggedIn: isLoggedIn));

@@ -103,12 +103,18 @@ class _LoginViewState extends State<_LoginView> {
                       SnackBar(content: Text('Bem-vindo $name ✅')),
                     );
 
-                    unawaited(PushNotificationService.instance.initialize());
-                    unawaited(PushNotificationService.instance.syncTokenNow());
-
                     Navigator.of(
                       context,
                     ).pushReplacementNamed(RootPage.routeName);
+
+                    unawaited(
+                      Future(() async {
+                        await PushNotificationService.instance.initialize();
+                        await PushNotificationService.instance.syncTokenNow();
+                      }).catchError((Object e) {
+                        debugPrint('Push notification setup falhou: $e');
+                      }),
+                    );
                   }
                 },
                 child: Column(
