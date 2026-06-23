@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
+import 'package:louvor4_app/core/ui/widgets/spring_tap.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_entity.dart';
 import '../../../../../core/theme/app_radius.dart';
 
@@ -32,64 +33,62 @@ class EventParticipantCard extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(15),
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(15),
-          child: AppCardSurface(
-            radius: 15,
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: cs.primaryContainer,
-                  backgroundImage: profileImage != null
-                      ? appCachedImageProvider(profileImage)
-                      : null,
-                  child: profileImage == null
-                      ? Icon(Icons.person, color: cs.primary)
-                      : null,
-                ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: titleColor,
-                        ),
+      child: SpringTap(
+        onTap: onTap,
+        pressedScale: 0.97,
+        child: AppCardSurface(
+          radius: 15,
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: cs.primaryContainer,
+                backgroundImage: profileImage != null
+                    ? appCachedImageProvider(profileImage)
+                    : null,
+                child: profileImage == null
+                    ? Icon(Icons.person, color: cs.primary)
+                    : null,
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: titleColor,
                       ),
-                      Text(
-                        skill,
-                        style: theme.textTheme.bodySmall?.copyWith(color: subtitleColor),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: badge.backgroundColor,
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                  ),
-                  child: Text(
-                    badge.label,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: badge.foregroundColor,
-                      fontWeight: FontWeight.w700,
                     ),
+                    Text(
+                      skill,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: subtitleColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: badge.backgroundColor,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
+                child: Text(
+                  badge.label,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: badge.foregroundColor,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

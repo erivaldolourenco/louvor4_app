@@ -4,6 +4,7 @@ import '../../theme/app_radius.dart';
 import '../../utils/youtube_utils.dart';
 import 'app_card_surface.dart';
 import 'app_circular_action_button.dart';
+import 'spring_tap.dart';
 
 class SongListCard extends StatelessWidget {
   final String title;
@@ -172,14 +173,10 @@ class SongListCard extends StatelessWidget {
       );
     }
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: cardContent,
-      ),
+    return SpringTap(
+      onTap: onTap,
+      pressedScale: 0.97,
+      child: cardContent,
     );
   }
 }

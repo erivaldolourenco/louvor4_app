@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../../core/ui/widgets/app_circular_action_button.dart';
+import '../../../../../core/ui/widgets/spring_tap.dart';
 import '../../domain/entities/medley_entity.dart';
 import 'medley_details_sheet.dart';
 
@@ -120,14 +121,10 @@ class MedleyCard extends StatelessWidget {
       ),
     );
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        onTap: onTap ?? () => showMedleyDetailsModal(context, medley),
-        borderRadius: BorderRadius.circular(22),
-        child: card,
-      ),
+    return SpringTap(
+      onTap: onTap ?? () => showMedleyDetailsModal(context, medley),
+      pressedScale: 0.97,
+      child: card,
     );
   }
 }
