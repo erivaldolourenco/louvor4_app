@@ -5,7 +5,7 @@ import '../../../../../core/theme/app_radius.dart';
 import '../../../../../core/utils/youtube_utils.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../domain/entities/program_item_entity.dart';
 import '../../domain/entities/program_item_input_entity.dart';
@@ -481,11 +481,11 @@ class _EmptyProgramState extends StatelessWidget {
           ),
           if (isAdmin) ...[
             const SizedBox(height: 16),
-            FilledButton.icon(
+            AppPrimaryButton(
               onPressed: onAdd,
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: const Text('Adicionar item de texto'),
-              style: appPrimaryPillButtonStyle(context),
+              icon: Icons.add_rounded,
+              height: 44,
+              child: const Text('Adicionar item de texto'),
             ),
           ],
         ],
@@ -546,7 +546,7 @@ class _TextItemDialogState extends State<_TextItemDialog> {
           children: [
             TextFormField(
               controller: _titleCtrl,
-              decoration: appFormFieldDecoration(context, hintText: 'Título *'),
+              decoration: const InputDecoration(labelText: 'Título'),
               textInputAction: TextInputAction.next,
               validator: (v) =>
                   v == null || v.trim().isEmpty ? 'Informe um título' : null,
@@ -554,9 +554,8 @@ class _TextItemDialogState extends State<_TextItemDialog> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _descCtrl,
-              decoration: appFormFieldDecoration(
-                context,
-                hintText: 'Descrição (opcional)',
+              decoration: const InputDecoration(
+                labelText: 'Descrição (opcional)',
                 alignLabelWithHint: true,
               ),
               textInputAction: TextInputAction.done,

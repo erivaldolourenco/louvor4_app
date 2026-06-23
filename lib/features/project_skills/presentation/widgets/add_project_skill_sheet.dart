@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/utils/skill_icon.dart';
 import '../../domain/entities/project_skill_entity.dart';
@@ -57,14 +58,13 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _FieldLabel(label: 'Nome da função'),
             TextFormField(
               controller: _nameController,
               enabled: !isSubmitting,
-              decoration: appFormFieldDecoration(
-                context,
+              decoration: const InputDecoration(
+                labelText: 'Nome da função',
                 hintText: 'Ex: Guitarra, Vocal, Teclado',
-                prefixIcon: Icons.music_note_rounded,
+                prefixIcon: Icon(Icons.music_note_rounded),
               ),
               validator: (value) {
                 if ((value ?? '').trim().isEmpty) {
@@ -74,7 +74,15 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
               },
             ),
             const SizedBox(height: 20),
-            const _FieldLabel(label: 'Ícone'),
+            Padding(
+              padding: const EdgeInsets.only(left: 4, bottom: 8),
+              child: Text(
+                'Ícone',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+              ),
+            ),
             _IconPickerGrid(
               selectedKey: _selectedIconKey,
               onSelect: (key) => setState(() => _selectedIconKey = key),
@@ -97,8 +105,7 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    style: appSecondaryPillButtonStyle(context),
+                  child: AppSecondaryButton(
                     onPressed: isSubmitting
                         ? null
                         : () => Navigator.of(context).maybePop(false),
@@ -107,8 +114,7 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: FilledButton(
-                    style: appPrimaryPillButtonStyle(context),
+                  child: AppPrimaryButton(
                     onPressed: isSubmitting
                         ? null
                         : () async {
@@ -255,24 +261,6 @@ class _IconPickerGrid extends StatelessWidget {
   }
 }
 
-class _FieldLabel extends StatelessWidget {
-  final String label;
-
-  const _FieldLabel({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).textTheme.bodyMedium?.color,
-        ),
-      ),
-    );
-  }
-}
 
 class _InlineError extends StatelessWidget {
   final String message;

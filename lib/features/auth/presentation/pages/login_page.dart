@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_radius.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/notifications/push_notification_service.dart';
 import '../../../root/presentation/pages/root_page.dart';
 import '../../data/repositories/impl/auth_repository_impl.dart';
@@ -77,10 +77,10 @@ class _LoginViewState extends State<_LoginView> {
                             title: const Text('Atenção'),
                             content: Text(state.errorMessage!),
                             actions: [
-                              FilledButton(
+                              AppPrimaryButton(
                                 onPressed: () =>
                                     Navigator.of(dialogContext).pop(),
-                                style: appPrimaryPillButtonStyle(dialogContext),
+                                height: 44,
                                 child: const Text('Entendi'),
                               ),
                             ],
@@ -171,23 +171,19 @@ class _LoginViewState extends State<_LoginView> {
                       builder: (context, state) {
                         final loading = state.status == LoginStatus.loading;
 
-                        return SizedBox(
-                          width: double.infinity,
-                          child: FilledButton(
-                            style: appPrimaryPillButtonStyle(context),
-                            onPressed: loading
-                                ? null
-                                : () => context.read<LoginCubit>().submit(),
-                            child: loading
-                                ? const SizedBox(
-                                    height: 22,
-                                    width: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Text('Entrar'),
-                          ),
+                        return AppPrimaryButton(
+                          onPressed: loading
+                              ? null
+                              : () => context.read<LoginCubit>().submit(),
+                          child: loading
+                              ? const SizedBox(
+                                  height: 22,
+                                  width: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Entrar'),
                         );
                       },
                     ),

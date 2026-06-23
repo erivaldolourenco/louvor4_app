@@ -7,6 +7,7 @@ import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
@@ -453,15 +454,14 @@ class _AddProjectMemberSheetState extends State<_AddProjectMemberSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _FormSectionLabel(label: 'Username'),
             TextFormField(
               controller: _usernameController,
               enabled: !isSubmitting,
               textInputAction: TextInputAction.done,
-              decoration: appFormFieldDecoration(
-                context,
+              decoration: const InputDecoration(
+                labelText: 'Username',
                 hintText: 'ex: joao.silva',
-                prefixIcon: Icons.alternate_email_rounded,
+                prefixIcon: Icon(Icons.alternate_email_rounded),
               ),
               validator: (value) {
                 if ((value ?? '').trim().isEmpty) {
@@ -478,8 +478,7 @@ class _AddProjectMemberSheetState extends State<_AddProjectMemberSheet> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    style: appSecondaryPillButtonStyle(context),
+                  child: AppSecondaryButton(
                     onPressed: isSubmitting
                         ? null
                         : () => Navigator.of(context).maybePop(false),
@@ -488,8 +487,7 @@ class _AddProjectMemberSheetState extends State<_AddProjectMemberSheet> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: FilledButton(
-                    style: appPrimaryPillButtonStyle(context),
+                  child: AppPrimaryButton(
                     onPressed: isSubmitting
                         ? null
                         : () async {
@@ -601,11 +599,11 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
                         message: 'Não foi possível abrir este membro.',
                       ),
                       const SizedBox(height: 18),
-                      FilledButton.icon(
-                        style: appPrimaryPillButtonStyle(context),
+                      AppPrimaryButton(
                         onPressed: _loadMember,
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Tentar novamente'),
+                        icon: Icons.refresh_rounded,
+                        height: 48,
+                        child: const Text('Tentar novamente'),
                       ),
                     ],
                   ),
@@ -691,8 +689,7 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
                       _InlineErrorMessage(message: state.actionErrorMessage!),
                     ],
                     const SizedBox(height: 22),
-                    FilledButton(
-                      style: appPrimaryPillButtonStyle(context),
+                    AppPrimaryButton(
                       onPressed: isSubmitting
                           ? null
                           : () async {
@@ -720,8 +717,7 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
                           : const Text('Salvar alterações'),
                     ),
                     const SizedBox(height: 10),
-                    OutlinedButton(
-                      style: appSecondaryPillButtonStyle(context),
+                    AppSecondaryButton(
                       onPressed: isSubmitting
                           ? null
                           : () => Navigator.of(context).pop(false),
@@ -749,25 +745,6 @@ class _MemberSheetScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppFormSheet(title: title, subtitle: subtitle, child: child);
-  }
-}
-
-class _FormSectionLabel extends StatelessWidget {
-  final String label;
-
-  const _FormSectionLabel({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).textTheme.bodyMedium?.color,
-        ),
-      ),
-    );
   }
 }
 

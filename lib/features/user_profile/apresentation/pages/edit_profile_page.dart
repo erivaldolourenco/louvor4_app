@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_radius.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/user_repository.dart';
 import '../../domain/entities/update_user_input_entity.dart';
@@ -162,8 +162,7 @@ class _EditProfileViewState extends State<_EditProfileView> {
                         _InlineErrorMessage(message: state.errorMessage!),
                       ],
                       const SizedBox(height: 22),
-                      FilledButton(
-                        style: appPrimaryPillButtonStyle(context),
+                      AppPrimaryButton(
                         onPressed: user == null || state.isSubmitting
                             ? null
                             : () => _submit(cubit),
@@ -179,8 +178,7 @@ class _EditProfileViewState extends State<_EditProfileView> {
                             : const Text('Salvar alterações'),
                       ),
                       const SizedBox(height: 10),
-                      OutlinedButton(
-                        style: appSecondaryPillButtonStyle(context),
+                      AppSecondaryButton(
                         onPressed: state.isSubmitting
                             ? null
                             : () => Navigator.of(context).pop(),

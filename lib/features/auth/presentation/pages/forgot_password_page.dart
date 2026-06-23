@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/ui/app_feedback.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/impl/auth_repository_impl.dart';
 import '../cubit/forgot_password_cubit.dart';
@@ -102,8 +102,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                           if (state.step == 2) _buildStep2(context, state, theme),
                           if (state.step == 3) _buildStep3(context, state),
                           const SizedBox(height: 12),
-                          OutlinedButton(
-                            style: appSecondaryPillButtonStyle(context),
+                          AppSecondaryButton(
                             onPressed: () => Navigator.of(context).maybePop(),
                             child: const Text('Voltar para login'),
                           ),
@@ -145,8 +144,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
           onSubmitted: (_) => context.read<ForgotPasswordCubit>().loadChannels(),
         ),
         const SizedBox(height: 24),
-        FilledButton(
-          style: appPrimaryPillButtonStyle(context),
+        AppPrimaryButton(
           onPressed: state.isLoading
               ? null
               : () => context.read<ForgotPasswordCubit>().loadChannels(),
@@ -192,8 +190,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
           ),
         ],
         const SizedBox(height: 24),
-        FilledButton(
-          style: appPrimaryPillButtonStyle(context),
+        AppPrimaryButton(
           onPressed: state.isLoading
               ? null
               : () => context.read<ForgotPasswordCubit>().sendCode(),
@@ -250,8 +247,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
           onSubmitted: (_) => context.read<ForgotPasswordCubit>().resetPassword(),
         ),
         const SizedBox(height: 24),
-        FilledButton(
-          style: appPrimaryPillButtonStyle(context),
+        AppPrimaryButton(
           onPressed: state.isLoading
               ? null
               : () => context.read<ForgotPasswordCubit>().resetPassword(),

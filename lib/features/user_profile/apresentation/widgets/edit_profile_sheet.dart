@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_radius.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../data/user_repository.dart';
 import '../../domain/entities/update_user_input_entity.dart';
@@ -176,8 +177,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  style: appSecondaryPillButtonStyle(context),
+                child: AppSecondaryButton(
                   onPressed: state.isSubmitting
                       ? null
                       : () => Navigator.of(context).maybePop(),
@@ -186,8 +186,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: FilledButton(
-                  style: appPrimaryPillButtonStyle(context),
+                child: AppPrimaryButton(
                   onPressed: !canEdit || state.isSubmitting
                       ? null
                       : () => _submit(context, cubit),

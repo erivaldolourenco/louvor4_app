@@ -6,7 +6,7 @@ import 'package:louvor4_app/features/songs/domain/entities/song_entity.dart';
 
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/utils/youtube_utils.dart';
 import '../../data/events_repository.dart';
 import '../cubit/manage_event_songs_cubit.dart';
@@ -176,31 +176,25 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                               final enabled =
                                   !btnState.isSubmitting && count > 0;
 
-                              return SizedBox(
-                                width: double.infinity,
-                                child: FilledButton(
-                                  style: appPrimaryPillButtonStyle(context),
-                                  onPressed: enabled
-                                      ? () => isMedleysTab
-                                          ? cubit.submitMedleys(
-                                              widget.eventId,
-                                            )
-                                          : cubit.submit(widget.eventId)
-                                      : null,
-                                  child: btnState.isSubmitting
-                                      ? const SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                          ),
-                                        )
-                                      : Text(
-                                          isMedleysTab
-                                              ? 'Adicionar Medley${count != 1 ? 's' : ''} ($count)'
-                                              : 'Adicionar Selecionadas ($count)',
+                              return AppPrimaryButton(
+                                onPressed: enabled
+                                    ? () => isMedleysTab
+                                        ? cubit.submitMedleys(widget.eventId)
+                                        : cubit.submit(widget.eventId)
+                                    : null,
+                                child: btnState.isSubmitting
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
                                         ),
-                                ),
+                                      )
+                                    : Text(
+                                        isMedleysTab
+                                            ? 'Adicionar Medley${count != 1 ? 's' : ''} ($count)'
+                                            : 'Adicionar Selecionadas ($count)',
+                                      ),
                               );
                             },
                           );

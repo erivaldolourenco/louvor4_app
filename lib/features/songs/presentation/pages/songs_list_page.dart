@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/ui/app_feedback.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/ui/widgets/song_details_sheet.dart';
@@ -299,10 +298,9 @@ class _SongsContentState extends State<_SongsContent>
           child: TextField(
             controller: _searchController,
             onChanged: (value) => setState(() => _searchQuery = value),
-            decoration: appFormFieldDecoration(
-              context,
+            decoration: InputDecoration(
               hintText: 'Buscar por título ou artista...',
-              prefixIcon: Icons.search_rounded,
+              prefixIcon: const Icon(Icons.search_rounded),
               suffixIcon: _searchQuery.isNotEmpty
                   ? IconButton(
                       icon: const Icon(Icons.clear_rounded),
@@ -312,10 +310,6 @@ class _SongsContentState extends State<_SongsContent>
                       },
                     )
                   : null,
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 12,
-                horizontal: 16,
-              ),
             ),
           ),
         ),

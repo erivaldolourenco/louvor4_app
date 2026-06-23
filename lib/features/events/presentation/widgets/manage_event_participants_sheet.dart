@@ -4,7 +4,7 @@ import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../data/events_repository.dart';
 import '../../domain/entities/event_detail_entity.dart';
@@ -189,21 +189,19 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                           child: Row(
                             children: [
                               Expanded(
-                                child: OutlinedButton(
+                                child: AppSecondaryButton(
                                   onPressed: state.isSubmitting
                                       ? null
                                       : () => Navigator.of(context).maybePop(),
-                                  style: appSecondaryPillButtonStyle(context),
                                   child: const Text('Cancelar'),
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
-                                child: FilledButton(
+                                child: AppPrimaryButton(
                                   onPressed: state.isSubmitting
                                       ? null
                                       : () => cubit.submit(event.id),
-                                  style: appPrimaryPillButtonStyle(context),
                                   child: state.isSubmitting
                                       ? const Center(
                                           child: SizedBox(

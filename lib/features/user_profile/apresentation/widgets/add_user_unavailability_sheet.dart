@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:louvor4_app/core/theme/app_radius.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
+import 'package:louvor4_app/core/ui/widgets/app_buttons.dart';
 import 'package:louvor4_app/core/ui/widgets/app_form_sheet.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/music_project_entity.dart';
 import 'package:louvor4_app/features/user_profile/apresentation/cubit/user_unavailability_cubit.dart';
@@ -178,17 +179,16 @@ class _AddUserUnavailabilitySheetState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const _FieldLabel(label: 'Descrição'),
             TextFormField(
               controller: _descriptionController,
               enabled: !isSubmitting,
               minLines: 2,
               maxLines: 4,
               maxLength: 180,
-              decoration: appFormFieldDecoration(
-                context,
+              decoration: const InputDecoration(
+                labelText: 'Descrição',
                 hintText: 'Ex: Viagem com a família, compromisso profissional',
-                prefixIcon: Icons.notes_rounded,
+                prefixIcon: Icon(Icons.notes_rounded),
                 alignLabelWithHint: true,
               ),
               validator: (value) {
@@ -297,8 +297,7 @@ class _AddUserUnavailabilitySheetState
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    style: appSecondaryPillButtonStyle(context),
+                  child: AppSecondaryButton(
                     onPressed: isSubmitting
                         ? null
                         : () => Navigator.of(context).maybePop(false),
@@ -307,8 +306,7 @@ class _AddUserUnavailabilitySheetState
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: FilledButton(
-                    style: appPrimaryPillButtonStyle(context),
+                  child: AppPrimaryButton(
                     onPressed: isSubmitting ? null : _submit,
                     child: isSubmitting
                         ? SizedBox(

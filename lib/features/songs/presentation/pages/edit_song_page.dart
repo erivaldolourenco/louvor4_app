@@ -4,7 +4,7 @@ import 'package:just_audio/just_audio.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/impl/songs_repository_impl.dart';
 import '../../domain/entities/song_entity.dart';
@@ -201,8 +201,7 @@ class _EditSongPageState extends State<EditSongPage> {
                       ),
 
                       const SizedBox(height: 22),
-                      FilledButton(
-                        style: appPrimaryPillButtonStyle(context),
+                      AppPrimaryButton(
                         onPressed: _isSaving || !_isFormValid ? null : _save,
                         child: _isSaving
                             ? SizedBox(
@@ -216,8 +215,7 @@ class _EditSongPageState extends State<EditSongPage> {
                             : const Text('Salvar alterações'),
                       ),
                       const SizedBox(height: 10),
-                      OutlinedButton(
-                        style: appSecondaryPillButtonStyle(context),
+                      AppSecondaryButton(
                         onPressed: _isSaving
                             ? null
                             : () => Navigator.of(context).pop(),

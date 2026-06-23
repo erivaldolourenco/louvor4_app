@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_circular_action_button.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../core/utils/youtube_utils.dart';
 import '../../../../features/songs/domain/entities/song_entity.dart';
@@ -243,35 +243,29 @@ class _MedleyFormPageState extends State<_MedleyFormPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _FieldLabel(label: 'Nome do medley *'),
                 TextFormField(
                   controller: _nameCtrl,
                   enabled: !isActioning,
-                  decoration: appFormFieldDecoration(
-                    context,
+                  decoration: const InputDecoration(
+                    labelText: 'Nome do medley',
                     hintText: 'Ex: Abertura do culto',
-                    prefixIcon: Icons.title_rounded,
+                    prefixIcon: Icon(Icons.title_rounded),
                   ),
                   validator: (v) {
                     if ((v ?? '').trim().length < 3) return 'Mínimo de 3 caracteres.';
                     return null;
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
-                _FieldLabel(label: 'Descrição (opcional)'),
                 TextFormField(
                   controller: _descCtrl,
                   enabled: !isActioning,
                   maxLines: 2,
-                  decoration: appFormFieldDecoration(
-                    context,
+                  decoration: const InputDecoration(
+                    labelText: 'Descrição (opcional)',
                     hintText: 'Uma breve descrição...',
                     alignLabelWithHint: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 14,
-                    ),
                   ),
                 ),
                 const SizedBox(height: 22),
@@ -312,17 +306,16 @@ class _MedleyFormPageState extends State<_MedleyFormPage> {
                   const SizedBox(height: 8),
                 ],
 
-                OutlinedButton.icon(
-                  style: appSecondaryPillButtonStyle(context),
+                AppSecondaryButton(
                   onPressed: isActioning ? null : _addSong,
-                  icon: const Icon(Icons.add_rounded),
-                  label: const Text('Adicionar Música'),
+                  icon: Icons.add_rounded,
+                  height: 48,
+                  child: const Text('Adicionar Música'),
                 ),
 
                 const SizedBox(height: 22),
 
-                FilledButton(
-                  style: appPrimaryPillButtonStyle(context),
+                AppPrimaryButton(
                   onPressed: isActioning ? null : _save,
                   child: isActioning
                       ? const SizedBox(
@@ -335,8 +328,7 @@ class _MedleyFormPageState extends State<_MedleyFormPage> {
                       : Text(_isEditing ? 'Salvar alterações' : 'Criar Medley'),
                 ),
                 const SizedBox(height: 10),
-                OutlinedButton(
-                  style: appSecondaryPillButtonStyle(context),
+                AppSecondaryButton(
                   onPressed: isActioning ? null : () => Navigator.of(context).pop(),
                   child: const Text('Cancelar'),
                 ),
@@ -471,28 +463,6 @@ class _MiniTag extends StatelessWidget {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Field label helper
-// ---------------------------------------------------------------------------
-
-class _FieldLabel extends StatelessWidget {
-  final String label;
-
-  const _FieldLabel({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
-      ),
-    );
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Song picker sheet
@@ -974,16 +944,15 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
               child: Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
-                      style: appSecondaryPillButtonStyle(context),
+                    child: AppSecondaryButton(
                       onPressed: () => Navigator.of(context).pop(),
+                      height: 48,
                       child: const Text('Cancelar'),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: FilledButton(
-                      style: appPrimaryPillButtonStyle(context),
+                    child: AppPrimaryButton(
                       onPressed: () {
                         if (!_formKey.currentState!.validate()) return;
                         final notes = _notesCtrl.text.trim();
@@ -993,6 +962,7 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                           notes: notes.isEmpty ? null : notes,
                         ));
                       },
+                      height: 48,
                       child: const Text('Confirmar'),
                     ),
                   ),
