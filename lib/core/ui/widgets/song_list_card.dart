@@ -53,6 +53,7 @@ class SongListCard extends StatelessWidget {
 
     Widget cardContent = AppCardSurface(
       radius: 22,
+      borderColor: cs.primary.withValues(alpha: 0.3),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

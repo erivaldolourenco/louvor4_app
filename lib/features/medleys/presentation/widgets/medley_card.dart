@@ -29,6 +29,7 @@ class MedleyCard extends StatelessWidget {
 
     final card = AppCardSurface(
       radius: 22,
+      borderColor: cs.secondary.withValues(alpha: 0.4),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
