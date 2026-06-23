@@ -5,8 +5,10 @@ import 'package:louvor4_app/features/events/presentation/pages/event_detail_page
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
+import '../../../../core/ui/widgets/app_cached_network_image.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
+import '../../../../core/ui/widgets/spring_tap.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../data/music_projects_repository.dart';
 import '../../domain/entities/music_event_detail_entity.dart';
@@ -202,9 +204,6 @@ class _ProjectEventCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final titleColor = theme.textTheme.titleMedium?.color;
-    final bodyColor = theme.textTheme.bodyMedium?.color;
-    final mutedColor = bodyColor?.withValues(alpha: isDark ? 0.82 : 0.72);
     final month = _monthAbbreviation(event.date.month);
     final day = event.date.day.toString().padLeft(2, '0');
     final normalizedTime = event.time.trim().isEmpty
@@ -214,11 +213,10 @@ class _ProjectEventCard extends StatelessWidget {
         ? 'Local não informado'
         : event.location;
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(AppRadius.cardLarge),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
+    return AppCardSurface(
+      radius: AppRadius.card,
+      child: SpringTap(
+        pressedScale: 0.97,
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -226,153 +224,136 @@ class _ProjectEventCard extends StatelessWidget {
             ),
           );
         },
-        child: Ink(
-          decoration: appCardDecoration(context),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // Coluna 1: data (mês + dia)
-                SizedBox(
-                  width: 68,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        month,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: cs.primary,
-                        ),
-                      ),
-                      Text(
-                        day,
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 30,
-                          height: 1,
-                          color: titleColor,
-                        ),
-                      ),
-                    ],
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              // Bloco de data, no lugar da capa do projeto
+              Container(
+                width: 70,
+                height: 70,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: isDark ? cs.surfaceContainer : cs.primaryContainer,
+                  borderRadius: BorderRadius.circular(AppRadius.input),
                 ),
-                const SizedBox(width: 14),
-
-                // Coluna 2: título + linha de hora/local
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        event.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: titleColor,
-                            ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.schedule_rounded,
-                            size: 15,
-                            color: cs.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            normalizedTime,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: cs.onSurfaceVariant,
-                                ),
-                          ),
-                          const SizedBox(width: 10),
-                          Icon(
-                            Icons.place_outlined,
-                            size: 15,
-                            color: cs.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              location,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: cs.onSurfaceVariant),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 10),
-
-                // Coluna 3: métricas
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Row(
-                      children: [
-                        SvgPicture.asset(
-                          'assets/icons/users-round.svg',
-                          width: 18,
-                          height: 18,
-                          colorFilter: ColorFilter.mode(
-                            cs.primary,
-                            BlendMode.srcIn,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${event.participantsCount}',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: cs.primary,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      month,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: cs.primary,
+                      ),
+                    ),
+                    Text(
+                      day,
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 28,
+                        height: 1,
+                        color: isDark ? cs.onSurface : cs.onPrimaryContainer,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      event.title,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: cs.onSurface,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '$normalizedTime • $location',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontSize: 13,
+                        color: cs.onSurfaceVariant,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        SvgPicture.asset(
-                          'assets/icons/music.svg',
-                          width: 18,
-                          height: 18,
-                          colorFilter: const ColorFilter.mode(
-                            Color(0xFFD97706),
-                            BlendMode.srcIn,
+                        if (event.participantsProfileImages.isNotEmpty)
+                          SizedBox(
+                            height: 22,
+                            width:
+                                22 +
+                                (event.participantsProfileImages.length > 5
+                                        ? 5
+                                        : event
+                                              .participantsProfileImages
+                                              .length) *
+                                    14.0,
+                            child: Stack(
+                              children: List.generate(
+                                event.participantsProfileImages.length > 5
+                                    ? 5
+                                    : event.participantsProfileImages.length,
+                                (index) => Positioned(
+                                  left: index * 14.0,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: cs.surface,
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 10,
+                                      backgroundColor: isDark
+                                          ? cs.surfaceContainerLow
+                                          : cs.outlineVariant,
+                                      backgroundImage: appCachedImageProvider(
+                                        event.participantsProfileImages[index],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        else ...[
+                          SvgPicture.asset(
+                            'assets/icons/users-round.svg',
+                            width: 15,
+                            height: 15,
+                            colorFilter: ColorFilter.mode(
+                              cs.primary,
+                              BlendMode.srcIn,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${event.repertoireCount}',
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: const Color(0xFFD97706),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${event.participantsCount}',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: cs.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ],
                 ),
-                const SizedBox(width: 6),
-
-                // Indicador de navegação
-                SizedBox(
-                  height: 68,
-                  child: Center(
-                    child: Icon(Icons.chevron_right_rounded, color: mutedColor),
-                  ),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 6),
+              Icon(Icons.chevron_right_rounded, color: cs.onSurfaceVariant),
+            ],
           ),
         ),
       ),

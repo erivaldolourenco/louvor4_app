@@ -12,6 +12,7 @@ class MusicEventDetailEntity extends Equatable {
   final String? projectImageUrl;
   final int participantsCount;
   final int repertoireCount;
+  final List<String> participantsProfileImages;
 
   const MusicEventDetailEntity({
     required this.id,
@@ -25,6 +26,7 @@ class MusicEventDetailEntity extends Equatable {
     this.projectImageUrl,
     required this.participantsCount,
     required this.repertoireCount,
+    this.participantsProfileImages = const [],
   });
 
   factory MusicEventDetailEntity.fromJson(Map<String, dynamic> json) {
@@ -40,6 +42,11 @@ class MusicEventDetailEntity extends Equatable {
       projectImageUrl: _normalizeOptionalValue(json['projectImageUrl']),
       participantsCount: _toInt(json['participantsCount']),
       repertoireCount: _toInt(json['repertoireCount']),
+      participantsProfileImages:
+          (json['participantsProfileImages'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [],
     );
   }
 
@@ -72,5 +79,6 @@ class MusicEventDetailEntity extends Equatable {
     projectImageUrl,
     participantsCount,
     repertoireCount,
+    participantsProfileImages,
   ];
 }
