@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/ui/app_feedback.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/impl/auth_repository_impl.dart';
 import '../../domain/entities/create_user_input_entity.dart';
@@ -211,8 +211,7 @@ class _RegisterViewState extends State<_RegisterView> {
                         BlocBuilder<RegisterCubit, RegisterState>(
                           buildWhen: (p, c) => p.status != c.status,
                           builder: (context, state) {
-                            return FilledButton(
-                              style: appPrimaryPillButtonStyle(context),
+                            return AppPrimaryButton(
                               onPressed: state.isSubmitting || !_isFormValid
                                   ? null
                                   : _submit,
@@ -229,8 +228,7 @@ class _RegisterViewState extends State<_RegisterView> {
                           },
                         ),
                         const SizedBox(height: 10),
-                        OutlinedButton(
-                          style: appSecondaryPillButtonStyle(context),
+                        AppSecondaryButton(
                           onPressed: () =>
                               Navigator.of(context).maybePop(false),
                           child: const Text('Voltar para login'),

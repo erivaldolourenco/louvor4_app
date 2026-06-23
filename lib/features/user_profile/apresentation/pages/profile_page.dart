@@ -7,7 +7,7 @@ import 'package:louvor4_app/core/theme/app_theme_controller.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
-import 'package:louvor4_app/core/ui/widgets/app_form_sheet.dart';
+import 'package:louvor4_app/core/ui/widgets/app_buttons.dart';
 import 'package:louvor4_app/core/ui/widgets/fade_slide_in.dart';
 import 'package:louvor4_app/core/ui/widgets/spring_tap.dart';
 import 'package:louvor4_app/features/auth/presentation/pages/login_page.dart';
@@ -217,11 +217,10 @@ class ProfilePage extends StatelessWidget {
               user.phoneNumber ?? 'Não informado',
             ),
             const SizedBox(height: 12),
-            OutlinedButton.icon(
+            AppSecondaryButton(
               onPressed: () => _onEditProfile(context),
-              icon: const Icon(Icons.edit_outlined, size: 20),
-              label: const Text('Editar perfil'),
-              style: appSecondaryPillButtonStyle(context),
+              icon: Icons.edit_outlined,
+              child: const Text('Editar perfil'),
             ),
             const SizedBox(height: 4),
             AnimatedBuilder(
@@ -244,7 +243,7 @@ class ProfilePage extends StatelessWidget {
               },
             ),
             const SizedBox(height: 4),
-            OutlinedButton.icon(
+            AppDestructiveButton(
               onPressed: () async {
                 await AuthService.instance.logout(ApiClient.dio);
                 if (context.mounted) {
@@ -254,9 +253,8 @@ class ProfilePage extends StatelessWidget {
                   );
                 }
               },
-              icon: const Icon(Icons.logout_rounded, size: 20),
-              label: const Text('Sair do aplicativo'),
-              style: appDestructivePillButtonStyle(context),
+              icon: Icons.logout_rounded,
+              child: const Text('Sair do aplicativo'),
             ),
           ],
         ),

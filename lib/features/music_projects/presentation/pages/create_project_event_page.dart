@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../data/music_projects_repository.dart';
@@ -94,16 +94,14 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const _SectionLabel(label: 'Título'),
                 TextFormField(
                   controller: _titleController,
                   enabled: !state.isSubmitting,
                   maxLength: 80,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: 15),
-                  decoration: appFormFieldDecoration(
-                    context,
+                  decoration: const InputDecoration(
+                    labelText: 'Título',
                     hintText: 'Ex: Culto Domingo',
-                    prefixIcon: Icons.title_rounded,
+                    prefixIcon: Icon(Icons.title_rounded),
                   ),
                   validator: (value) {
                     final text = (value ?? '').trim();
@@ -117,20 +115,18 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 14),
-                const _SectionLabel(label: 'Descrição'),
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _descriptionController,
                   enabled: !state.isSubmitting,
                   maxLength: 500,
                   minLines: 3,
                   maxLines: 5,
-                  decoration: appFormFieldDecoration(
-                    context,
+                  decoration: const InputDecoration(
+                    labelText: 'Descrição',
                     hintText: 'Descrição do evento (opcional)',
-                    prefixIcon: Icons.notes_rounded,
+                    prefixIcon: Icon(Icons.notes_rounded),
                     alignLabelWithHint: true,
-                    contentPadding: const EdgeInsets.all(16),
                   ),
                   validator: (value) {
                     final text = (value ?? '').trim();
@@ -140,72 +136,60 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const _SectionLabel(label: 'Data'),
-                          TextFormField(
-                            controller: _dateController,
-                            enabled: !state.isSubmitting,
-                            readOnly: true,
-                            onTap: state.isSubmitting ? null : _pickDate,
-                            decoration: appFormFieldDecoration(
-                              context,
-                              hintText: 'Selecione',
-                              prefixIcon: Icons.calendar_month_rounded,
-                            ),
-                            validator: (value) {
-                              if ((value ?? '').trim().isEmpty) {
-                                return 'Informe a data.';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
+                      child: TextFormField(
+                        controller: _dateController,
+                        enabled: !state.isSubmitting,
+                        readOnly: true,
+                        onTap: state.isSubmitting ? null : _pickDate,
+                        decoration: const InputDecoration(
+                          labelText: 'Data',
+                          hintText: 'Selecione',
+                          prefixIcon: Icon(Icons.calendar_month_rounded),
+                        ),
+                        validator: (value) {
+                          if ((value ?? '').trim().isEmpty) {
+                            return 'Informe a data.';
+                          }
+                          return null;
+                        },
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const _SectionLabel(label: 'Hora'),
-                          TextFormField(
-                            controller: _timeController,
-                            enabled: !state.isSubmitting,
-                            readOnly: true,
-                            onTap: state.isSubmitting ? null : _pickTime,
-                            decoration: appFormFieldDecoration(
-                              context,
-                              hintText: 'Selecione',
-                              prefixIcon: Icons.schedule_rounded,
-                            ),
-                            validator: (value) {
-                              if ((value ?? '').trim().isEmpty) {
-                                return 'Informe a hora.';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
+                      child: TextFormField(
+                        controller: _timeController,
+                        enabled: !state.isSubmitting,
+                        readOnly: true,
+                        onTap: state.isSubmitting ? null : _pickTime,
+                        decoration: const InputDecoration(
+                          labelText: 'Hora',
+                          hintText: 'Selecione',
+                          prefixIcon: Icon(Icons.schedule_rounded),
+                        ),
+                        validator: (value) {
+                          if ((value ?? '').trim().isEmpty) {
+                            return 'Informe a hora.';
+                          }
+                          return null;
+                        },
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
-                const _SectionLabel(label: 'Local'),
+                const SizedBox(height: 12),
                 TextFormField(
                   controller: _locationController,
                   enabled: !state.isSubmitting,
                   maxLength: 120,
-                  decoration: appFormFieldDecoration(
-                    context,
+                  decoration: const InputDecoration(
+                    labelText: 'Local',
                     hintText: 'Ex: Igreja Central',
-                    prefixIcon: Icons.place_outlined,
+                    prefixIcon: Icon(Icons.place_outlined),
                   ),
                   validator: (value) {
                     final text = (value ?? '').trim();
@@ -221,8 +205,7 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
                   _InlineErrorMessage(message: state.errorMessage!),
                 ],
                 const SizedBox(height: 22),
-                FilledButton(
-                  style: appPrimaryPillButtonStyle(context),
+                AppPrimaryButton(
                   onPressed: state.isSubmitting ? null : () => _submit(cubit),
                   child: state.isSubmitting
                       ? SizedBox(
@@ -236,8 +219,7 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
                       : const Text('Adicionar evento'),
                 ),
                 const SizedBox(height: 10),
-                OutlinedButton(
-                  style: appSecondaryPillButtonStyle(context),
+                AppSecondaryButton(
                   onPressed: state.isSubmitting
                       ? null
                       : () => Navigator.of(context).pop(false),
@@ -312,26 +294,6 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
   }
 }
 
-class _SectionLabel extends StatelessWidget {
-  final String label;
-
-  const _SectionLabel({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).textTheme.bodyMedium?.color,
-        ),
-      ),
-    );
-  }
-}
-
 class _InlineErrorMessage extends StatelessWidget {
   final String message;
 
@@ -348,16 +310,11 @@ class _InlineErrorMessage extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? cs.errorContainer : cs.errorContainer,
         borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(
-          color: cs.error.withValues(alpha: 0.35),
-        ),
+        border: Border.all(color: cs.error.withValues(alpha: 0.35)),
       ),
       child: Text(
         message,
-        style: TextStyle(
-          color: cs.error,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(color: cs.error, fontWeight: FontWeight.w600),
       ),
     );
   }

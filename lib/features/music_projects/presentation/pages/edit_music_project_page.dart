@@ -5,8 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../../core/theme/app_radius.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_cached_network_image.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/music_projects_repository.dart';
 import '../../domain/entities/music_project_entity.dart';
@@ -104,14 +104,13 @@ class _EditMusicProjectViewState extends State<_EditMusicProjectView> {
                         onTap: _pickImage,
                       ),
                       const SizedBox(height: 18),
-                      const _FieldLabel(label: 'Nome do projeto'),
                       TextFormField(
                         controller: _nameController,
                         enabled: !state.isSubmitting,
-                        decoration: appFormFieldDecoration(
-                          context,
+                        decoration: const InputDecoration(
+                          labelText: 'Nome do projeto',
                           hintText: 'Ex: Louvor Sede',
-                          prefixIcon: Icons.music_note_rounded,
+                          prefixIcon: Icon(Icons.music_note_rounded),
                         ),
                         validator: (value) {
                           if ((value ?? '').trim().isEmpty) {
@@ -120,8 +119,7 @@ class _EditMusicProjectViewState extends State<_EditMusicProjectView> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 14),
-                      const _FieldLabel(label: 'Tipo'),
+                      const SizedBox(height: 12),
                       DropdownButtonFormField<MusicProjectType>(
                         initialValue: _selectedType,
                         items: const [
@@ -141,10 +139,10 @@ class _EditMusicProjectViewState extends State<_EditMusicProjectView> {
                         onChanged: state.isSubmitting
                             ? null
                             : (value) => setState(() => _selectedType = value),
-                        decoration: appFormFieldDecoration(
-                          context,
+                        decoration: const InputDecoration(
+                          labelText: 'Tipo',
                           hintText: 'Selecione o tipo',
-                          prefixIcon: Icons.category_outlined,
+                          prefixIcon: Icon(Icons.category_outlined),
                         ),
                         validator: (value) {
                           if (value == null) {
@@ -158,8 +156,7 @@ class _EditMusicProjectViewState extends State<_EditMusicProjectView> {
                         _InlineErrorMessage(message: state.errorMessage!),
                       ],
                       const SizedBox(height: 22),
-                      FilledButton(
-                        style: appPrimaryPillButtonStyle(context),
+                      AppPrimaryButton(
                         onPressed: state.isSubmitting || project == null
                             ? null
                             : () => _submit(cubit, project.id),
@@ -175,8 +172,7 @@ class _EditMusicProjectViewState extends State<_EditMusicProjectView> {
                             : const Text('Salvar alterações'),
                       ),
                       const SizedBox(height: 10),
-                      OutlinedButton(
-                        style: appSecondaryPillButtonStyle(context),
+                      AppSecondaryButton(
                         onPressed: state.isSubmitting
                             ? null
                             : () => Navigator.of(context).pop(false),
@@ -274,10 +270,11 @@ class _ProjectImageCard extends StatelessWidget {
                   child: !hasLocalImage && !hasNetworkImage
                       ? Text(
                           initials,
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: cs.primary,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(
+                                color: cs.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
                         )
                       : null,
                 ),
@@ -313,7 +310,9 @@ class _ProjectImageCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Toque na imagem para alterar',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: subtitleColor),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: subtitleColor),
           ),
         ],
       ),
@@ -325,26 +324,6 @@ class _ProjectImageCard extends StatelessWidget {
     if (parts.isEmpty) return 'P';
     final chars = parts.take(2).map((e) => e[0].toUpperCase()).join();
     return chars.isEmpty ? 'P' : chars;
-  }
-}
-
-class _FieldLabel extends StatelessWidget {
-  final String label;
-
-  const _FieldLabel({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).textTheme.bodyMedium?.color,
-        ),
-      ),
-    );
   }
 }
 
@@ -363,16 +342,11 @@ class _InlineErrorMessage extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? cs.errorContainer : cs.errorContainer,
         borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(
-          color: cs.error.withValues(alpha: 0.35),
-        ),
+        border: Border.all(color: cs.error.withValues(alpha: 0.35)),
       ),
       child: Text(
         message,
-        style: TextStyle(
-          color: cs.error,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(color: cs.error, fontWeight: FontWeight.w600),
       ),
     );
   }

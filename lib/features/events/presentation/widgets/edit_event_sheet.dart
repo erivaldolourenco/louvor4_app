@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/theme/app_radius.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../data/events_repository.dart';
@@ -106,15 +107,14 @@ class _EditEventSheetState extends State<_EditEventSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const _FieldLabel(label: 'Titulo'),
                   TextFormField(
                     controller: _titleController,
                     enabled: !state.isSubmitting,
                     maxLength: 80,
-                    decoration: appFormFieldDecoration(
-                      context,
+                    decoration: const InputDecoration(
+                      labelText: 'Titulo',
                       hintText: 'Ex: Culto Domingo',
-                      prefixIcon: Icons.title_rounded,
+                      prefixIcon: Icon(Icons.title_rounded),
                     ),
                     validator: (value) {
                       final text = (value ?? '').trim();
@@ -128,20 +128,18 @@ class _EditEventSheetState extends State<_EditEventSheet> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 14),
-                  const _FieldLabel(label: 'Descricao'),
+                  const SizedBox(height: 12),
                   TextFormField(
                     controller: _descriptionController,
                     enabled: !state.isSubmitting,
                     maxLength: 500,
                     minLines: 3,
                     maxLines: 5,
-                    decoration: appFormFieldDecoration(
-                      context,
+                    decoration: const InputDecoration(
+                      labelText: 'Descricao',
                       hintText: 'Descricao do evento (opcional)',
-                      prefixIcon: Icons.notes_rounded,
+                      prefixIcon: Icon(Icons.notes_rounded),
                       alignLabelWithHint: true,
-                      contentPadding: const EdgeInsets.all(16),
                     ),
                     validator: (value) {
                       final text = (value ?? '').trim();
@@ -151,72 +149,60 @@ class _EditEventSheetState extends State<_EditEventSheet> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const _FieldLabel(label: 'Data'),
-                            TextFormField(
-                              controller: _dateController,
-                              enabled: !state.isSubmitting,
-                              readOnly: true,
-                              onTap: state.isSubmitting ? null : _pickDate,
-                              decoration: appFormFieldDecoration(
-                                context,
-                                hintText: 'Selecione',
-                                prefixIcon: Icons.calendar_month_rounded,
-                              ),
-                              validator: (value) {
-                                if ((value ?? '').trim().isEmpty) {
-                                  return 'Informe a data.';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
+                        child: TextFormField(
+                          controller: _dateController,
+                          enabled: !state.isSubmitting,
+                          readOnly: true,
+                          onTap: state.isSubmitting ? null : _pickDate,
+                          decoration: const InputDecoration(
+                            labelText: 'Data',
+                            hintText: 'Selecione',
+                            prefixIcon: Icon(Icons.calendar_month_rounded),
+                          ),
+                          validator: (value) {
+                            if ((value ?? '').trim().isEmpty) {
+                              return 'Informe a data.';
+                            }
+                            return null;
+                          },
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const _FieldLabel(label: 'Hora'),
-                            TextFormField(
-                              controller: _timeController,
-                              enabled: !state.isSubmitting,
-                              readOnly: true,
-                              onTap: state.isSubmitting ? null : _pickTime,
-                              decoration: appFormFieldDecoration(
-                                context,
-                                hintText: 'Selecione',
-                                prefixIcon: Icons.schedule_rounded,
-                              ),
-                              validator: (value) {
-                                if ((value ?? '').trim().isEmpty) {
-                                  return 'Informe a hora.';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
+                        child: TextFormField(
+                          controller: _timeController,
+                          enabled: !state.isSubmitting,
+                          readOnly: true,
+                          onTap: state.isSubmitting ? null : _pickTime,
+                          decoration: const InputDecoration(
+                            labelText: 'Hora',
+                            hintText: 'Selecione',
+                            prefixIcon: Icon(Icons.schedule_rounded),
+                          ),
+                          validator: (value) {
+                            if ((value ?? '').trim().isEmpty) {
+                              return 'Informe a hora.';
+                            }
+                            return null;
+                          },
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  const _FieldLabel(label: 'Local'),
+                  const SizedBox(height: 12),
                   TextFormField(
                     controller: _locationController,
                     enabled: !state.isSubmitting,
                     maxLength: 120,
-                    decoration: appFormFieldDecoration(
-                      context,
+                    decoration: const InputDecoration(
+                      labelText: 'Local',
                       hintText: 'Ex: Igreja Central',
-                      prefixIcon: Icons.place_outlined,
+                      prefixIcon: Icon(Icons.place_outlined),
                     ),
                     validator: (value) {
                       final text = (value ?? '').trim();
@@ -235,8 +221,7 @@ class _EditEventSheetState extends State<_EditEventSheet> {
                   Row(
                     children: [
                       Expanded(
-                        child: OutlinedButton(
-                          style: appSecondaryPillButtonStyle(context),
+                        child: AppSecondaryButton(
                           onPressed: state.isSubmitting
                               ? null
                               : () => Navigator.of(context).maybePop(false),
@@ -245,8 +230,7 @@ class _EditEventSheetState extends State<_EditEventSheet> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: FilledButton(
-                          style: appPrimaryPillButtonStyle(context),
+                        child: AppPrimaryButton(
                           onPressed: state.isSubmitting
                               ? null
                               : () => _submit(cubit),
@@ -335,26 +319,6 @@ class _EditEventSheetState extends State<_EditEventSheet> {
   }
 }
 
-class _FieldLabel extends StatelessWidget {
-  final String label;
-
-  const _FieldLabel({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
-      ),
-    );
-  }
-}
-
 class _InlineErrorMessage extends StatelessWidget {
   final String message;
 
@@ -373,10 +337,7 @@ class _InlineErrorMessage extends StatelessWidget {
       ),
       child: Text(
         message,
-        style: TextStyle(
-          color: cs.error,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(color: cs.error, fontWeight: FontWeight.w600),
       ),
     );
   }

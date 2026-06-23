@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/ui/app_feedback.dart';
-import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/music_projects_repository.dart';
 import '../../domain/entities/create_music_project_input.dart';
@@ -73,14 +73,13 @@ class _CreateMusicProjectViewState extends State<_CreateMusicProjectView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const _FieldLabel(label: 'Nome do projeto'),
                 TextFormField(
                   controller: _nameController,
                   enabled: !state.isSubmitting,
-                  decoration: appFormFieldDecoration(
-                    context,
+                  decoration: const InputDecoration(
+                    labelText: 'Nome do projeto',
                     hintText: 'Ex: Louvor Sede',
-                    prefixIcon: Icons.music_note_rounded,
+                    prefixIcon: Icon(Icons.music_note_rounded),
                   ),
                   validator: (value) {
                     final text = (value ?? '').trim();
@@ -91,8 +90,7 @@ class _CreateMusicProjectViewState extends State<_CreateMusicProjectView> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 14),
-                const _FieldLabel(label: 'Tipo'),
+                const SizedBox(height: 12),
                 DropdownButtonFormField<MusicProjectType>(
                   initialValue: _selectedType,
                   items: const [
@@ -112,10 +110,10 @@ class _CreateMusicProjectViewState extends State<_CreateMusicProjectView> {
                   onChanged: state.isSubmitting
                       ? null
                       : (value) => setState(() => _selectedType = value),
-                  decoration: appFormFieldDecoration(
-                    context,
+                  decoration: const InputDecoration(
+                    labelText: 'Tipo',
                     hintText: 'Selecione o tipo',
-                    prefixIcon: Icons.category_outlined,
+                    prefixIcon: Icon(Icons.category_outlined),
                   ),
                   validator: (value) {
                     if (value == null) return 'Selecione o tipo do projeto.';
@@ -123,8 +121,7 @@ class _CreateMusicProjectViewState extends State<_CreateMusicProjectView> {
                   },
                 ),
                 const SizedBox(height: 22),
-                FilledButton(
-                  style: appPrimaryPillButtonStyle(context),
+                AppPrimaryButton(
                   onPressed: state.isSubmitting ? null : () => _submit(cubit),
                   child: state.isSubmitting
                       ? SizedBox(
@@ -138,8 +135,7 @@ class _CreateMusicProjectViewState extends State<_CreateMusicProjectView> {
                       : const Text('Criar projeto'),
                 ),
                 const SizedBox(height: 10),
-                OutlinedButton(
-                  style: appSecondaryPillButtonStyle(context),
+                AppSecondaryButton(
                   onPressed: state.isSubmitting
                       ? null
                       : () => Navigator.of(context).pop(),
@@ -177,24 +173,5 @@ class _CreateMusicProjectViewState extends State<_CreateMusicProjectView> {
     }
 
     Navigator.of(context).pop(project);
-  }
-}
-
-class _FieldLabel extends StatelessWidget {
-  final String label;
-
-  const _FieldLabel({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4, bottom: 8),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).textTheme.bodyMedium?.color,
-        ),
-      ),
-    );
   }
 }
