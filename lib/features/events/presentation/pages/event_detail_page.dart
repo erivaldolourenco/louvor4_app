@@ -330,36 +330,36 @@ class _EventDetailViewState extends State<_EventDetailView>
       animation: _tabController,
       builder: (context, _) {
         final cs = Theme.of(context).colorScheme;
-        return switch (_tabController.index) {
-          0 => FloatingActionButton(
-            heroTag: 'event_detail_fab',
+        final index = _tabController.index;
+
+        final action = switch (index) {
+          0 => (
+            icon: Icons.settings_rounded,
             onPressed: () => _onManageSchedule(state),
-            shape: const CircleBorder(),
-            backgroundColor: cs.primary,
-            foregroundColor: cs.onPrimary,
-            elevation: 4,
-            child: const Icon(Icons.settings_rounded, size: 28),
           ),
-          1 => FloatingActionButton(
-            heroTag: 'event_detail_fab',
-            onPressed: () => _onAddSongs(state),
-            shape: const CircleBorder(),
-            backgroundColor: cs.primary,
-            foregroundColor: cs.onPrimary,
-            elevation: 4,
-            child: const Icon(Icons.add_rounded, size: 28),
-          ),
-          2 => FloatingActionButton(
-            heroTag: 'event_detail_fab',
-            onPressed: _onAddProgramItem,
-            shape: const CircleBorder(),
-            backgroundColor: cs.primary,
-            foregroundColor: cs.onPrimary,
-            elevation: 4,
-            child: const Icon(Icons.add_rounded, size: 28),
-          ),
-          _ => const SizedBox.shrink(),
+          1 => (icon: Icons.add_rounded, onPressed: () => _onAddSongs(state)),
+          2 => (icon: Icons.add_rounded, onPressed: _onAddProgramItem),
+          _ => null,
         };
+
+        if (action == null) return const SizedBox.shrink();
+
+        return FloatingActionButton(
+          heroTag: 'event_detail_fab',
+          onPressed: action.onPressed,
+          shape: const CircleBorder(),
+          backgroundColor: cs.primary,
+          foregroundColor: cs.onPrimary,
+          elevation: 4,
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            transitionBuilder: (child, animation) => ScaleTransition(
+              scale: animation,
+              child: FadeTransition(opacity: animation, child: child),
+            ),
+            child: Icon(action.icon, key: ValueKey(index), size: 28),
+          ),
+        );
       },
     );
   }
