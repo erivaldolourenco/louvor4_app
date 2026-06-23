@@ -6,6 +6,7 @@ import 'package:louvor4_app/core/ui/widgets/song_details_sheet.dart';
 import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 import 'package:louvor4_app/core/ui/widgets/header_project_event.dart';
 import 'package:louvor4_app/core/ui/widgets/fade_slide_in.dart';
+import 'package:louvor4_app/core/ui/widgets/spring_tap.dart';
 import '../../../../core/ui/widgets/song_list_card.dart';
 import '../../../medleys/presentation/widgets/medley_card.dart';
 import 'package:louvor4_app/features/user_profile/data/impl/user_repository_impl.dart';
@@ -184,17 +185,19 @@ class _EventDetailViewState extends State<_EventDetailView>
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                    child: _EventHeroCard(
-                      title: event.title,
-                      description: event.description,
-                      date: formatDate(event.date),
-                      time: formatTime(event.time),
-                      location: event.location?.trim().isNotEmpty == true
-                          ? event.location!
-                          : 'Sem local definido',
-                      onLocationTap: event.location?.trim().isNotEmpty == true
-                          ? () => _openMaps(event.location!)
-                          : null,
+                    child: FadeSlideIn(
+                      child: _EventHeroCard(
+                        title: event.title,
+                        description: event.description,
+                        date: formatDate(event.date),
+                        time: formatTime(event.time),
+                        location: event.location?.trim().isNotEmpty == true
+                            ? event.location!
+                            : 'Sem local definido',
+                        onLocationTap: event.location?.trim().isNotEmpty == true
+                            ? () => _openMaps(event.location!)
+                            : null,
+                      ),
                     ),
                   ),
                 ),
@@ -506,8 +509,9 @@ class _EventHeroCard extends StatelessWidget {
             _MetaItem(icon: Icons.calendar_today_rounded, label: date),
             _MetaItem(icon: Icons.access_time_rounded, label: time),
             if (onLocationTap != null)
-              GestureDetector(
+              SpringTap(
                 onTap: onLocationTap,
+                pressedScale: 0.95,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
