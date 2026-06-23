@@ -5,6 +5,7 @@ import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/song_details_sheet.dart';
 import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 import 'package:louvor4_app/core/ui/widgets/header_project_event.dart';
+import 'package:louvor4_app/core/ui/widgets/fade_slide_in.dart';
 import '../../../../core/ui/widgets/song_list_card.dart';
 import '../../../medleys/presentation/widgets/medley_card.dart';
 import 'package:louvor4_app/features/user_profile/data/impl/user_repository_impl.dart';
@@ -110,7 +111,8 @@ class _EventDetailViewState extends State<_EventDetailView>
         builder: (context, state) {
           if (state.status != EventDetailStatus.success ||
               state.event == null ||
-              !state.isProjectAdmin) return const SizedBox.shrink();
+              !state.isProjectAdmin)
+            return const SizedBox.shrink();
           return _buildFab(state);
         },
       ),
@@ -206,20 +208,20 @@ class _EventDetailViewState extends State<_EventDetailView>
               children: [
                 _ParticipantsTab(
                   state: state,
-                  onRefresh: () => context
-                      .read<EventDetailCubit>()
-                      .load(widget.eventId, force: true),
+                  onRefresh: () => context.read<EventDetailCubit>().load(
+                    widget.eventId,
+                    force: true,
+                  ),
                 ),
                 _SongsTab(
                   state: state,
                   onRemoveSong: _onRemoveSong,
-                  onRefresh: () => context
-                      .read<EventDetailCubit>()
-                      .load(widget.eventId, force: true),
+                  onRefresh: () => context.read<EventDetailCubit>().load(
+                    widget.eventId,
+                    force: true,
+                  ),
                 ),
-                EventProgramTab(
-                  isAdmin: state.isProjectAdmin,
-                ),
+                EventProgramTab(isAdmin: state.isProjectAdmin),
               ],
             ),
           );
@@ -280,9 +282,7 @@ class _EventDetailViewState extends State<_EventDetailView>
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              style: FilledButton.styleFrom(
-                backgroundColor: cs.error,
-              ),
+              style: FilledButton.styleFrom(backgroundColor: cs.error),
               child: const Text('Remover'),
             ),
           ],
@@ -303,7 +303,9 @@ class _EventDetailViewState extends State<_EventDetailView>
     }
 
     final state = context.read<EventDetailCubit>().state;
-    AppFeedback.showError(state.actionErrorMessage ?? 'Erro ao remover música.');
+    AppFeedback.showError(
+      state.actionErrorMessage ?? 'Erro ao remover música.',
+    );
     return false;
   }
 
@@ -330,40 +332,39 @@ class _EventDetailViewState extends State<_EventDetailView>
         final cs = Theme.of(context).colorScheme;
         return switch (_tabController.index) {
           0 => FloatingActionButton(
-              heroTag: 'event_detail_fab',
-              onPressed: () => _onManageSchedule(state),
-              shape: const CircleBorder(),
-              backgroundColor: cs.primary,
-              foregroundColor: cs.onPrimary,
-              elevation: 4,
-              child: const Icon(Icons.settings_rounded, size: 28),
-            ),
+            heroTag: 'event_detail_fab',
+            onPressed: () => _onManageSchedule(state),
+            shape: const CircleBorder(),
+            backgroundColor: cs.primary,
+            foregroundColor: cs.onPrimary,
+            elevation: 4,
+            child: const Icon(Icons.settings_rounded, size: 28),
+          ),
           1 => FloatingActionButton(
-              heroTag: 'event_detail_fab',
-              onPressed: () => _onAddSongs(state),
-              shape: const CircleBorder(),
-              backgroundColor: cs.primary,
-              foregroundColor: cs.onPrimary,
-              elevation: 4,
-              child: const Icon(Icons.add_rounded, size: 28),
-            ),
+            heroTag: 'event_detail_fab',
+            onPressed: () => _onAddSongs(state),
+            shape: const CircleBorder(),
+            backgroundColor: cs.primary,
+            foregroundColor: cs.onPrimary,
+            elevation: 4,
+            child: const Icon(Icons.add_rounded, size: 28),
+          ),
           2 => FloatingActionButton(
-              heroTag: 'event_detail_fab',
-              onPressed: _onAddProgramItem,
-              shape: const CircleBorder(),
-              backgroundColor: cs.primary,
-              foregroundColor: cs.onPrimary,
-              elevation: 4,
-              child: const Icon(Icons.add_rounded, size: 28),
-            ),
+            heroTag: 'event_detail_fab',
+            onPressed: _onAddProgramItem,
+            shape: const CircleBorder(),
+            backgroundColor: cs.primary,
+            foregroundColor: cs.onPrimary,
+            elevation: 4,
+            child: const Icon(Icons.add_rounded, size: 28),
+          ),
           _ => const SizedBox.shrink(),
         };
       },
     );
   }
 
-  Future<void> _onAddProgramItem() =>
-      showProgramTextItemDialog(context);
+  Future<void> _onAddProgramItem() => showProgramTextItemDialog(context);
 
   Future<void> _onEditEvent() async {
     final event = context.read<EventDetailCubit>().state.event;
@@ -408,8 +409,12 @@ class _EventDetailTabs extends StatelessWidget {
 
         return TabBar(
           controller: controller,
-          labelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-          unselectedLabelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500),
+          labelStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+          unselectedLabelStyle: textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
           tabs: [
             for (var i = 0; i < tabs.length; i++)
               Tab(
@@ -504,7 +509,10 @@ class _EventHeroCard extends StatelessWidget {
               GestureDetector(
                 onTap: onLocationTap,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: cs.primaryContainer,
                     borderRadius: BorderRadius.circular(AppRadius.badge),
@@ -512,7 +520,11 @@ class _EventHeroCard extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.location_on_rounded, size: 14, color: cs.onPrimaryContainer),
+                      Icon(
+                        Icons.location_on_rounded,
+                        size: 14,
+                        color: cs.onPrimaryContainer,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         'Ver localização',
@@ -522,7 +534,11 @@ class _EventHeroCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Icon(Icons.open_in_new_rounded, size: 11, color: cs.onPrimaryContainer),
+                      Icon(
+                        Icons.open_in_new_rounded,
+                        size: 11,
+                        color: cs.onPrimaryContainer,
+                      ),
                     ],
                   ),
                 ),
@@ -558,11 +574,7 @@ class _MetaItem extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          icon,
-          size: 15,
-          color: muted ? cs.onSurfaceVariant : cs.primary,
-        ),
+        Icon(icon, size: 15, color: muted ? cs.onSurfaceVariant : cs.primary),
         const SizedBox(width: 5),
         Text(
           label,
@@ -580,10 +592,7 @@ class _ParticipantsTab extends StatelessWidget {
   final EventDetailState state;
   final VoidCallback onRefresh;
 
-  const _ParticipantsTab({
-    required this.state,
-    required this.onRefresh,
-  });
+  const _ParticipantsTab({required this.state, required this.onRefresh});
 
   Future<bool> _handleParticipantInviteAction(
     BuildContext context, {
@@ -633,37 +642,41 @@ class _ParticipantsTab extends StatelessWidget {
             subtitle: 'Nenhum integrante foi vinculado a este evento.',
           )
         else
-          ...state.participants.map((participant) {
+          ...List.generate(state.participants.length, (index) {
+            final participant = state.participants[index];
             final canRespondToInvite =
                 participant.status == EventParticipantStatus.pending &&
                 participant.id.trim().isNotEmpty &&
                 cubit.isCurrentUserParticipant(participant);
 
-            return EventParticipantCard(
-              name: participant.fullName,
-              skill: state.skillsMap[participant.skillId] ?? '',
-              status: participant.status,
-              profileImage: participant.profileImage,
-              onTap: () => showUserProfileDialog(
-                context,
+            return FadeSlideIn(
+              delay: staggerDelay(index),
+              child: EventParticipantCard(
                 name: participant.fullName,
-                profileImageUrl: participant.profileImage,
-                eventSkill: state.skillsMap[participant.skillId] ?? '',
-                eventStatus: participant.status,
-                onAcceptInvite: canRespondToInvite
-                    ? () => _handleParticipantInviteAction(
-                        context,
-                        accept: true,
-                        participantId: participant.id,
-                      )
-                    : null,
-                onDeclineInvite: canRespondToInvite
-                    ? () => _handleParticipantInviteAction(
-                        context,
-                        accept: false,
-                        participantId: participant.id,
-                      )
-                    : null,
+                skill: state.skillsMap[participant.skillId] ?? '',
+                status: participant.status,
+                profileImage: participant.profileImage,
+                onTap: () => showUserProfileDialog(
+                  context,
+                  name: participant.fullName,
+                  profileImageUrl: participant.profileImage,
+                  eventSkill: state.skillsMap[participant.skillId] ?? '',
+                  eventStatus: participant.status,
+                  onAcceptInvite: canRespondToInvite
+                      ? () => _handleParticipantInviteAction(
+                          context,
+                          accept: true,
+                          participantId: participant.id,
+                        )
+                      : null,
+                  onDeclineInvite: canRespondToInvite
+                      ? () => _handleParticipantInviteAction(
+                          context,
+                          accept: false,
+                          participantId: participant.id,
+                        )
+                      : null,
+                ),
               ),
             );
           }),
@@ -738,63 +751,89 @@ class _SongsTab extends StatelessWidget {
             subtitle: 'Ainda não há repertório cadastrado para este evento.',
           )
         else
-          ...groupedSongs.entries.expand(
-            (group) => [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(4, 4, 4, 10),
-                child: Text(
-                  'Adicionado por: ${group.key}',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              ...group.value.map(
-                (song) => Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: song.isMedley && song.medleyEntity != null
-                      ? MedleyCard(
-                          medley: song.medleyEntity!,
-                          onDelete: (state.isProjectAdmin &&
-                                  state.deletingSongId != song.id)
-                              ? () => onRemoveSong(song.id)
-                              : null,
-                        )
-                      : SongListCard(
-                          title: song.title,
-                          artist: song.artist ?? 'Desconhecido',
-                          musicKey: song.key,
-                          bpm: song.bpm?.toString(),
-                          youTubeUrl: song.youTubeUrl,
-                          hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
-                          onTap: () => showSongDetailsModal(
-                            context,
-                            title: song.title,
-                            artist: song.artist ?? 'Desconhecido',
-                            musicKey: song.key,
-                            bpm: song.bpm?.toString(),
-                            youTubeUrl: song.youTubeUrl ?? '',
-                            notes: song.notes,
-                            referenceAudioUrl: song.referenceAudioUrl,
-                          ),
-                          onOpenYoutube: (song.youTubeUrl != null &&
-                                  song.youTubeUrl!.isNotEmpty)
-                              ? () => _launchYoutube(song.youTubeUrl!)
-                              : null,
-                          onDelete: (state.isProjectAdmin &&
-                                  state.deletingSongId != song.id)
-                              ? () => onRemoveSong(song.id)
-                              : null,
-                          isRemoving: state.deletingSongId == song.id,
-                        ),
-                ),
-              ),
-              const SizedBox(height: 6),
-            ],
+          ..._buildGroupedSongSections(
+            context,
+            groupedSongs,
+            state,
+            onRemoveSong,
           ),
       ],
     );
+  }
+
+  List<Widget> _buildGroupedSongSections(
+    BuildContext context,
+    Map<String, List<dynamic>> groupedSongs,
+    EventDetailState state,
+    Future<bool> Function(String eventSongId) onRemoveSong,
+  ) {
+    var staggerIndex = 0;
+    final children = <Widget>[];
+
+    for (final group in groupedSongs.entries) {
+      children.add(
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 4, 4, 10),
+          child: Text(
+            'Adicionado por: ${group.key}',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      );
+      for (final song in group.value) {
+        children.add(
+          FadeSlideIn(
+            delay: staggerDelay(staggerIndex++),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: song.isMedley && song.medleyEntity != null
+                  ? MedleyCard(
+                      medley: song.medleyEntity!,
+                      onDelete:
+                          (state.isProjectAdmin &&
+                              state.deletingSongId != song.id)
+                          ? () => onRemoveSong(song.id)
+                          : null,
+                    )
+                  : SongListCard(
+                      title: song.title,
+                      artist: song.artist ?? 'Desconhecido',
+                      musicKey: song.key,
+                      bpm: song.bpm?.toString(),
+                      youTubeUrl: song.youTubeUrl,
+                      hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
+                      onTap: () => showSongDetailsModal(
+                        context,
+                        title: song.title,
+                        artist: song.artist ?? 'Desconhecido',
+                        musicKey: song.key,
+                        bpm: song.bpm?.toString(),
+                        youTubeUrl: song.youTubeUrl ?? '',
+                        notes: song.notes,
+                        referenceAudioUrl: song.referenceAudioUrl,
+                      ),
+                      onOpenYoutube:
+                          (song.youTubeUrl != null &&
+                              song.youTubeUrl!.isNotEmpty)
+                          ? () => _launchYoutube(song.youTubeUrl!)
+                          : null,
+                      onDelete:
+                          (state.isProjectAdmin &&
+                              state.deletingSongId != song.id)
+                          ? () => onRemoveSong(song.id)
+                          : null,
+                      isRemoving: state.deletingSongId == song.id,
+                    ),
+            ),
+          ),
+        );
+      }
+      children.add(const SizedBox(height: 6));
+    }
+    return children;
   }
 }
 
@@ -852,12 +891,19 @@ class _DetailErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 48, color: cs.onSurfaceVariant),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: cs.onSurfaceVariant,
+            ),
             const SizedBox(height: 12),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(color: cs.onSurfaceVariant, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                color: cs.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             const SizedBox(height: 14),
             FilledButton.icon(
@@ -903,14 +949,18 @@ class _RetryTabState extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             title,
-            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 12),
           OutlinedButton.icon(
@@ -953,13 +1003,17 @@ class _EmptyTabState extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             title,
-            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
           ),
         ],
       ),

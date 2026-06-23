@@ -6,6 +6,7 @@ import '../../../../../core/utils/youtube_utils.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../domain/entities/program_item_entity.dart';
 import '../../domain/entities/program_item_input_entity.dart';
 import '../cubit/event_program_cubit.dart';
@@ -63,26 +64,29 @@ class EventProgramTab extends StatelessWidget {
           },
           children: [
             for (int i = 0; i < state.items.length; i++)
-              Padding(
+              FadeSlideIn(
                 key: ValueKey(state.items[i].id),
-                padding: const EdgeInsets.only(bottom: 10),
-                child: _ProgramItemCard(
-                  item: state.items[i],
-                  position: i + 1,
-                  isAdmin: isAdmin,
-                  itemIndex: i,
-                  onEdit: isAdmin && state.items[i] is TextProgramItemEntity
-                      ? () => _showTextItemDialog(
-                          context,
-                          item: state.items[i] as TextProgramItemEntity,
-                        )
-                      : null,
-                  onDelete: isAdmin && state.items[i] is TextProgramItemEntity
-                      ? () => _confirmDelete(
-                          context,
-                          state.items[i] as TextProgramItemEntity,
-                        )
-                      : null,
+                delay: staggerDelay(i),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: _ProgramItemCard(
+                    item: state.items[i],
+                    position: i + 1,
+                    isAdmin: isAdmin,
+                    itemIndex: i,
+                    onEdit: isAdmin && state.items[i] is TextProgramItemEntity
+                        ? () => _showTextItemDialog(
+                            context,
+                            item: state.items[i] as TextProgramItemEntity,
+                          )
+                        : null,
+                    onDelete: isAdmin && state.items[i] is TextProgramItemEntity
+                        ? () => _confirmDelete(
+                            context,
+                            state.items[i] as TextProgramItemEntity,
+                          )
+                        : null,
+                  ),
                 ),
               ),
           ],
@@ -170,9 +174,7 @@ Future<void> showProgramTextItemDialog(
       item == null ? 'Item adicionado à programação.' : 'Item atualizado.',
     );
   } else {
-    AppFeedback.showError(
-      cubit.state.actionError ?? 'Erro ao salvar item.',
-    );
+    AppFeedback.showError(cubit.state.actionError ?? 'Erro ao salvar item.');
   }
 }
 
@@ -210,20 +212,20 @@ class _ProgramItemCard extends StatelessWidget {
     final iconData = isMusic
         ? Icons.music_note_rounded
         : isMedley
-            ? Icons.queue_music_rounded
-            : Icons.text_fields_rounded;
+        ? Icons.queue_music_rounded
+        : Icons.text_fields_rounded;
 
     final iconColor = isMusic
         ? cs.primary
         : isMedley
-            ? cs.secondary
-            : cs.tertiary;
+        ? cs.secondary
+        : cs.tertiary;
 
     final iconBgColor = isMusic
         ? cs.primaryContainer
         : isMedley
-            ? cs.secondaryContainer
-            : cs.tertiaryContainer;
+        ? cs.secondaryContainer
+        : cs.tertiaryContainer;
 
     final isEditable = text != null;
 
@@ -231,9 +233,7 @@ class _ProgramItemCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(
-          color: cs.outlineVariant,
-        ),
+        border: Border.all(color: cs.outlineVariant),
         boxShadow: [
           BoxShadow(
             color: cs.shadow.withValues(alpha: 0.06),
@@ -249,11 +249,16 @@ class _ProgramItemCard extends StatelessWidget {
           children: [
             _PositionBadge(position: position),
             const SizedBox(width: 10),
-            if (isMusic && music!.songYouTubeUrl != null && music.songYouTubeUrl!.isNotEmpty)
+            if (isMusic &&
+                music!.songYouTubeUrl != null &&
+                music.songYouTubeUrl!.isNotEmpty)
               ClipRRect(
                 borderRadius: BorderRadius.circular(AppRadius.input),
                 child: Image.network(
-                  YoutubeUtils.getThumbnail(music.songYouTubeUrl, quality: 'default'),
+                  YoutubeUtils.getThumbnail(
+                    music.songYouTubeUrl,
+                    quality: 'default',
+                  ),
                   width: 48,
                   height: 48,
                   fit: BoxFit.cover,
@@ -288,8 +293,8 @@ class _ProgramItemCard extends StatelessWidget {
                     isMusic
                         ? music!.songTitle
                         : isMedley
-                            ? medley!.medleyName
-                            : text!.title,
+                        ? medley!.medleyName
+                        : text!.title,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -384,9 +389,7 @@ class _PositionBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surfaceContainer,
         borderRadius: BorderRadius.circular(AppRadius.badge),
-        border: Border.all(
-          color: cs.outlineVariant,
-        ),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Center(
         child: Text(
@@ -464,13 +467,17 @@ class _EmptyProgramState extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             'Sem programação',
-            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             'A programação deste evento está vazia.',
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
           ),
           if (isAdmin) ...[
             const SizedBox(height: 16),
@@ -521,10 +528,9 @@ class _TextItemDialogState extends State<_TextItemDialog> {
 
   void _submit() {
     if (!_formKey.currentState!.validate()) return;
-    Navigator.of(context).pop((
-      title: _titleCtrl.text.trim(),
-      description: _descCtrl.text.trim(),
-    ));
+    Navigator.of(
+      context,
+    ).pop((title: _titleCtrl.text.trim(), description: _descCtrl.text.trim()));
   }
 
   @override
@@ -565,10 +571,7 @@ class _TextItemDialogState extends State<_TextItemDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: _submit,
-          child: const Text('Salvar'),
-        ),
+        FilledButton(onPressed: _submit, child: const Text('Salvar')),
       ],
     );
   }
