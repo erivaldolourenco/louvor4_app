@@ -43,7 +43,9 @@ abstract final class AppTheme {
         backgroundColor: cs.surfaceContainerLow,
         surfaceTintColor: Colors.transparent,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.bottomSheet)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.bottomSheet),
+          ),
         ),
       ),
 
@@ -51,7 +53,9 @@ abstract final class AppTheme {
         style: FilledButton.styleFrom(
           backgroundColor: cs.primary,
           foregroundColor: cs.onPrimary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.input)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.input),
+          ),
         ),
       ),
 
@@ -59,14 +63,19 @@ abstract final class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: cs.onSurface,
           side: BorderSide(color: cs.outline),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.input)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.input),
+          ),
         ),
       ),
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: cs.surfaceContainerLow,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
           borderSide: BorderSide(color: cs.outlineVariant),
@@ -90,30 +99,38 @@ abstract final class AppTheme {
         hintStyle: TextStyle(color: cs.onSurfaceVariant),
       ),
 
-      dividerTheme: DividerThemeData(
-        color: cs.outlineVariant,
-        thickness: 1,
-      ),
+      dividerTheme: DividerThemeData(color: cs.outlineVariant, thickness: 1),
 
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: cs.surfaceContainer,
         indicatorColor: cs.primaryContainer,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return IconThemeData(color: cs.onPrimaryContainer);
+            return IconThemeData(color: cs.primary);
           }
           return IconThemeData(color: cs.onSurfaceVariant);
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return TextStyle(color: cs.onSurface, fontWeight: FontWeight.w700, fontSize: 12, fontFamily: 'Outfit');
+            return TextStyle(
+              color: cs.primary,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              fontFamily: 'Outfit',
+            );
           }
-          return TextStyle(color: cs.onSurfaceVariant, fontWeight: FontWeight.w500, fontSize: 12, fontFamily: 'Outfit');
+          return TextStyle(
+            color: cs.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
+            fontSize: 12,
+            fontFamily: 'Outfit',
+          );
         }),
       ),
 
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: cs.primary,
+        year2023: false,
       ),
 
       iconTheme: IconThemeData(color: cs.onSurfaceVariant),
@@ -158,7 +175,9 @@ abstract final class AppTheme {
         backgroundColor: cs.surfaceContainerLow,
         surfaceTintColor: Colors.transparent,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.bottomSheet)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.bottomSheet),
+          ),
         ),
       ),
 
@@ -166,7 +185,9 @@ abstract final class AppTheme {
         style: FilledButton.styleFrom(
           backgroundColor: cs.primary,
           foregroundColor: cs.onPrimary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.input)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.input),
+          ),
         ),
       ),
 
@@ -174,14 +195,19 @@ abstract final class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: cs.onSurface,
           side: BorderSide(color: cs.outline),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.input)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.input),
+          ),
         ),
       ),
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: cs.surfaceContainerLow,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
           borderSide: BorderSide(color: cs.outlineVariant),
@@ -205,30 +231,38 @@ abstract final class AppTheme {
         hintStyle: TextStyle(color: cs.onSurfaceVariant),
       ),
 
-      dividerTheme: DividerThemeData(
-        color: cs.outlineVariant,
-        thickness: 1,
-      ),
+      dividerTheme: DividerThemeData(color: cs.outlineVariant, thickness: 1),
 
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: cs.surfaceContainer,
         indicatorColor: cs.primaryContainer,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return IconThemeData(color: cs.onPrimaryContainer);
+            return IconThemeData(color: cs.primary);
           }
           return IconThemeData(color: cs.onSurfaceVariant);
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return TextStyle(color: cs.onSurface, fontWeight: FontWeight.w700, fontSize: 12, fontFamily: 'Outfit');
+            return TextStyle(
+              color: cs.primary,
+              fontWeight: FontWeight.w700,
+              fontSize: 12,
+              fontFamily: 'Outfit',
+            );
           }
-          return TextStyle(color: cs.onSurfaceVariant, fontWeight: FontWeight.w500, fontSize: 12, fontFamily: 'Outfit');
+          return TextStyle(
+            color: cs.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
+            fontSize: 12,
+            fontFamily: 'Outfit',
+          );
         }),
       ),
 
       progressIndicatorTheme: ProgressIndicatorThemeData(
         color: cs.primary,
+        year2023: false,
       ),
 
       iconTheme: IconThemeData(color: cs.onSurfaceVariant),
@@ -238,23 +272,83 @@ abstract final class AppTheme {
 
 const _textTheme = TextTheme(
   // Display — para títulos de destaque muito grandes
-  displayLarge:  TextStyle(fontSize: 57, fontWeight: FontWeight.w400, fontFamily: 'Outfit'),
-  displayMedium: TextStyle(fontSize: 45, fontWeight: FontWeight.w400, fontFamily: 'Outfit'),
-  displaySmall:  TextStyle(fontSize: 36, fontWeight: FontWeight.w400, fontFamily: 'Outfit'),
+  displayLarge: TextStyle(
+    fontSize: 57,
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Outfit',
+  ),
+  displayMedium: TextStyle(
+    fontSize: 45,
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Outfit',
+  ),
+  displaySmall: TextStyle(
+    fontSize: 36,
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Outfit',
+  ),
   // Headline — seções e cabeçalhos
-  headlineLarge:  TextStyle(fontSize: 32, fontWeight: FontWeight.w400, fontFamily: 'Outfit'),
-  headlineMedium: TextStyle(fontSize: 28, fontWeight: FontWeight.w400, fontFamily: 'Outfit'),
-  headlineSmall:  TextStyle(fontSize: 24, fontWeight: FontWeight.w400, fontFamily: 'Outfit'),
+  headlineLarge: TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Outfit',
+  ),
+  headlineMedium: TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Outfit',
+  ),
+  headlineSmall: TextStyle(
+    fontSize: 24,
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Outfit',
+  ),
   // Title — títulos de card, sheet, appbar
-  titleLarge:  TextStyle(fontSize: 22, fontWeight: FontWeight.w700, fontFamily: 'Outfit'),
-  titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, fontFamily: 'Outfit'),
-  titleSmall:  TextStyle(fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'Outfit'),
+  titleLarge: TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w700,
+    fontFamily: 'Outfit',
+  ),
+  titleMedium: TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w700,
+    fontFamily: 'Outfit',
+  ),
+  titleSmall: TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w700,
+    fontFamily: 'Outfit',
+  ),
   // Body — texto corrido
-  bodyLarge:  TextStyle(fontSize: 16, fontWeight: FontWeight.w400, fontFamily: 'Outfit'),
-  bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, fontFamily: 'Outfit'),
-  bodySmall:  TextStyle(fontSize: 12, fontWeight: FontWeight.w400, fontFamily: 'Outfit'),
+  bodyLarge: TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Outfit',
+  ),
+  bodyMedium: TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Outfit',
+  ),
+  bodySmall: TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    fontFamily: 'Outfit',
+  ),
   // Label — chips, badges, legendas
-  labelLarge:  TextStyle(fontSize: 14, fontWeight: FontWeight.w500, fontFamily: 'Outfit'),
-  labelMedium: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, fontFamily: 'Outfit'),
-  labelSmall:  TextStyle(fontSize: 11, fontWeight: FontWeight.w500, fontFamily: 'Outfit'),
+  labelLarge: TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    fontFamily: 'Outfit',
+  ),
+  labelMedium: TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    fontFamily: 'Outfit',
+  ),
+  labelSmall: TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w500,
+    fontFamily: 'Outfit',
+  ),
 );

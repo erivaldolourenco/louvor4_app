@@ -195,8 +195,11 @@ class _HomeTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return TabBar.secondary(
       controller: controller,
+      labelColor: cs.primary,
+      unselectedLabelColor: cs.onSurfaceVariant,
       labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
       unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
       tabs: const [
@@ -216,10 +219,10 @@ class _UpcomingTab extends StatelessWidget {
       buildWhen: (prev, curr) =>
           prev.status != curr.status || prev.events != curr.events,
       builder: (context, state) {
-        if (state.status == EventsStatus.loading) {
+        if (state.status == EventsStatus.loading && state.events.isEmpty) {
           return const _EventsLoadingState();
         }
-        if (state.status == EventsStatus.failure) {
+        if (state.status == EventsStatus.failure && state.events.isEmpty) {
           return _EventsErrorState(
             message: state.errorMessage ?? 'Erro ao carregar eventos',
             onRetry: () => context.read<EventsCubit>().load(),

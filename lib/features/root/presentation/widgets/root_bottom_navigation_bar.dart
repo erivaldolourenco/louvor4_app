@@ -21,39 +21,78 @@ class RootBottomNavigationBar extends StatelessWidget {
         : '$unreadNotificationsCount';
     final showBadge = unreadNotificationsCount > 0;
 
-    return NavigationBar(
-      selectedIndex: currentIndex,
-      onDestinationSelected: onTap,
-      destinations: [
-        NavigationDestination(
-          label: 'Início',
-          icon: _SvgIcon('assets/icons/layout-dashboard.svg', cs.onSurfaceVariant),
-          selectedIcon: _SvgIcon('assets/icons/layout-dashboard.svg', cs.onPrimaryContainer),
-        ),
-        NavigationDestination(
-          label: 'Projetos',
-          icon: _SvgIcon('assets/icons/square-library.svg', cs.onSurfaceVariant),
-          selectedIcon: _SvgIcon('assets/icons/square-library.svg', cs.onPrimaryContainer),
-        ),
-        NavigationDestination(
-          label: 'Músicas',
-          icon: _SvgIcon('assets/icons/list-music.svg', cs.onSurfaceVariant),
-          selectedIcon: _SvgIcon('assets/icons/list-music.svg', cs.onPrimaryContainer),
-        ),
-        NavigationDestination(
-          label: 'Avisos',
-          icon: Badge(
-            isLabelVisible: showBadge,
-            label: Text(badgeLabel),
-            child: _SvgIcon('assets/icons/bell.svg', cs.onSurfaceVariant),
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: cs.outlineVariant)),
+      ),
+      child: NavigationBar(
+        backgroundColor: cs.surface,
+        surfaceTintColor: Colors.transparent,
+        selectedIndex: currentIndex,
+        onDestinationSelected: onTap,
+        destinations: [
+          NavigationDestination(
+            label: 'Início',
+            icon: _SvgIcon(
+              'assets/icons/layout-dashboard.svg',
+              cs.onSurfaceVariant,
+            ),
+            selectedIcon: _ActiveIcon(
+              child: _SvgIcon('assets/icons/layout-dashboard.svg', cs.primary),
+            ),
           ),
-          selectedIcon: Badge(
-            isLabelVisible: showBadge,
-            label: Text(badgeLabel),
-            child: _SvgIcon('assets/icons/bell.svg', cs.onPrimaryContainer),
+          NavigationDestination(
+            label: 'Projetos',
+            icon: _SvgIcon(
+              'assets/icons/square-library.svg',
+              cs.onSurfaceVariant,
+            ),
+            selectedIcon: _ActiveIcon(
+              child: _SvgIcon('assets/icons/square-library.svg', cs.primary),
+            ),
           ),
-        ),
-      ],
+          NavigationDestination(
+            label: 'Músicas',
+            icon: _SvgIcon('assets/icons/list-music.svg', cs.onSurfaceVariant),
+            selectedIcon: _ActiveIcon(
+              child: _SvgIcon('assets/icons/list-music.svg', cs.primary),
+            ),
+          ),
+          NavigationDestination(
+            label: 'Avisos',
+            icon: Badge(
+              isLabelVisible: showBadge,
+              label: Text(badgeLabel),
+              child: _SvgIcon('assets/icons/bell.svg', cs.onSurfaceVariant),
+            ),
+            selectedIcon: _ActiveIcon(
+              child: Badge(
+                isLabelVisible: showBadge,
+                label: Text(badgeLabel),
+                child: _SvgIcon('assets/icons/bell.svg', cs.primary),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActiveIcon extends StatelessWidget {
+  final Widget child;
+
+  const _ActiveIcon({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 1.0, end: 1.18),
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutBack,
+      builder: (context, scale, child) =>
+          Transform.scale(scale: scale, child: child),
+      child: child,
     );
   }
 }

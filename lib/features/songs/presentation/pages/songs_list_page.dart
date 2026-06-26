@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
@@ -61,6 +62,7 @@ class _SongsContentState extends State<_SongsContent>
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   DateTime? _lastLoadedAt;
+  String? _deletingSongId;
 
   @override
   void initState() {
@@ -133,9 +135,9 @@ class _SongsContentState extends State<_SongsContent>
   }
 
   Future<void> _goToCreate() async {
-    final created = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const CreateSongPage()),
-    );
+    final created = await Navigator.of(
+      context,
+    ).push<bool>(MaterialPageRoute(builder: (_) => const CreateSongPage()));
     if (created == true) await _loadSongs(silent: true, force: true);
   }
 
@@ -144,6 +146,71 @@ class _SongsContentState extends State<_SongsContent>
       MaterialPageRoute(builder: (_) => EditSongPage(songId: songId)),
     );
     if (updated == true) await _loadSongs(silent: true, force: true);
+  }
+
+  void _confirmDeleteSong(SongEntity song) {
+    if (song.id == null) return;
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Excluir "${song.title}"?'),
+        content: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: Theme.of(ctx).colorScheme.error,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'Esta ação não pode ser desfeita.',
+                style: TextStyle(
+                  color: Theme.of(ctx).colorScheme.error,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _deleteSong(song);
+            },
+            child: const Text('Excluir'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteSong(SongEntity song) async {
+    final id = song.id!;
+    setState(() => _deletingSongId = id);
+    try {
+      await _repo.deleteSong(id);
+      if (!mounted) return;
+      setState(() {
+        _songs = _songs.where((s) => s.id != id).toList();
+        _deletingSongId = null;
+      });
+      AppFeedback.showSuccess('Música excluída com sucesso.');
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _deletingSongId = null);
+      AppFeedback.showError(e.toString().replaceFirst('Exception: ', ''));
+    }
   }
 
   Future<void> _openYouTube(String url) async {
@@ -219,14 +286,57 @@ class _SongsContentState extends State<_SongsContent>
       floatingActionButton: _buildFab(onSongsTab),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) => setState(() => _searchQuery = value),
+              decoration: InputDecoration(
+                hintText: onSongsTab
+                    ? 'Buscar por título ou artista...'
+                    : 'Buscar medley...',
+                prefixIcon: const Icon(Icons.search_rounded),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      )
+                    : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.input),
+                  borderSide: BorderSide(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outlineVariant.withValues(alpha: 0.25),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.input),
+                  borderSide: BorderSide(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outlineVariant.withValues(alpha: 0.25),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.input),
+                  borderSide: BorderSide(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outlineVariant.withValues(alpha: 0.25),
+                  ),
+                ),
+              ),
+            ),
+          ),
           _SongsTabBar(controller: _tabController),
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: [
-                _buildSongsTab(),
-                _buildMedleysTab(),
-              ],
+              children: [_buildSongsTab(), _buildMedleysTab()],
             ),
           ),
         ],
@@ -236,14 +346,9 @@ class _SongsContentState extends State<_SongsContent>
 
   Widget? _buildFab(bool onSongsTab) {
     if (onSongsTab) {
-      return _songs.isNotEmpty
-          ? PrimaryAddFab(onPressed: _goToCreate)
-          : null;
+      return _songs.isNotEmpty ? PrimaryAddFab(onPressed: _goToCreate) : null;
     }
-    return PrimaryAddFab(
-      heroTag: 'medley_fab',
-      onPressed: _openCreateMedley,
-    );
+    return PrimaryAddFab(heroTag: 'medley_fab', onPressed: _openCreateMedley);
   }
 
   // ------ Songs tab body ------
@@ -291,92 +396,69 @@ class _SongsContentState extends State<_SongsContent>
           song.artist.toLowerCase().contains(query);
     }).toList();
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-          child: TextField(
-            controller: _searchController,
-            onChanged: (value) => setState(() => _searchQuery = value),
-            decoration: InputDecoration(
-              hintText: 'Buscar por título ou artista...',
-              prefixIcon: const Icon(Icons.search_rounded),
-              suffixIcon: _searchQuery.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear_rounded),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _searchQuery = '');
-                      },
-                    )
-                  : null,
-            ),
-          ),
-        ),
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: () => _loadSongs(force: true),
-            child: filteredSongs.isEmpty
-                ? ListView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(top: 60),
+    return RefreshIndicator(
+      onRefresh: () => _loadSongs(force: true),
+      child: filteredSongs.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(top: 60),
+              children: [
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Center(
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.search_off_rounded,
-                              size: 48,
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Nenhuma música encontrada\npara "$_searchQuery"',
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
+                      Icon(
+                        Icons.search_off_rounded,
+                        size: 48,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Nenhuma música encontrada\npara "$_searchQuery"',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
-                  )
-                : ListView.separated(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 90),
-                    itemBuilder: (_, index) {
-                      final song = filteredSongs[index];
-                      return SongListCard(
-                        title: song.title,
-                        artist: song.artist,
-                        musicKey: song.key,
-                        bpm: song.bpm,
-                        youTubeUrl: song.youTubeUrl,
-                        hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
-                        onTap: () => showSongDetailsModal(
-                          context,
-                          title: song.title,
-                          artist: song.artist,
-                          musicKey: song.key,
-                          bpm: song.bpm,
-                          youTubeUrl: song.youTubeUrl,
-                          notes: song.notes,
-                          referenceAudioUrl: song.referenceAudioUrl,
-                        ),
-                        onOpenYoutube: () => _openYouTube(song.youTubeUrl),
-                        onEdit: song.id == null
-                            ? null
-                            : () => _goToEdit(song.id!),
-                      );
-                    },
-                    separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemCount: filteredSongs.length,
                   ),
-          ),
-        ),
-      ],
+                ),
+              ],
+            )
+          : ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 90),
+              itemBuilder: (_, index) {
+                final song = filteredSongs[index];
+                return SongListCard(
+                  title: song.title,
+                  artist: song.artist,
+                  musicKey: song.key,
+                  bpm: song.bpm,
+                  youTubeUrl: song.youTubeUrl,
+                  notes: song.notes,
+                  hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
+                  onTap: () => showSongDetailsModal(
+                    context,
+                    title: song.title,
+                    artist: song.artist,
+                    musicKey: song.key,
+                    bpm: song.bpm,
+                    youTubeUrl: song.youTubeUrl,
+                    notes: song.notes,
+                    referenceAudioUrl: song.referenceAudioUrl,
+                  ),
+                  onOpenYoutube: () => _openYouTube(song.youTubeUrl),
+                  onEdit: song.id == null ? null : () => _goToEdit(song.id!),
+                  onDelete: song.id == null
+                      ? null
+                      : () => _confirmDeleteSong(song),
+                  isRemoving: song.id != null && _deletingSongId == song.id,
+                );
+              },
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              itemCount: filteredSongs.length,
+            ),
     );
   }
 
@@ -399,22 +481,60 @@ class _SongsContentState extends State<_SongsContent>
         if (state.medleys.isEmpty) {
           return _MedleysEmpty(onCreateMedley: _openCreateMedley);
         }
+
+        final query = _searchQuery.toLowerCase();
+        final filteredMedleys = state.medleys
+            .where((medley) => medley.name.toLowerCase().contains(query))
+            .toList();
+
         return RefreshIndicator(
           onRefresh: () => context.read<MedleyCubit>().loadMedleys(),
-          child: ListView.separated(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
-            itemCount: state.medleys.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 10),
-            itemBuilder: (_, i) {
-              final medley = state.medleys[i];
-              return MedleyCard(
-                medley: medley,
-                onEdit: () => _openEditMedley(medley),
-                onDelete: () => _confirmDeleteMedley(medley),
-              );
-            },
-          ),
+          child: filteredMedleys.isEmpty
+              ? ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.only(top: 60),
+                  children: [
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 48,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Nenhum medley encontrado\npara "$_searchQuery"',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyLarge
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              : ListView.separated(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
+                  itemCount: filteredMedleys.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
+                  itemBuilder: (_, i) {
+                    final medley = filteredMedleys[i];
+                    return MedleyCard(
+                      medley: medley,
+                      onEdit: () => _openEditMedley(medley),
+                      onDelete: () => _confirmDeleteMedley(medley),
+                    );
+                  },
+                ),
         );
       },
     );
@@ -433,10 +553,15 @@ class _SongsTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
     return TabBar(
       controller: controller,
+      labelColor: cs.primary,
+      unselectedLabelColor: cs.onSurfaceVariant,
       labelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-      unselectedLabelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500),
+      unselectedLabelStyle: textTheme.labelLarge?.copyWith(
+        fontWeight: FontWeight.w500,
+      ),
       tabs: const [
         Tab(text: 'Músicas'),
         Tab(text: 'Medleys'),
@@ -479,9 +604,9 @@ class _MedleysEmpty extends StatelessWidget {
             Text(
               'Monte sequências de músicas para usar nas suas escalas.',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
@@ -495,4 +620,3 @@ class _MedleysEmpty extends StatelessWidget {
     );
   }
 }
-

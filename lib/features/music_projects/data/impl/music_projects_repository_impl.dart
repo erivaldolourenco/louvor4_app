@@ -206,6 +206,34 @@ class MusicProjectsRepositoryImpl implements MusicProjectsRepository {
   }
 
   @override
+  Future<void> leaveProject(String projectId) async {
+    try {
+      await _dio.delete('/users/project/$projectId/leave');
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível sair do projeto.',
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<void> deleteProject(String projectId) async {
+    try {
+      await _dio.delete('/music-project/$projectId');
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível excluir o projeto.',
+        ),
+      );
+    }
+  }
+
+  @override
   Future<List<ProjectSkillEntity>> getProjectSkills(String projectId) async {
     try {
       final response = await _dio.get('/music-project/$projectId/skills');

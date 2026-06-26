@@ -5,7 +5,7 @@ import '../../domain/entities/project_skill_entity.dart';
 
 enum ProjectMembersStatus { initial, loading, success, failure }
 
-enum ProjectMembersSubmission { idle, loadingMember, adding, updating, removing }
+enum ProjectMembersSubmission { idle, loadingMember, adding, updating, removing, leaving }
 
 class ProjectMembersState extends Equatable {
   final ProjectMembersStatus status;

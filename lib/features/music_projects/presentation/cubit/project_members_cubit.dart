@@ -12,11 +12,13 @@ class ProjectMembersCubit extends Cubit<ProjectMembersState> {
   final MusicProjectsRepository _repository;
   final String projectId;
   final bool canManageMembers;
+  final String? currentUserId;
 
   ProjectMembersCubit({
     required MusicProjectsRepository repository,
     required this.projectId,
     required this.canManageMembers,
+    this.currentUserId,
   }) : _repository = repository,
        super(const ProjectMembersState());
 
@@ -242,13 +244,50 @@ class ProjectMembersCubit extends Cubit<ProjectMembersState> {
     }
   }
 
+  bool isCurrentUser(ProjectMemberEntity member) =>
+      currentUserId != null && member.userId == currentUserId;
+
   bool canEditMember(ProjectMemberEntity member) => canManageMembers;
 
   bool canRemoveMember(ProjectMemberEntity member) =>
-      canManageMembers && !member.isOwner;
+      canManageMembers && !member.isOwner && !isCurrentUser(member);
+
+  bool canLeaveProject(ProjectMemberEntity member) =>
+      isCurrentUser(member) && !member.isOwner;
 
   bool canChangeAdministrativeAccess(ProjectMemberEntity member) =>
       canManageMembers && !member.isOwner;
+
+  Future<bool> leaveProject(ProjectMemberEntity member) async {
+    emit(
+      state.copyWith(
+        submission: ProjectMembersSubmission.leaving,
+        activeMemberId: member.id,
+        clearActionErrorMessage: true,
+      ),
+    );
+
+    try {
+      await _repository.leaveProject(projectId);
+      emit(
+        state.copyWith(
+          submission: ProjectMembersSubmission.idle,
+          clearActiveMemberId: true,
+          clearActionErrorMessage: true,
+        ),
+      );
+      return true;
+    } catch (e) {
+      emit(
+        state.copyWith(
+          submission: ProjectMembersSubmission.idle,
+          clearActiveMemberId: true,
+          actionErrorMessage: _extractMessage(e),
+        ),
+      );
+      return false;
+    }
+  }
 
   Future<void> _refreshDataAfterMutation() async {
     final results = await Future.wait([

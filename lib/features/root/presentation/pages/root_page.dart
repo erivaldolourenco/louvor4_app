@@ -266,7 +266,9 @@ class _RootPageState extends State<RootPage>
                           user: userState.user,
                           isLoadingUser: userState.status == UserStatus.loading,
                         ),
-                        const MusicProjectsTabPage(),
+                        MusicProjectsTabPage(
+                          onGoHome: () => _setIndex(0),
+                        ),
                         const SongsListPage(),
                         const AvisosPage(),
                       ],

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
+import '../../../../core/ui/widgets/circular_icon_action_button.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/utils/skill_icon.dart';
 import '../../data/repositories/project_skills_repository.dart';
@@ -164,7 +166,6 @@ class _ProjectSkillsView extends StatelessWidget {
       AppFeedback.showSuccess('Função adicionada com sucesso.');
     }
   }
-
 }
 
 class _SkillsEmptyState extends StatelessWidget {
@@ -204,7 +205,7 @@ class _ProjectSkillCard extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(AppRadius.cardLarge),
       child: Ink(
         decoration: appCardDecoration(context),
         child: Padding(
@@ -216,7 +217,7 @@ class _ProjectSkillCard extends StatelessWidget {
                 height: 46,
                 decoration: BoxDecoration(
                   color: cs.primaryContainer,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.card),
                 ),
                 child: Center(
                   child: SvgPicture.asset(
@@ -246,7 +247,7 @@ class _ProjectSkillCard extends StatelessWidget {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 else ...[
-                  _CircularSkillActionButton(
+                  CircularIconActionButton(
                     tooltip: 'Editar função',
                     onPressed: () => _showEditSkillSheet(context, cubit, skill),
                     assetPath: 'assets/icons/wrench.svg',
@@ -255,11 +256,11 @@ class _ProjectSkillCard extends StatelessWidget {
                     borderColor: cs.primary.withValues(alpha: 0.3),
                   ),
                   const SizedBox(width: 6),
-                  _CircularSkillActionButton(
+                  CircularIconActionButton(
                     tooltip: 'Excluir função',
                     onPressed: () => _onDeleteSkill(context, cubit, skill),
                     assetPath: 'assets/icons/trash-2.svg',
-                    iconColor: cs.error,
+                    iconColor: cs.onErrorContainer,
                     backgroundColor: cs.errorContainer,
                     borderColor: cs.error.withValues(alpha: 0.3),
                   ),
@@ -302,19 +303,24 @@ class _ProjectSkillCard extends StatelessWidget {
       builder: (dialogContext) {
         final cs = Theme.of(context).colorScheme;
         return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.card),
+          ),
           title: const Text('Excluir função'),
           content: Text(
             'Deseja excluir a função "${skill.name}"? Essa ação não poderá ser desfeita.',
           ),
           actions: [
             TextButton(
+              style: TextButton.styleFrom(shape: const StadiumBorder()),
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
               style: FilledButton.styleFrom(
                 backgroundColor: cs.error,
+                shape: const StadiumBorder(),
               ),
               child: const Text('Excluir'),
             ),
@@ -332,55 +338,5 @@ class _ProjectSkillCard extends StatelessWidget {
     } else if (cubit.state.actionErrorMessage != null) {
       AppFeedback.showError(cubit.state.actionErrorMessage!);
     }
-  }
-}
-
-class _CircularSkillActionButton extends StatelessWidget {
-  final String tooltip;
-  final VoidCallback? onPressed;
-  final String assetPath;
-  final Color iconColor;
-  final Color backgroundColor;
-  final Color borderColor;
-
-  const _CircularSkillActionButton({
-    required this.tooltip,
-    required this.onPressed,
-    required this.assetPath,
-    required this.iconColor,
-    required this.backgroundColor,
-    required this.borderColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: Colors.transparent,
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: Ink(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              shape: BoxShape.circle,
-              border: Border.all(color: borderColor),
-            ),
-            child: Center(
-              child: SvgPicture.asset(
-                assetPath,
-                width: 18,
-                height: 18,
-                colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

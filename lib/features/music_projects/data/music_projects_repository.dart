@@ -36,6 +36,10 @@ abstract class MusicProjectsRepository {
 
   Future<void> removeProjectMember(String projectId, String memberId);
 
+  Future<void> leaveProject(String projectId);
+
+  Future<void> deleteProject(String projectId);
+
   Future<List<ProjectSkillEntity>> getProjectSkills(String projectId);
 
   Future<void> createProjectEvent(

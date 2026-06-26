@@ -12,6 +12,7 @@ class SongListCard extends StatelessWidget {
   final String? musicKey;
   final String? bpm;
   final String? youTubeUrl;
+  final String? notes;
   final bool isMedley;
   final bool hasAudio;
   final VoidCallback? onTap;
@@ -29,6 +30,7 @@ class SongListCard extends StatelessWidget {
     this.musicKey,
     this.bpm,
     this.youTubeUrl,
+    this.notes,
     this.isMedley = false,
     this.hasAudio = false,
     this.onTap,
@@ -40,11 +42,61 @@ class SongListCard extends StatelessWidget {
     this.dismissKey,
   });
 
+  bool get _hasNotes => notes != null && notes!.trim().isNotEmpty;
+
   bool get _hasActions =>
       isRemoving ||
       (!isMedley && onOpenYoutube != null) ||
+      _hasNotes ||
       onEdit != null ||
       onDelete != null;
+
+  void _openNotesModal(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        final cs = Theme.of(dialogContext).colorScheme;
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 24,
+          ),
+          child: AppCardSurface(
+            radius: AppRadius.sheet,
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Observações',
+                        style: Theme.of(dialogContext).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Fechar',
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  notes!.trim(),
+                  style: TextStyle(color: cs.onSurfaceVariant, height: 1.5),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,10 +141,7 @@ class SongListCard extends StatelessWidget {
                           ),
                         ),
                       ],
-                      if (hasAudio) ...[
-                        const SizedBox(height: 6),
-                        _AudioTag(),
-                      ],
+                      if (hasAudio) ...[const SizedBox(height: 6), _AudioTag()],
                     ],
                   ),
                 ),
@@ -127,7 +176,13 @@ class SongListCard extends StatelessWidget {
                         backgroundColor: cs.tertiaryContainer,
                         borderColor: cs.tertiary.withValues(alpha: 0.3),
                       ),
-                    if (!isMedley && onOpenYoutube != null && onEdit != null)
+                    if (!isMedley && onOpenYoutube != null && _hasNotes)
+                      const SizedBox(width: 8),
+                    if (_hasNotes)
+                      _NotesActionButton(
+                        onPressed: () => _openNotesModal(context),
+                      ),
+                    if ((onOpenYoutube != null || _hasNotes) && onEdit != null)
                       const SizedBox(width: 8),
                     if (onEdit != null)
                       AppCircularActionButton(
@@ -137,7 +192,8 @@ class SongListCard extends StatelessWidget {
                         backgroundColor: cs.primaryContainer,
                         borderColor: cs.primary.withValues(alpha: 0.3),
                       ),
-                    if (onDelete != null && (onOpenYoutube != null || onEdit != null))
+                    if (onDelete != null &&
+                        (onOpenYoutube != null || _hasNotes || onEdit != null))
                       const SizedBox(width: 8),
                     if (onDelete != null)
                       AppCircularActionButton(
@@ -174,17 +230,49 @@ class SongListCard extends StatelessWidget {
       );
     }
 
-    return SpringTap(
-      onTap: onTap,
-      pressedScale: 0.97,
-      child: cardContent,
-    );
+    return SpringTap(onTap: onTap, pressedScale: 0.97, child: cardContent);
   }
 }
 
 // ---------------------------------------------------------------------------
 // Sub-widgets
 // ---------------------------------------------------------------------------
+
+class _NotesActionButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _NotesActionButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: 'Ver observação',
+      child: Material(
+        color: Colors.transparent,
+        shape: const CircleBorder(),
+        child: InkWell(
+          onTap: onPressed,
+          customBorder: const CircleBorder(),
+          child: Ink(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: cs.secondaryContainer,
+              shape: BoxShape.circle,
+              border: Border.all(color: cs.secondary.withValues(alpha: 0.3)),
+            ),
+            child: Icon(
+              Icons.sticky_note_2_rounded,
+              size: 18,
+              color: cs.onSecondaryContainer,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
 
 class _Thumbnail extends StatelessWidget {
   final String? youTubeUrl;
@@ -204,7 +292,11 @@ class _Thumbnail extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
         ),
         child: Center(
-          child: Icon(Icons.queue_music_rounded, color: cs.onSecondaryContainer, size: 32),
+          child: Icon(
+            Icons.queue_music_rounded,
+            color: cs.onSecondaryContainer,
+            size: 32,
+          ),
         ),
       );
     }
@@ -267,7 +359,11 @@ class _AudioTag extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.headphones_rounded, size: 11, color: cs.onSecondaryContainer),
+          Icon(
+            Icons.headphones_rounded,
+            size: 11,
+            color: cs.onSecondaryContainer,
+          ),
           const SizedBox(width: 3),
           Text(
             'Áudio',
@@ -304,9 +400,9 @@ class _InfoChip extends StatelessWidget {
           children: [
             TextSpan(
               text: '$label ',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
             ),
             TextSpan(
               text: value,

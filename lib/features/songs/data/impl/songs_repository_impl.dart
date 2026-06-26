@@ -67,10 +67,16 @@ class SongsRepositoryImpl implements SongsRepository {
           filename: File(filePath).uri.pathSegments.last,
         ),
       });
-      await _dio.post(
-        '/songs/$songId/audio?type=REFERENCE',
-        data: formData,
-      );
+      await _dio.post('/songs/$songId/audio?type=REFERENCE', data: formData);
+    } on DioException catch (e) {
+      throw Exception(_extractApiErrorMessage(e));
+    }
+  }
+
+  @override
+  Future<void> deleteSong(String id) async {
+    try {
+      await _dio.delete('/songs/$id/delete');
     } on DioException catch (e) {
       throw Exception(_extractApiErrorMessage(e));
     }
@@ -79,7 +85,7 @@ class SongsRepositoryImpl implements SongsRepository {
   String _extractApiErrorMessage(DioException e) {
     final data = e.response?.data;
     if (data is Map<String, dynamic>) {
-      final message = data['message'] ?? data['error'];
+      final message = data['detail'] ?? data['message'] ?? data['error'];
       if (message != null && message.toString().trim().isNotEmpty) {
         return message.toString();
       }

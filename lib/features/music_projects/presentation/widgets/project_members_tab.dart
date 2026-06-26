@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 
@@ -9,6 +8,7 @@ import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
+import '../../../../core/ui/widgets/circular_icon_action_button.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
@@ -23,12 +23,16 @@ class ProjectMembersTab extends StatefulWidget {
   final String projectId;
   final bool canManageMembers;
   final MusicProjectsRepository repository;
+  final String? currentUserId;
+  final VoidCallback? onLeaveProject;
 
   const ProjectMembersTab({
     super.key,
     required this.projectId,
     required this.canManageMembers,
     required this.repository,
+    this.currentUserId,
+    this.onLeaveProject,
   });
 
   @override
@@ -46,6 +50,7 @@ class _ProjectMembersTabState extends State<ProjectMembersTab>
       repository: widget.repository,
       projectId: widget.projectId,
       canManageMembers: widget.canManageMembers,
+      currentUserId: widget.currentUserId,
     )..load();
   }
 
@@ -60,7 +65,7 @@ class _ProjectMembersTabState extends State<ProjectMembersTab>
     super.build(context);
     return BlocProvider.value(
       value: _cubit,
-      child: const _ProjectMembersTabView(),
+      child: _ProjectMembersTabView(onLeaveProject: widget.onLeaveProject),
     );
   }
 
@@ -69,7 +74,9 @@ class _ProjectMembersTabState extends State<ProjectMembersTab>
 }
 
 class _ProjectMembersTabView extends StatelessWidget {
-  const _ProjectMembersTabView();
+  final VoidCallback? onLeaveProject;
+
+  const _ProjectMembersTabView({this.onLeaveProject});
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +140,10 @@ class _ProjectMembersTabView extends StatelessWidget {
                     ...state.members.map(
                       (member) => Padding(
                         padding: const EdgeInsets.only(bottom: 10),
-                        child: _ProjectMemberCard(member: member),
+                        child: _ProjectMemberCard(
+                          member: member,
+                          onLeaveProject: onLeaveProject,
+                        ),
                       ),
                     ),
                 ],
@@ -194,16 +204,16 @@ class _MembersEmptyState extends StatelessWidget {
 
 class _ProjectMemberCard extends StatelessWidget {
   final ProjectMemberEntity member;
+  final VoidCallback? onLeaveProject;
 
-  const _ProjectMemberCard({required this.member});
+  const _ProjectMemberCard({required this.member, this.onLeaveProject});
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<ProjectMembersCubit>();
     final state = context.watch<ProjectMembersCubit>().state;
     final theme = Theme.of(context);
-  final cs = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
     final titleColor = theme.textTheme.titleMedium?.color;
     final skillNames = member.skillIds
         .map(
@@ -220,7 +230,15 @@ class _ProjectMemberCard extends StatelessWidget {
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(AppRadius.cardLarge),
       child: Ink(
-        decoration: appCardDecoration(context),
+        decoration: appCardDecoration(
+          context,
+          color: member.isOwner
+              ? Color.alphaBlend(
+                  cs.tertiaryContainer.withValues(alpha: 0.18),
+                  cs.surfaceContainerLow,
+                )
+              : null,
+        ),
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(
@@ -246,6 +264,7 @@ class _ProjectMemberCard extends StatelessWidget {
                         _MemberAvatar(
                           imageUrl: member.profileImage,
                           fullName: member.fullName,
+                          role: member.projectRole,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -295,63 +314,163 @@ class _ProjectMemberCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (cubit.canManageMembers) ...[
-                const SizedBox(width: 10),
-                isBusy
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (cubit.canEditMember(member))
-                            _CircularMemberActionButton(
-                              tooltip: 'Editar membro',
-                              onPressed: () async {
-                                final success = await _openEditMemberPage(
-                                  context,
-                                  member.id,
-                                );
-                                if (success == true) {
-                                  AppFeedback.showSuccess(
-                                    'Membro atualizado com sucesso.',
+              Builder(
+                builder: (context) {
+                  final canEdit = cubit.canEditMember(member);
+                  final canRemove = cubit.canRemoveMember(member);
+                  final canLeave = cubit.canLeaveProject(member);
+                  final hasActions = canEdit || canRemove || canLeave;
+
+                  if (!hasActions) return const SizedBox.shrink();
+
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(width: 10),
+                      if (isBusy)
+                        const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      else
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (canEdit)
+                              CircularIconActionButton(
+                                tooltip: 'Editar membro',
+                                onPressed: () async {
+                                  final success = await _openEditMemberPage(
+                                    context,
+                                    member.id,
                                   );
-                                }
-                              },
-                              assetPath: 'assets/icons/settings-2.svg',
-                              iconColor: cs.primary,
-                              backgroundColor: isDark
-                                  ? cs.primaryContainer
-                                  : cs.primaryContainer,
-                              borderColor: isDark
-                                  ? cs.primary
-                                  : cs.primary.withValues(alpha: 0.30),
-                            ),
-                          if (cubit.canEditMember(member) &&
-                              cubit.canManageMembers)
-                            const SizedBox(width: 8),
-                          if (cubit.canManageMembers)
-                            _CircularMemberActionButton(
-                              tooltip: 'Remover membro',
-                              onPressed: () {
-                                AppFeedback.showInfo(
-                                  'Remover membro ainda não foi implementado.',
-                                );
-                              },
-                              assetPath: 'assets/icons/trash-2.svg',
-                              iconColor: cs.error,
-                              backgroundColor: isDark
-                                  ? const Color(0xFF2A1313)
-                                  : const Color(0xFFFFF1F2),
-                              borderColor: isDark
-                                  ? cs.error.withValues(alpha: 0.35)
-                                  : const Color(0xFFFECDD3),
-                            ),
-                        ],
-                      ),
-              ],
+                                  if (success == true) {
+                                    AppFeedback.showSuccess(
+                                      'Membro atualizado com sucesso.',
+                                    );
+                                  }
+                                },
+                                assetPath: 'assets/icons/settings-2.svg',
+                                iconColor: cs.onPrimaryContainer,
+                                backgroundColor: cs.primaryContainer,
+                                borderColor: cs.primary.withValues(alpha: 0.3),
+                              ),
+                            if (canEdit && canRemove)
+                              const SizedBox(width: 8),
+                            if (canRemove)
+                              CircularIconActionButton(
+                                tooltip: 'Remover membro',
+                                onPressed: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Remover membro'),
+                                      content: Text(
+                                        'Deseja remover ${member.fullName} do projeto?',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(ctx).pop(false),
+                                          child: const Text('Cancelar'),
+                                        ),
+                                        FilledButton(
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: cs.error,
+                                            foregroundColor: cs.onError,
+                                          ),
+                                          onPressed: () =>
+                                              Navigator.of(ctx).pop(true),
+                                          child: const Text('Remover'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed != true) return;
+                                  final success =
+                                      await cubit.removeMember(member);
+                                  if (!context.mounted) return;
+                                  if (success) {
+                                    AppFeedback.showSuccess(
+                                      'Membro removido com sucesso.',
+                                    );
+                                  } else if (cubit.state.actionErrorMessage !=
+                                      null) {
+                                    AppFeedback.showError(
+                                      cubit.state.actionErrorMessage!,
+                                    );
+                                  }
+                                },
+                                assetPath: 'assets/icons/trash-2.svg',
+                                iconColor: cs.onErrorContainer,
+                                backgroundColor: cs.errorContainer,
+                                borderColor: cs.error.withValues(alpha: 0.3),
+                              ),
+                            if (canLeave)
+                              IconButton(
+                                tooltip: 'Sair do projeto',
+                                onPressed: () async {
+                                  final confirmed = await showDialog<bool>(
+                                    context: context,
+                                    builder: (ctx) => AlertDialog(
+                                      title: const Text('Sair do projeto'),
+                                      content: const Text(
+                                        'Tem certeza que deseja sair deste projeto? Você perderá acesso a eventos, membros e configurações.',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(ctx).pop(false),
+                                          child: const Text('Cancelar'),
+                                        ),
+                                        FilledButton(
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: cs.error,
+                                            foregroundColor: cs.onError,
+                                          ),
+                                          onPressed: () =>
+                                              Navigator.of(ctx).pop(true),
+                                          child: const Text('Sair'),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (confirmed != true) return;
+                                  final success =
+                                      await cubit.leaveProject(member);
+                                  if (!context.mounted) return;
+                                  if (success) {
+                                    onLeaveProject?.call();
+                                  } else if (cubit.state.actionErrorMessage !=
+                                      null) {
+                                    AppFeedback.showError(
+                                      cubit.state.actionErrorMessage!,
+                                    );
+                                  }
+                                },
+                                style: IconButton.styleFrom(
+                                  backgroundColor: cs.errorContainer,
+                                  shape: CircleBorder(
+                                    side: BorderSide(
+                                      color: cs.error.withValues(alpha: 0.3),
+                                    ),
+                                  ),
+                                  minimumSize: const Size(40, 40),
+                                  padding: EdgeInsets.zero,
+                                ),
+                                icon: Icon(
+                                  Icons.logout_rounded,
+                                  size: 18,
+                                  color: cs.onErrorContainer,
+                                ),
+                              ),
+                          ],
+                        ),
+                    ],
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -366,56 +485,6 @@ class _ProjectMemberCard extends StatelessWidget {
         builder: (_) => BlocProvider.value(
           value: cubit,
           child: _EditProjectMemberPage(memberId: memberId),
-        ),
-      ),
-    );
-  }
-}
-
-class _CircularMemberActionButton extends StatelessWidget {
-  final String tooltip;
-  final VoidCallback? onPressed;
-  final String assetPath;
-  final Color iconColor;
-  final Color backgroundColor;
-  final Color borderColor;
-
-  const _CircularMemberActionButton({
-    required this.tooltip,
-    required this.onPressed,
-    required this.assetPath,
-    required this.iconColor,
-    required this.backgroundColor,
-    required this.borderColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: Colors.transparent,
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: Ink(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              shape: BoxShape.circle,
-              border: Border.all(color: borderColor),
-            ),
-            child: Center(
-              child: SvgPicture.asset(
-                assetPath,
-                width: 18,
-                height: 18,
-                colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-              ),
-            ),
-          ),
         ),
       ),
     );
@@ -665,20 +734,34 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
                                           }
                                         });
                                       },
-                                selectedColor: Theme.of(context).colorScheme.primaryContainer,
-                                checkmarkColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                                selectedColor: Theme.of(
+                                  context,
+                                ).colorScheme.primaryContainer,
+                                checkmarkColor: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
                                 labelStyle: TextStyle(
                                   fontWeight: FontWeight.w700,
                                   color: _selectedSkillIds.contains(skill.id)
-                                      ? Theme.of(context).colorScheme.onPrimaryContainer
-                                      : Theme.of(context).textTheme.bodyMedium?.color,
+                                      ? Theme.of(
+                                          context,
+                                        ).colorScheme.onPrimaryContainer
+                                      : Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium?.color,
                                 ),
-                                backgroundColor: Theme.of(context).colorScheme.surface,
+                                backgroundColor: Theme.of(
+                                  context,
+                                ).colorScheme.surface,
                                 side: BorderSide(
-                                  color: Theme.of(context).colorScheme.outlineVariant,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
                                 ),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.pill,
+                                  ),
                                 ),
                               ),
                             )
@@ -756,7 +839,7 @@ class _MemberHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-  final cs = theme.colorScheme;
+    final cs = theme.colorScheme;
     final titleColor = theme.textTheme.titleMedium?.color;
     final mutedColor = theme.textTheme.bodySmall?.color?.withValues(
       alpha: 0.78,
@@ -769,6 +852,7 @@ class _MemberHeader extends StatelessWidget {
           _MemberAvatar(
             imageUrl: member.profileImage,
             fullName: member.fullName,
+            role: member.projectRole,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -866,35 +950,51 @@ class _PermissionCard extends StatelessWidget {
 class _MemberAvatar extends StatelessWidget {
   final String? imageUrl;
   final String fullName;
+  final ProjectMemberRole? role;
 
-  const _MemberAvatar({required this.imageUrl, required this.fullName});
+  const _MemberAvatar({
+    required this.imageUrl,
+    required this.fullName,
+    this.role,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ringColor = switch (role) {
+      ProjectMemberRole.owner => cs.tertiary,
+      ProjectMemberRole.admin => cs.primary,
+      ProjectMemberRole.member || null => null,
+    };
 
-    if (UrlUtils.isValidNetworkUrl(imageUrl)) {
-      return CircleAvatar(
-        radius: 26,
-        backgroundImage: appCachedImageProvider(imageUrl),
-      );
-    }
+    final avatar = UrlUtils.isValidNetworkUrl(imageUrl)
+        ? CircleAvatar(
+            radius: 26,
+            backgroundImage: appCachedImageProvider(imageUrl),
+          )
+        : CircleAvatar(
+            radius: 26,
+            backgroundColor: cs.primaryContainer,
+            child: Text(
+              (fullName.trim().isEmpty ? '?' : fullName.trim()[0])
+                  .toUpperCase(),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: cs.primary,
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+              ),
+            ),
+          );
 
-    final initial = fullName.trim().isEmpty ? '?' : fullName.trim()[0];
-    return CircleAvatar(
-      radius: 26,
-      backgroundColor: isDark
-          ? cs.primaryContainer
-          : cs.primaryContainer,
-      child: Text(
-        initial.toUpperCase(),
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: cs.primary,
-          fontWeight: FontWeight.w700,
-          fontSize: 18,
-        ),
+    if (ringColor == null) return avatar;
+
+    return Container(
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: ringColor, width: 2),
       ),
+      child: avatar,
     );
   }
 }
@@ -921,9 +1021,9 @@ class _RoleBadge extends StatelessWidget {
       ),
       child: Text(
         role.label,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: foreground,
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.labelMedium?.copyWith(color: foreground),
       ),
     );
   }
@@ -938,25 +1038,19 @@ class _SkillTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: muted
-            ? (isDark ? cs.surface : cs.surfaceContainer)
-            : (isDark ? cs.surfaceContainer : cs.surfaceContainerLow),
+        color: muted ? cs.surfaceContainer : cs.primaryContainer,
         borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(
-          color: isDark ? cs.outlineVariant : cs.outlineVariant,
-        ),
+        border: muted ? Border.all(color: cs.outlineVariant) : null,
       ),
       child: Text(
         label,
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: muted
-              ? cs.onSurfaceVariant
-              : (isDark ? cs.outlineVariant : cs.outlineVariant),
+          color: muted ? cs.onSurfaceVariant : cs.onPrimaryContainer,
+          fontWeight: muted ? FontWeight.w500 : FontWeight.w700,
         ),
       ),
     );
@@ -1005,24 +1099,18 @@ class _InlineErrorMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? cs.errorContainer : cs.errorContainer,
+        color: cs.errorContainer,
         borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(
-          color: cs.error.withValues(alpha: 0.35),
-        ),
+        border: Border.all(color: cs.error.withValues(alpha: 0.35)),
       ),
       child: Text(
         message,
-        style: TextStyle(
-          color: cs.error,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(color: cs.error, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -1036,22 +1124,19 @@ class _InlineHint extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? cs.surface : cs.surfaceContainer,
+        color: cs.surfaceContainer,
         borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(
-          color: isDark ? cs.outlineVariant : cs.outlineVariant,
-        ),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Text(
         message,
         style: TextStyle(
-          color: isDark ? cs.onSurfaceVariant : cs.onSurfaceVariant,
+          color: cs.onSurfaceVariant,
           fontWeight: FontWeight.w600,
         ),
       ),

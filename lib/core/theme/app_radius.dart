@@ -1,6 +1,6 @@
 abstract final class AppRadius {
   static const double badge       = 8;    // chips, tags pequenas
-  static const double input       = 14;   // padrão único: campos e botões de formulário
+  static const double input       = 999;  // padrão único: campos e botões de formulário
   static const double card        = 16;   // cards padrão
   static const double cardLarge   = 20;   // cards grandes
   static const double bottomSheet = 24;   // bottom sheets deslizantes

@@ -15,7 +15,7 @@ BoxDecoration appCardDecoration(
     color: color ?? (cs.surfaceContainerLow),
     borderRadius: BorderRadius.circular(radius),
     border: Border.all(
-      color: borderColor ?? (cs.outline),
+      color: borderColor ?? (cs.outlineVariant),
     ),
     boxShadow: boxShadow ?? [
       BoxShadow(

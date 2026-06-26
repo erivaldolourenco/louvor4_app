@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/ui/app_feedback.dart';
 import '../cubit/project_cubit.dart';
 import '../cubit/project_state.dart';
 import '../widgets/project_selector_bottom_sheet.dart';
 import 'music_project_overview_page.dart';
 
 class MusicProjectsTabPage extends StatelessWidget {
-  const MusicProjectsTabPage({super.key});
+  final VoidCallback? onGoHome;
+
+  const MusicProjectsTabPage({super.key, this.onGoHome});
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +28,15 @@ class MusicProjectsTabPage extends StatelessWidget {
           key: ValueKey(activeProject.id),
           projectId: activeProject.id,
           embedded: true,
+          onLeaveProject: () {
+            AppFeedback.showSuccess('Você saiu do projeto com sucesso.');
+            context.read<ProjectCubit>().loadProjects(force: true);
+            onGoHome?.call();
+          },
+          onDeleteProject: () {
+            context.read<ProjectCubit>().loadProjects(force: true);
+            onGoHome?.call();
+          },
         );
       },
     );

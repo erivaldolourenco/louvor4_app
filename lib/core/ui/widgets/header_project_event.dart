@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'app_cached_network_image.dart';
+import '../../theme/app_radius.dart';
 import '../../utils/url_utils.dart';
 
 class HeaderProjectEvent extends StatelessWidget {
@@ -25,7 +26,7 @@ class HeaderProjectEvent extends StatelessWidget {
       expandedHeight: 64,
       pinned: true,
       stretch: true,
-      backgroundColor: cs.primary,
+      backgroundColor: cs.surface,
       foregroundColor: cs.onPrimary,
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -58,33 +59,52 @@ class HeaderProjectEvent extends StatelessWidget {
         ],
       ),
       actions: actions,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (UrlUtils.isValidNetworkUrl(backgroundImageUrl))
-              AppCachedNetworkImage(imageUrl: backgroundImageUrl!, fit: BoxFit.cover)
-            else
-              Container(
-                color: cs.primaryContainer,
-                child: Center(
-                  child: Icon(
-                    Icons.multitrack_audio_rounded,
-                    color: cs.onPrimaryContainer.withValues(alpha: 0.5),
-                    size: 58,
+      flexibleSpace: ClipRRect(
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(AppRadius.cardLarge),
+          bottomRight: Radius.circular(AppRadius.cardLarge),
+        ),
+        child: FlexibleSpaceBar(
+          background: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (UrlUtils.isValidNetworkUrl(backgroundImageUrl))
+                AppCachedNetworkImage(
+                  imageUrl: backgroundImageUrl!,
+                  fit: BoxFit.cover,
+                )
+              else
+                Container(
+                  color: cs.primaryContainer,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: cs.primary.withValues(alpha: 0.12),
+                      ),
+                      child: Icon(
+                        Icons.multitrack_audio_rounded,
+                        color: cs.onPrimaryContainer.withValues(alpha: 0.7),
+                        size: 40,
+                      ),
+                    ),
+                  ),
+                ),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      cs.primary.withValues(alpha: 0.0),
+                      cs.scrim.withValues(alpha: 0.7),
+                    ],
                   ),
                 ),
               ),
-            const DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0x8A000000), Color(0xCC000000)],
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
