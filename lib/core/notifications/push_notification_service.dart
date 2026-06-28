@@ -8,6 +8,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../network/api_client.dart';
+import '../network/api_error_message.dart';
 import '../storage/token_storage.dart';
 import '../ui/app_feedback.dart';
 
@@ -201,18 +202,11 @@ class PushNotificationService {
     return generated;
   }
 
-  String _extractApiErrorMessage(DioException e) {
-    final data = e.response?.data;
-    if (data is Map<String, dynamic>) {
-      final msg =
-          data['message'] ?? data['error'] ?? data['detail'] ?? data['title'];
-      if (msg != null && msg.toString().trim().isNotEmpty) {
-        return msg.toString();
-      }
-    }
-    if (data is String && data.trim().isNotEmpty) return data;
-    return 'Falha ao registrar dispositivo para notificações.';
-  }
+  String _extractApiErrorMessage(DioException e) =>
+      extractApiErrorMessage(
+        e,
+        fallback: 'Falha ao registrar dispositivo para notificações.',
+      );
 
   String get _platform {
     if (kIsWeb) return 'WEB';

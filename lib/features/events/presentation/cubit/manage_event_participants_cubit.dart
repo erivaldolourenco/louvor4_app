@@ -48,11 +48,11 @@ class ManageEventParticipantsCubit extends Cubit<ManageEventParticipantsState> {
           clearErrorMessage: true,
         ),
       );
-    } catch (_) {
+    } catch (e) {
       emit(
         state.copyWith(
           status: ManageEventParticipantsStatus.failure,
-          errorMessage: 'Não foi possível carregar os membros do projeto.',
+          errorMessage: e.toString().replaceFirst('Exception: ', ''),
         ),
       );
     }
@@ -148,11 +148,11 @@ class ManageEventParticipantsCubit extends Cubit<ManageEventParticipantsState> {
         ),
       );
       return true;
-    } catch (_) {
+    } catch (e) {
       emit(
         state.copyWith(
           status: ManageEventParticipantsStatus.failure,
-          errorMessage: 'Não foi possível salvar a escala do evento.',
+          errorMessage: e.toString().replaceFirst('Exception: ', ''),
         ),
       );
       return false;

@@ -135,10 +135,10 @@ class _EditSongPageState extends State<EditSongPage> {
             widget.songId,
             _selectedAudioFile!.path!,
           );
-        } catch (_) {
+        } catch (e) {
           if (!mounted) return;
           AppFeedback.showError(
-            "Música salva, mas erro ao enviar áudio de referência.",
+            e.toString().replaceFirst('Exception: ', ''),
           );
           Navigator.of(context).pop(true);
           return;

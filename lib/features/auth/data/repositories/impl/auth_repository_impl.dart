@@ -4,6 +4,7 @@ import 'package:louvor4_app/features/auth/domain/entities/forgot_password_channe
 import 'package:louvor4_app/features/auth/domain/exceptions/auth_request_exception.dart';
 
 import '../../../../../core/network/api_client.dart';
+import '../../../../../core/network/api_error_message.dart';
 import '../../../../../core/storage/token_storage.dart';
 import '../../dtos/login_response_dto.dart';
 import '../../../domain/entities/create_user_input_entity.dart';
@@ -129,7 +130,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   String _extractApiErrorMessage(DioException e) {
-    final data = e.response?.data;
+    if (e.response == null) return extractApiErrorMessage(e);
+
+    final data = e.response!.data;
     if (data is Map<String, dynamic>) {
       final message =
           data['detail'] ?? data['message'] ?? data['error'] ?? data['title'];

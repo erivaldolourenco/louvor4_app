@@ -50,11 +50,11 @@ class UserCubit extends Cubit<UserState> {
         ),
       );
       return true;
-    } catch (_) {
+    } catch (e) {
       emit(
         state.copyWith(
           isUploadingImage: false,
-          errorMessage: 'Não foi possível atualizar a imagem do perfil.',
+          errorMessage: e.toString().replaceFirst('Exception: ', ''),
         ),
       );
       return false;

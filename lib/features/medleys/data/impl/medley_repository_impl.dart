@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_error_message.dart';
 import '../../domain/entities/create_medley_input_entity.dart';
 import '../../domain/entities/medley_entity.dart';
 import '../medley_repository.dart';
@@ -109,24 +110,6 @@ class MedleyRepositoryImpl implements MedleyRepository {
   String _extractApiErrorMessage(
     DioException error, {
     String fallback = 'Erro inesperado.',
-  }) {
-    final data = error.response?.data;
-
-    if (data is Map<String, dynamic>) {
-      final message = data['detail'] ?? data['message'] ?? data['error'];
-      if (message != null && message.toString().trim().isNotEmpty) {
-        return message.toString();
-      }
-    }
-
-    if (data is Map) {
-      final map = Map<String, dynamic>.from(data);
-      final message = map['detail'] ?? map['message'] ?? map['error'];
-      if (message != null && message.toString().trim().isNotEmpty) {
-        return message.toString();
-      }
-    }
-
-    return error.message ?? fallback;
-  }
+  }) =>
+      extractApiErrorMessage(error, fallback: fallback);
 }

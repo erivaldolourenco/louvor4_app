@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:louvor4_app/core/network/api_client.dart';
+import 'package:louvor4_app/core/network/api_error_message.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/music_project_entity.dart';
 
 import '../../domain/entities/create_user_unavailability_input_entity.dart';
@@ -98,7 +99,9 @@ class UserUnavailabilityRepositoryImpl implements UserUnavailabilityRepository {
     DioException error, {
     required String fallback,
   }) {
-    final data = error.response?.data;
+    if (error.response == null) return extractApiErrorMessage(error, fallback: fallback);
+
+    final data = error.response!.data;
 
     if (data is Map<String, dynamic>) {
       final nestedError = data['error'];

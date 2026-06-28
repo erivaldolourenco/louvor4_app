@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_error_message.dart';
 import '../../domain/entities/add_project_member_input.dart';
 import '../../domain/entities/create_project_event_input.dart';
 import '../../domain/entities/create_music_project_input.dart';
@@ -322,21 +323,7 @@ class MusicProjectsRepositoryImpl implements MusicProjectsRepository {
 
   String _extractApiErrorMessage(
     DioException e, {
-    String fallback = 'Erro inesperado',
-  }) {
-    final data = e.response?.data;
-
-    if (data is Map<String, dynamic>) {
-      return (data['detail'] ?? data['message'] ?? data['details'] ?? fallback)
-          .toString();
-    }
-
-    if (data is Map) {
-      final map = Map<String, dynamic>.from(data);
-      return (map['detail'] ?? map['message'] ?? map['details'] ?? fallback)
-          .toString();
-    }
-
-    return e.message ?? fallback;
-  }
+    String fallback = 'Erro inesperado.',
+  }) =>
+      extractApiErrorMessage(e, fallback: fallback);
 }

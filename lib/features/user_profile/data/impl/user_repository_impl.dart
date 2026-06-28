@@ -4,6 +4,7 @@ import 'package:louvor4_app/features/user_profile/domain/entities/update_user_in
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_error_message.dart';
 
 class UserRepositoryImpl implements UserRepository {
   final Dio _dio;
@@ -68,24 +69,6 @@ class UserRepositoryImpl implements UserRepository {
   String _extractApiErrorMessage(
     DioException error, {
     required String fallback,
-  }) {
-    final data = error.response?.data;
-
-    if (data is Map<String, dynamic>) {
-      final message = data['detail'] ?? data['message'];
-      if (message != null && message.toString().trim().isNotEmpty) {
-        return message.toString();
-      }
-    }
-
-    if (data is Map) {
-      final map = Map<String, dynamic>.from(data);
-      final message = map['detail'] ?? map['message'];
-      if (message != null && message.toString().trim().isNotEmpty) {
-        return message.toString();
-      }
-    }
-
-    return error.message ?? fallback;
-  }
+  }) =>
+      extractApiErrorMessage(error, fallback: fallback);
 }

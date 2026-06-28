@@ -3,6 +3,7 @@ import 'package:louvor4_app/features/events/domain/entities/skill_entity.dart';
 import 'package:louvor4_app/features/songs/domain/entities/song_entity.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_error_message.dart';
 import '../../domain/entities/event_detail_entity.dart';
 import '../../domain/entities/event_participant_input_entity.dart';
 import '../../domain/entities/event_entity.dart';
@@ -247,24 +248,6 @@ class EventsRepositoryImpl implements EventsRepository {
   String _extractApiErrorMessage(
     DioException error, {
     String fallback = 'Erro inesperado.',
-  }) {
-    final data = error.response?.data;
-
-    if (data is Map<String, dynamic>) {
-      final message = data['detail'] ?? data['message'] ?? data['details'];
-      if (message != null && message.toString().trim().isNotEmpty) {
-        return message.toString();
-      }
-    }
-
-    if (data is Map) {
-      final map = Map<String, dynamic>.from(data);
-      final message = map['detail'] ?? map['message'] ?? map['details'];
-      if (message != null && message.toString().trim().isNotEmpty) {
-        return message.toString();
-      }
-    }
-
-    return error.message ?? fallback;
-  }
+  }) =>
+      extractApiErrorMessage(error, fallback: fallback);
 }

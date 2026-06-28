@@ -39,11 +39,11 @@ class CreateMusicProjectCubit extends Cubit<CreateMusicProjectState> {
         ),
       );
       return null;
-    } catch (_) {
+    } catch (e) {
       emit(
         state.copyWith(
           status: CreateMusicProjectStatus.error,
-          errorMessage: 'Não foi possível criar o projeto.',
+          errorMessage: e.toString().replaceFirst('Exception: ', ''),
           errorStatusCode: null,
         ),
       );

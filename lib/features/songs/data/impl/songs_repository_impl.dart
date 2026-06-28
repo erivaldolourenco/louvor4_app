@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_error_message.dart';
 import '../../domain/entities/song_entity.dart';
 import '../songs_repository.dart';
 
@@ -82,15 +83,6 @@ class SongsRepositoryImpl implements SongsRepository {
     }
   }
 
-  String _extractApiErrorMessage(DioException e) {
-    final data = e.response?.data;
-    if (data is Map<String, dynamic>) {
-      final message = data['detail'] ?? data['message'] ?? data['error'];
-      if (message != null && message.toString().trim().isNotEmpty) {
-        return message.toString();
-      }
-    }
-
-    return 'Não foi possível concluir a operação (${e.response?.statusCode ?? 'sem status'}).';
-  }
+  String _extractApiErrorMessage(DioException e) =>
+      extractApiErrorMessage(e);
 }
