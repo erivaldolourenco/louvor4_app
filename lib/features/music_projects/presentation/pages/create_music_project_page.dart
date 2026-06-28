@@ -162,11 +162,13 @@ class _CreateMusicProjectViewState extends State<_CreateMusicProjectView> {
     if (!mounted || project == null) {
       final state = cubit.state;
       if (state.status == CreateMusicProjectStatus.error) {
-        if (state.errorStatusCode == 409 &&
-            (state.errorMessage?.trim().isNotEmpty ?? false)) {
-          AppFeedback.showInfo(state.errorMessage!);
+        final message = state.errorMessage?.trim().isNotEmpty == true
+            ? state.errorMessage!
+            : 'Não foi possível criar o projeto.';
+        if (state.errorStatusCode == 409) {
+          AppFeedback.showInfo(message);
         } else {
-          AppFeedback.showError('Não foi possível criar o projeto.');
+          AppFeedback.showError(message);
         }
       }
       return;

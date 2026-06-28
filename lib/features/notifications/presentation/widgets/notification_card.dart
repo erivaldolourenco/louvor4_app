@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_radius.dart';
+import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../domain/entities/notification_item_entity.dart';
 
@@ -40,7 +42,7 @@ class NotificationCard extends StatelessWidget {
     final badgeColor = notification.isRead ? cs.onSurfaceVariant : cs.primary;
 
     return AppCardSurface(
-      radius: 18,
+      radius: AppRadius.cardLarge,
       color: highlightColor,
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -107,8 +109,9 @@ class NotificationCard extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: OutlinedButton(
+                    child: AppSecondaryButton(
                       onPressed: isBusy ? null : onDecline,
+                      height: 44,
                       child: isDeclining
                           ? const SizedBox(
                               width: 18,
@@ -120,8 +123,9 @@ class NotificationCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: FilledButton(
+                    child: AppPrimaryButton(
                       onPressed: isBusy ? null : onAccept,
+                      height: 44,
                       child: isAccepting
                           ? SizedBox(
                               width: 18,

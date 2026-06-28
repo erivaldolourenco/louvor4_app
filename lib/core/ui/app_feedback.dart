@@ -5,42 +5,51 @@ class AppFeedback {
 
   static final navigatorKey = GlobalKey<NavigatorState>();
 
-  static void showError(String message) {
-    final context = navigatorKey.currentContext;
-    if (context == null) return;
-    final cs = Theme.of(context).colorScheme;
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      SnackBar(
-        content: Text(message, style: TextStyle(color: cs.onError)),
-        backgroundColor: cs.error,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
+  static void showError(String message) =>
+      _show(message, icon: Icons.error_outline_rounded, type: _Type.error);
 
-  static void showSuccess(String message) {
-    final context = navigatorKey.currentContext;
-    if (context == null) return;
-    final cs = Theme.of(context).colorScheme;
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      SnackBar(
-        content: Text(message, style: TextStyle(color: cs.onPrimaryContainer)),
-        backgroundColor: cs.primaryContainer,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
+  static void showSuccess(String message) =>
+      _show(message, icon: Icons.check_circle_outline_rounded, type: _Type.success);
 
-  static void showInfo(String message) {
+  static void showInfo(String message) =>
+      _show(message, icon: Icons.info_outline_rounded, type: _Type.info);
+
+  static void _show(String message, {required IconData icon, required _Type type}) {
     final context = navigatorKey.currentContext;
     if (context == null) return;
     final cs = Theme.of(context).colorScheme;
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      SnackBar(
-        content: Text(message, style: TextStyle(color: cs.onPrimary)),
-        backgroundColor: cs.primary,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+
+    final (bg, fg) = switch (type) {
+      _Type.error   => (cs.errorContainer, cs.onErrorContainer),
+      _Type.success => (cs.primaryContainer, cs.onPrimaryContainer),
+      _Type.info    => (cs.secondaryContainer, cs.onSecondaryContainer),
+    };
+
+    ScaffoldMessenger.maybeOf(context)
+      ?..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: bg,
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          content: Row(
+            children: [
+              Icon(icon, color: fg, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: TextStyle(color: fg, fontWeight: FontWeight.w500),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
   }
 }
+
+enum _Type { error, success, info }
