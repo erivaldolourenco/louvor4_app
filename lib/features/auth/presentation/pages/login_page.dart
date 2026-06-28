@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_radius.dart';
+import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/notifications/push_notification_service.dart';
 import '../../../root/presentation/pages/root_page.dart';
@@ -90,22 +91,21 @@ class _LoginViewState extends State<_LoginView> {
                       return;
                     }
 
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(state.errorMessage ?? 'Erro no login'),
-                      ),
+                    AppFeedback.showError(
+                      state.errorMessage ?? 'Erro no login',
                     );
                   }
 
                   if (state.status == LoginStatus.success) {
                     final name = state.auth?.user.firstName ?? '';
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Bem-vindo $name ✅')),
-                    );
 
                     Navigator.of(
                       context,
                     ).pushReplacementNamed(RootPage.routeName);
+
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      AppFeedback.showSuccess('Bem-vindo, $name!');
+                    });
 
                     unawaited(
                       Future(() async {
