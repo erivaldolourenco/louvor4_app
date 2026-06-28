@@ -103,7 +103,7 @@ class _LoginViewState extends State<_LoginView> {
                       context,
                     ).pushReplacementNamed(RootPage.routeName);
 
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Future.delayed(const Duration(milliseconds: 300), () {
                       AppFeedback.showSuccess('Bem-vindo, $name!');
                     });
 
