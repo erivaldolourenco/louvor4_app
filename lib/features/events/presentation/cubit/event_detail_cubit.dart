@@ -23,8 +23,18 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     : super(const EventDetailState());
 
   Future<void> load(String eventId, {bool force = false}) async {
+    // Carrega o usuário primeiro para validar se o cache pertence a ele.
+    // Isso evita que um usuário veja dados em cache de outro (ex: admin → não-admin).
+    final currentUser = await _safeLoad(
+      () => _userRepository.getUserDetail(),
+      fallback: null,
+      debugLabel: 'usuário atual',
+    );
+
     final cached = !force ? _cacheByEventId[eventId] : null;
-    if (cached != null && !cached.isExpired) {
+    if (cached != null &&
+        !cached.isExpired &&
+        cached.currentUser?.id == currentUser?.id) {
       _projectMembers = cached.projectMembers;
       _currentUser = cached.currentUser;
       emit(cached.state);
@@ -73,11 +83,6 @@ class EventDetailCubit extends Cubit<EventDetailState> {
               debugLabel: 'membros do projeto',
             )
           : const <ProjectMemberEntity>[];
-      final currentUser = await _safeLoad(
-        () => _userRepository.getUserDetail(),
-        fallback: null,
-        debugLabel: 'usuário atual',
-      );
 
       _projectMembers = projectMembers;
       _currentUser = currentUser;
@@ -96,6 +101,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
           participants: participants,
           currentUser: currentUser,
         ),
+        currentUserId: currentUser?.id,
         participantsLoadFailed: participantsFailed,
         songsLoadFailed: songsFailed,
       );

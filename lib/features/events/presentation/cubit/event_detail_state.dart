@@ -16,6 +16,7 @@ class EventDetailState extends Equatable {
   final Map<String, String> skillsMap;
   final bool isProjectAdmin;
   final bool canAddSongs;
+  final String? currentUserId;
   final String? deletingSongId;
   final bool participantsLoadFailed;
   final bool songsLoadFailed;
@@ -30,6 +31,7 @@ class EventDetailState extends Equatable {
     this.skillsMap = const {},
     this.isProjectAdmin = false,
     this.canAddSongs = false,
+    this.currentUserId,
     this.deletingSongId,
     this.participantsLoadFailed = false,
     this.songsLoadFailed = false,
@@ -46,6 +48,7 @@ class EventDetailState extends Equatable {
     Map<String, String>? skillsMap,
     bool? isProjectAdmin,
     bool? canAddSongs,
+    String? currentUserId,
     String? deletingSongId,
     bool clearDeletingSongId = false,
     bool? participantsLoadFailed,
@@ -63,6 +66,7 @@ class EventDetailState extends Equatable {
       skillsMap: skillsMap ?? this.skillsMap,
       isProjectAdmin: isProjectAdmin ?? this.isProjectAdmin,
       canAddSongs: canAddSongs ?? this.canAddSongs,
+      currentUserId: currentUserId ?? this.currentUserId,
       deletingSongId: clearDeletingSongId
           ? null
           : (deletingSongId ?? this.deletingSongId),
@@ -70,6 +74,14 @@ class EventDetailState extends Equatable {
           participantsLoadFailed ?? this.participantsLoadFailed,
       songsLoadFailed: songsLoadFailed ?? this.songsLoadFailed,
     );
+  }
+
+  bool canDeleteSong(EventSong song) {
+    if (isProjectAdmin) return true;
+    if (!canAddSongs) return false;
+    final userId = currentUserId;
+    if (userId == null || userId.isEmpty) return false;
+    return song.addedByUserId == userId;
   }
 
   @override
@@ -83,6 +95,7 @@ class EventDetailState extends Equatable {
     skillsMap,
     isProjectAdmin,
     canAddSongs,
+    currentUserId,
     deletingSongId,
     participantsLoadFailed,
     songsLoadFailed,

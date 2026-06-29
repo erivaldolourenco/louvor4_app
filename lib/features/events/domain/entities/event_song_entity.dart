@@ -12,6 +12,7 @@ class EventSong {
   final String? notes;
   final String? referenceAudioUrl;
   final String addedBy;
+  final String? addedByUserId;
   final SetlistItemType type;
   final MedleyEntity? medleyEntity;
 
@@ -25,6 +26,7 @@ class EventSong {
     this.notes,
     this.referenceAudioUrl,
     required this.addedBy,
+    this.addedByUserId,
     this.type = SetlistItemType.song,
     this.medleyEntity,
   });
@@ -48,6 +50,7 @@ class EventSong {
         artist: medleyEntity.description,
         notes: medleyEntity.notes ?? json['notes']?.toString(),
         addedBy: json['addedBy']?.toString() ?? '',
+        addedByUserId: json['addedByUserId']?.toString(),
         type: SetlistItemType.medley,
         medleyEntity: medleyEntity,
       );
@@ -67,6 +70,7 @@ class EventSong {
       notes: json['notes']?.toString(),
       referenceAudioUrl: song['referenceAudioUrl']?.toString(),
       addedBy: json['addedBy']?.toString() ?? '',
+      addedByUserId: json['addedByUserId']?.toString(),
     );
   }
 

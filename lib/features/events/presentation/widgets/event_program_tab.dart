@@ -36,60 +36,69 @@ class EventProgramTab extends StatelessWidget {
         }
 
         const header = SizedBox(height: 4);
+        final cubit = context.read<EventProgramCubit>();
 
         if (state.items.isEmpty) {
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 36),
-            children: [
-              header,
-              _EmptyProgramState(
-                isAdmin: isAdmin,
-                onAdd: () => _showTextItemDialog(context),
-              ),
-            ],
+          return RefreshIndicator(
+            onRefresh: cubit.loadProgram,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 36),
+              children: [
+                header,
+                _EmptyProgramState(
+                  isAdmin: isAdmin,
+                  onAdd: () => _showTextItemDialog(context),
+                ),
+              ],
+            ),
           );
         }
 
-        return ReorderableListView(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 36),
-          header: header,
-          buildDefaultDragHandles: false,
-          onReorder: (oldIndex, newIndex) {
-            if (!isAdmin) return;
-            if (newIndex > oldIndex) newIndex -= 1;
-            final ids = state.items.map((i) => i.id).toList();
-            final id = ids.removeAt(oldIndex);
-            ids.insert(newIndex, id);
-            context.read<EventProgramCubit>().reorder(ids);
-          },
-          children: [
-            for (int i = 0; i < state.items.length; i++)
-              FadeSlideIn(
-                key: ValueKey(state.items[i].id),
-                delay: staggerDelay(i),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _ProgramItemCard(
-                    item: state.items[i],
-                    position: i + 1,
-                    isAdmin: isAdmin,
-                    itemIndex: i,
-                    onEdit: isAdmin && state.items[i] is TextProgramItemEntity
-                        ? () => _showTextItemDialog(
-                            context,
-                            item: state.items[i] as TextProgramItemEntity,
-                          )
-                        : null,
-                    onDelete: isAdmin && state.items[i] is TextProgramItemEntity
-                        ? () => _confirmDelete(
-                            context,
-                            state.items[i] as TextProgramItemEntity,
-                          )
-                        : null,
+        return RefreshIndicator(
+          onRefresh: cubit.loadProgram,
+          child: ReorderableListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 36),
+            header: header,
+            buildDefaultDragHandles: false,
+            onReorder: (oldIndex, newIndex) {
+              if (!isAdmin) return;
+              if (newIndex > oldIndex) newIndex -= 1;
+              final ids = state.items.map((i) => i.id).toList();
+              final id = ids.removeAt(oldIndex);
+              ids.insert(newIndex, id);
+              cubit.reorder(ids);
+            },
+            children: [
+              for (int i = 0; i < state.items.length; i++)
+                FadeSlideIn(
+                  key: ValueKey(state.items[i].id),
+                  delay: staggerDelay(i),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _ProgramItemCard(
+                      item: state.items[i],
+                      position: i + 1,
+                      isAdmin: isAdmin,
+                      itemIndex: i,
+                      onEdit: isAdmin && state.items[i] is TextProgramItemEntity
+                          ? () => _showTextItemDialog(
+                              context,
+                              item: state.items[i] as TextProgramItemEntity,
+                            )
+                          : null,
+                      onDelete: isAdmin && state.items[i] is TextProgramItemEntity
+                          ? () => _confirmDelete(
+                              context,
+                              state.items[i] as TextProgramItemEntity,
+                            )
+                          : null,
+                    ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         );
       },
     );

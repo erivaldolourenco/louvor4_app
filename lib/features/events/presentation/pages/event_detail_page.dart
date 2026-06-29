@@ -112,7 +112,7 @@ class _EventDetailViewState extends State<_EventDetailView>
         builder: (context, state) {
           if (state.status != EventDetailStatus.success ||
               state.event == null ||
-              !state.isProjectAdmin)
+              (!state.isProjectAdmin && !state.canAddSongs))
             return const SizedBox.shrink();
           return _buildFab(state);
         },
@@ -211,18 +211,14 @@ class _EventDetailViewState extends State<_EventDetailView>
               children: [
                 _ParticipantsTab(
                   state: state,
-                  onRefresh: () => context.read<EventDetailCubit>().load(
-                    widget.eventId,
-                    force: true,
-                  ),
+                  onRefresh: () =>
+                      context.read<EventDetailCubit>().refreshParticipants(),
                 ),
                 _SongsTab(
                   state: state,
                   onRemoveSong: _onRemoveSong,
-                  onRefresh: () => context.read<EventDetailCubit>().load(
-                    widget.eventId,
-                    force: true,
-                  ),
+                  onRefresh: () =>
+                      context.read<EventDetailCubit>().refreshSongs(),
                 ),
                 EventProgramTab(isAdmin: state.isProjectAdmin),
               ],
@@ -336,12 +332,18 @@ class _EventDetailViewState extends State<_EventDetailView>
         final index = _tabController.index;
 
         final action = switch (index) {
-          0 => (
+          0 when state.isProjectAdmin => (
             icon: Icons.settings_rounded,
             onPressed: () => _onManageSchedule(state),
           ),
-          1 => (icon: Icons.add_rounded, onPressed: () => _onAddSongs(state)),
-          2 => (icon: Icons.add_rounded, onPressed: _onAddProgramItem),
+          1 when state.isProjectAdmin || state.canAddSongs => (
+            icon: Icons.add_rounded,
+            onPressed: () => _onAddSongs(state),
+          ),
+          2 when state.isProjectAdmin => (
+            icon: Icons.add_rounded,
+            onPressed: _onAddProgramItem,
+          ),
           _ => null,
         };
 
@@ -628,7 +630,15 @@ class _ParticipantsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<EventDetailCubit>();
 
+    return RefreshIndicator(
+      onRefresh: () async => onRefresh(),
+      child: _buildList(context, cubit),
+    );
+  }
+
+  Widget _buildList(BuildContext context, EventDetailCubit cubit) {
     return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(16, 2, 16, 36),
       children: [
         const SizedBox(height: 4),
@@ -737,31 +747,35 @@ class _SongsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final groupedSongs = _groupSongsByAddedBy();
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 2, 16, 36),
-      children: [
-        const SizedBox(height: 4),
-        if (state.songsLoadFailed && state.songs.isEmpty)
-          _RetryTabState(
-            icon: Icons.music_off_rounded,
-            title: 'Não foi possível carregar o repertório',
-            subtitle: 'Verifique sua conexão e tente novamente.',
-            onRetry: onRefresh,
-          )
-        else if (state.songs.isEmpty)
-          const _EmptyTabState(
-            icon: Icons.music_off_rounded,
-            title: 'Sem músicas',
-            subtitle: 'Ainda não há repertório cadastrado para este evento.',
-          )
-        else
-          ..._buildGroupedSongSections(
-            context,
-            groupedSongs,
-            state,
-            onRemoveSong,
-          ),
-      ],
+    return RefreshIndicator(
+      onRefresh: () async => onRefresh(),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 2, 16, 36),
+        children: [
+          const SizedBox(height: 4),
+          if (state.songsLoadFailed && state.songs.isEmpty)
+            _RetryTabState(
+              icon: Icons.music_off_rounded,
+              title: 'Não foi possível carregar o repertório',
+              subtitle: 'Verifique sua conexão e tente novamente.',
+              onRetry: onRefresh,
+            )
+          else if (state.songs.isEmpty)
+            const _EmptyTabState(
+              icon: Icons.music_off_rounded,
+              title: 'Sem músicas',
+              subtitle: 'Ainda não há repertório cadastrado para este evento.',
+            )
+          else
+            ..._buildGroupedSongSections(
+              context,
+              groupedSongs,
+              state,
+              onRemoveSong,
+            ),
+        ],
+      ),
     );
   }
 
@@ -797,7 +811,7 @@ class _SongsTab extends StatelessWidget {
                   ? MedleyCard(
                       medley: song.medleyEntity!,
                       onDelete:
-                          (state.isProjectAdmin &&
+                          (state.canDeleteSong(song) &&
                               state.deletingSongId != song.id)
                           ? () => onRemoveSong(song.id)
                           : null,
@@ -825,7 +839,7 @@ class _SongsTab extends StatelessWidget {
                           ? () => _launchYoutube(song.youTubeUrl!)
                           : null,
                       onDelete:
-                          (state.isProjectAdmin &&
+                          (state.canDeleteSong(song) &&
                               state.deletingSongId != song.id)
                           ? () => onRemoveSong(song.id)
                           : null,
