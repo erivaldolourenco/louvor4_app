@@ -33,7 +33,8 @@ class ProfilePage extends StatelessWidget {
           appBar: AppBar(title: const Text('Perfil')),
           body: BlocBuilder<UserCubit, UserState>(
             builder: (context, state) {
-              if (state.status == UserStatus.loading) {
+              if (state.status == UserStatus.loading ||
+                  state.status == UserStatus.initial) {
                 return const Center(child: CircularProgressIndicator());
               }
 

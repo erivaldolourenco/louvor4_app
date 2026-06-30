@@ -125,7 +125,8 @@ class _EventDetailViewState extends State<_EventDetailView>
       ),
       body: BlocBuilder<EventDetailCubit, EventDetailState>(
         builder: (context, state) {
-          if (state.status == EventDetailStatus.loading) {
+          if (state.status == EventDetailStatus.loading ||
+              state.status == EventDetailStatus.initial) {
             return const _DetailLoadingState();
           }
 

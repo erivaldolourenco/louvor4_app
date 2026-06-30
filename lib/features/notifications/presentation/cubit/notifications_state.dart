@@ -41,7 +41,8 @@ class NotificationsState extends Equatable {
   });
 
   bool get isInitialLoading =>
-      status == NotificationsStatus.loading && notifications.isEmpty;
+      status == NotificationsStatus.initial ||
+      (status == NotificationsStatus.loading && notifications.isEmpty);
 
   bool get isEmpty =>
       status == NotificationsStatus.success && notifications.isEmpty;

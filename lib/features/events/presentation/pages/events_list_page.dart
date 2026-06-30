@@ -219,7 +219,9 @@ class _UpcomingTab extends StatelessWidget {
       buildWhen: (prev, curr) =>
           prev.status != curr.status || prev.events != curr.events,
       builder: (context, state) {
-        if (state.status == EventsStatus.loading && state.events.isEmpty) {
+        if ((state.status == EventsStatus.initial ||
+                state.status == EventsStatus.loading) &&
+            state.events.isEmpty) {
           return const _EventsLoadingState();
         }
         if (state.status == EventsStatus.failure && state.events.isEmpty) {
