@@ -1,8 +1,12 @@
+import 'dart:typed_data';
+
 import '../domain/entities/program_item_entity.dart';
 import '../domain/entities/program_item_input_entity.dart';
 
 abstract class EventProgramRepository {
   Future<List<ProgramItemEntity>> getProgram(String eventId);
+
+  Future<Uint8List> downloadRoteiroPdf(String eventId);
 
   Future<ProgramItemEntity> createTextItem(
     String eventId,

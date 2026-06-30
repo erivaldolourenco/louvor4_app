@@ -35,69 +35,72 @@ class EventProgramTab extends StatelessWidget {
           );
         }
 
-        const header = SizedBox(height: 4);
         final cubit = context.read<EventProgramCubit>();
+        final cs = Theme.of(context).colorScheme;
 
         if (state.items.isEmpty) {
           return RefreshIndicator(
             onRefresh: cubit.loadProgram,
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 36),
-              children: [
-                header,
-                _EmptyProgramState(
-                  isAdmin: isAdmin,
-                  onAdd: () => _showTextItemDialog(context),
-                ),
-              ],
+            child: Material(
+              color: cs.surfaceContainerLow,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 36),
+                children: [
+                  _EmptyProgramState(
+                    isAdmin: isAdmin,
+                    onAdd: () => _showTextItemDialog(context),
+                  ),
+                ],
+              ),
             ),
           );
         }
 
         return RefreshIndicator(
           onRefresh: cubit.loadProgram,
-          child: ReorderableListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 36),
-            header: header,
-            buildDefaultDragHandles: false,
-            onReorder: (oldIndex, newIndex) {
-              if (!isAdmin) return;
-              if (newIndex > oldIndex) newIndex -= 1;
-              final ids = state.items.map((i) => i.id).toList();
-              final id = ids.removeAt(oldIndex);
-              ids.insert(newIndex, id);
-              cubit.reorder(ids);
-            },
-            children: [
-              for (int i = 0; i < state.items.length; i++)
-                FadeSlideIn(
-                  key: ValueKey(state.items[i].id),
-                  delay: staggerDelay(i),
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _ProgramItemCard(
+          child: Material(
+            color: cs.surfaceContainerLow,
+            child: ReorderableListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(bottom: 36),
+              buildDefaultDragHandles: false,
+              onReorder: (oldIndex, newIndex) {
+                if (!isAdmin) return;
+                if (newIndex > oldIndex) newIndex -= 1;
+                final ids = state.items.map((i) => i.id).toList();
+                final id = ids.removeAt(oldIndex);
+                ids.insert(newIndex, id);
+                cubit.reorder(ids);
+              },
+              children: [
+                for (int i = 0; i < state.items.length; i++)
+                  FadeSlideIn(
+                    key: ValueKey(state.items[i].id),
+                    delay: staggerDelay(i),
+                    child: _ProgramItemTile(
                       item: state.items[i],
                       position: i + 1,
                       isAdmin: isAdmin,
                       itemIndex: i,
+                      showDivider: i < state.items.length - 1,
                       onEdit: isAdmin && state.items[i] is TextProgramItemEntity
                           ? () => _showTextItemDialog(
-                              context,
-                              item: state.items[i] as TextProgramItemEntity,
-                            )
+                                context,
+                                item: state.items[i] as TextProgramItemEntity,
+                              )
                           : null,
-                      onDelete: isAdmin && state.items[i] is TextProgramItemEntity
-                          ? () => _confirmDelete(
-                              context,
-                              state.items[i] as TextProgramItemEntity,
-                            )
-                          : null,
+                      onDelete:
+                          isAdmin && state.items[i] is TextProgramItemEntity
+                              ? () => _confirmDelete(
+                                    context,
+                                    state.items[i] as TextProgramItemEntity,
+                                  )
+                              : null,
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -188,22 +191,24 @@ Future<void> showProgramTextItemDialog(
 }
 
 // ---------------------------------------------------------------------------
-// Item card
+// Item tile (M3 Expressive)
 // ---------------------------------------------------------------------------
 
-class _ProgramItemCard extends StatelessWidget {
+class _ProgramItemTile extends StatelessWidget {
   final ProgramItemEntity item;
   final int position;
   final bool isAdmin;
   final int itemIndex;
+  final bool showDivider;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
-  const _ProgramItemCard({
+  const _ProgramItemTile({
     required this.item,
     required this.position,
     required this.isAdmin,
     required this.itemIndex,
+    required this.showDivider,
     this.onEdit,
     this.onDelete,
   });
@@ -212,238 +217,164 @@ class _ProgramItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+
     final isMusic = item is MusicProgramItemEntity;
     final isMedley = item is MedleyProgramItemEntity;
     final music = isMusic ? item as MusicProgramItemEntity : null;
     final medley = isMedley ? item as MedleyProgramItemEntity : null;
     final text = (!isMusic && !isMedley) ? item as TextProgramItemEntity : null;
-
-    final iconData = isMusic
-        ? Icons.music_note_rounded
-        : isMedley
-        ? Icons.queue_music_rounded
-        : Icons.text_fields_rounded;
-
-    final iconColor = isMusic
-        ? cs.primary
-        : isMedley
-        ? cs.secondary
-        : cs.tertiary;
-
-    final iconBgColor = isMusic
-        ? cs.primaryContainer
-        : isMedley
-        ? cs.secondaryContainer
-        : cs.tertiaryContainer;
-
     final isEditable = text != null;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: cs.surface,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: cs.outlineVariant),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+    final IconData iconData;
+    final Color avatarBgColor;
+    final Color avatarFgColor;
+
+    if (isMusic) {
+      iconData = Icons.music_note_rounded;
+      avatarBgColor = cs.primaryContainer;
+      avatarFgColor = cs.onPrimaryContainer;
+    } else if (isMedley) {
+      iconData = Icons.queue_music_rounded;
+      avatarBgColor = cs.secondaryContainer;
+      avatarFgColor = cs.onSecondaryContainer;
+    } else {
+      iconData = Icons.text_fields_rounded;
+      avatarBgColor = cs.tertiaryContainer;
+      avatarFgColor = cs.onTertiaryContainer;
+    }
+
+    final String titleText = isMusic
+        ? music!.songTitle
+        : isMedley
+        ? medley!.medleyName
+        : text!.title;
+
+    String? subtitleText;
+    if (isMusic && music!.songArtist.isNotEmpty) {
+      subtitleText = music.songArtist;
+    } else if (isMedley && medley!.songs.isNotEmpty) {
+      subtitleText = medley.songs.map((s) => s.title).join(' • ');
+    } else if (text?.description?.isNotEmpty == true) {
+      subtitleText = text!.description;
+    }
+
+    final thumbnailUrl = music?.songYouTubeUrl?.isNotEmpty == true
+        ? YoutubeUtils.getThumbnail(music!.songYouTubeUrl, quality: 'default')
+        : null;
+
+    final Widget avatarFallback = CircleAvatar(
+      radius: 18,
+      backgroundColor: avatarBgColor,
+      child: Icon(iconData, color: avatarFgColor, size: 18),
+    );
+
+    final Widget avatar = thumbnailUrl != null
+        ? ClipOval(
+            child: Image.network(
+              thumbnailUrl,
+              width: 36,
+              height: 36,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => avatarFallback,
+            ),
+          )
+        : avatarFallback;
+
+    Widget trailing = ReorderableDragStartListener(
+      index: itemIndex,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Icon(Icons.drag_handle, color: cs.onSurfaceVariant),
+      ),
+    );
+
+    if (isAdmin && isEditable) {
+      trailing = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton.filledTonal(
+            visualDensity: VisualDensity.compact,
+            style: IconButton.styleFrom(
+              foregroundColor: cs.onSecondaryContainer,
+              backgroundColor: cs.secondaryContainer,
+              shape: const CircleBorder(),
+            ),
+            icon: const Icon(Icons.edit_outlined, size: 18),
+            onPressed: onEdit,
+          ),
+          const SizedBox(width: 4),
+          IconButton.filledTonal(
+            visualDensity: VisualDensity.compact,
+            style: IconButton.styleFrom(
+              foregroundColor: cs.onErrorContainer,
+              backgroundColor: cs.errorContainer,
+              shape: const CircleBorder(),
+            ),
+            icon: const Icon(Icons.delete_outline_rounded, size: 18),
+            onPressed: onDelete,
+          ),
+          const SizedBox(width: 4),
+          ReorderableDragStartListener(
+            index: itemIndex,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Icon(Icons.drag_handle, color: cs.onSurfaceVariant),
+            ),
           ),
         ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _PositionBadge(position: position),
-            const SizedBox(width: 10),
-            if (isMusic &&
-                music!.songYouTubeUrl != null &&
-                music.songYouTubeUrl!.isNotEmpty)
-              ClipRRect(
-                borderRadius: BorderRadius.circular(AppRadius.input),
-                child: Image.network(
-                  YoutubeUtils.getThumbnail(
-                    music.songYouTubeUrl,
-                    quality: 'default',
-                  ),
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, e, stack) => Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: iconBgColor,
-                      borderRadius: BorderRadius.circular(AppRadius.input),
-                    ),
-                    child: Icon(iconData, color: iconColor, size: 20),
-                  ),
-                ),
-              )
-            else
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: iconBgColor,
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                ),
-                child: Icon(iconData, color: iconColor, size: 20),
-              ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    isMusic
-                        ? music!.songTitle
-                        : isMedley
-                        ? medley!.medleyName
-                        : text!.title,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (isMusic)
-                    Text(
-                      music!.songArtist,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                  else if (isMedley && medley!.songs.isNotEmpty)
-                    Text(
-                      medley.songs.map((s) => s.title).join(' • '),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                  else if (text != null &&
-                      text.description != null &&
-                      text.description!.isNotEmpty)
-                    Text(
-                      text.description!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: cs.onSurfaceVariant,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                ],
-              ),
-            ),
-            if (isAdmin) ...[
-              const SizedBox(width: 4),
-              if (isEditable) ...[
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _SmallIconButton(
-                      icon: Icons.edit_outlined,
-                      color: cs.primary,
-                      bgColor: cs.primaryContainer,
-                      onPressed: onEdit,
-                    ),
-                    const SizedBox(width: 4),
-                    _SmallIconButton(
-                      icon: Icons.delete_outline_rounded,
-                      color: cs.error,
-                      bgColor: cs.errorContainer,
-                      onPressed: onDelete,
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 6),
-              ],
-              ReorderableDragStartListener(
-                index: itemIndex,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Icon(
-                    Icons.drag_handle_rounded,
-                    size: 22,
+      );
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          minLeadingWidth: 0,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
+          leading: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 20,
+                child: Text(
+                  '$position',
+                  style: theme.textTheme.labelMedium?.copyWith(
                     color: cs.onSurfaceVariant,
                   ),
+                  textAlign: TextAlign.end,
                 ),
               ),
+              const SizedBox(width: 8),
+              avatar,
             ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PositionBadge extends StatelessWidget {
-  final int position;
-
-  const _PositionBadge({required this.position});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(
-        color: cs.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppRadius.badge),
-        border: Border.all(color: cs.outlineVariant),
-      ),
-      child: Center(
-        child: Text(
-          '$position',
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: cs.onSurfaceVariant,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SmallIconButton extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final Color? bgColor;
-  final VoidCallback? onPressed;
-
-  const _SmallIconButton({
-    required this.icon,
-    required this.color,
-    this.bgColor,
-    this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: bgColor ?? Colors.transparent,
-      borderRadius: BorderRadius.circular(AppRadius.badge),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(AppRadius.badge),
-        onTap: onPressed,
-        child: SizedBox(
-          width: 32,
-          height: 32,
-          child: Icon(
-            icon,
-            size: 18,
-            color: onPressed == null ? color.withValues(alpha: 0.3) : color,
+          title: Text(
+            titleText,
+            style: theme.textTheme.bodyLarge,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
+          subtitle: subtitleText != null
+              ? Text(
+                  subtitleText,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                )
+              : null,
+          trailing: isAdmin ? trailing : null,
         ),
-      ),
+        if (showDivider)
+          Divider(
+            height: 1,
+            indent: 72,
+            endIndent: 16,
+            color: cs.outlineVariant.withValues(alpha: 0.5),
+          ),
+      ],
     );
   }
 }

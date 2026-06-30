@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 
 import '../../../../core/network/api_client.dart';
@@ -74,6 +76,21 @@ class EventProgramRepositoryImpl implements EventProgramRepository {
       await _dio.delete('/events/$eventId/program/$itemId');
     } on DioException catch (e) {
       throw Exception(_extractError(e, fallback: 'Não foi possível remover o item.'));
+    }
+  }
+
+  @override
+  Future<Uint8List> downloadRoteiroPdf(String eventId) async {
+    try {
+      final response = await _dio.get<List<int>>(
+        '/events/$eventId/roteiro/pdf',
+        options: Options(responseType: ResponseType.bytes),
+      );
+      return Uint8List.fromList(response.data ?? []);
+    } on DioException catch (e) {
+      throw Exception(
+        _extractError(e, fallback: 'Não foi possível exportar o roteiro em PDF.'),
+      );
     }
   }
 

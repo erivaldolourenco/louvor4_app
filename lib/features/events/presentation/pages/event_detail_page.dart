@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/song_details_sheet.dart';
@@ -11,6 +14,8 @@ import '../../../../core/ui/widgets/song_list_card.dart';
 import '../../../medleys/presentation/widgets/medley_card.dart';
 import 'package:louvor4_app/features/user_profile/data/impl/user_repository_impl.dart';
 import 'package:louvor4_app/features/user_profile/data/user_repository.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_radius.dart';
@@ -112,8 +117,9 @@ class _EventDetailViewState extends State<_EventDetailView>
         builder: (context, state) {
           if (state.status != EventDetailStatus.success ||
               state.event == null ||
-              (!state.isProjectAdmin && !state.canAddSongs))
+              (!state.isProjectAdmin && !state.canAddSongs)) {
             return const SizedBox.shrink();
+          }
           return _buildFab(state);
         },
       ),
@@ -328,9 +334,48 @@ class _EventDetailViewState extends State<_EventDetailView>
     return AnimatedBuilder(
       animation: _tabController,
       builder: (context, _) {
-        final cs = Theme.of(context).colorScheme;
+        final theme = Theme.of(context);
+        final cs = theme.colorScheme;
         final index = _tabController.index;
 
+        // Aba Roteiro: Speed Dial com opções expandíveis
+        if (index == 2 && state.isProjectAdmin) {
+          return SpeedDial(
+            heroTag: 'event_detail_fab',
+            icon: Icons.add_rounded,
+            activeIcon: Icons.close_rounded,
+            backgroundColor: cs.primaryContainer,
+            foregroundColor: cs.onPrimaryContainer,
+            shape: const CircleBorder(),
+            elevation: 4,
+            children: [
+              SpeedDialChild(
+                child: const Icon(Icons.picture_as_pdf),
+                label: 'Exportar PDF',
+                backgroundColor: cs.secondaryContainer,
+                foregroundColor: cs.onSecondaryContainer,
+                labelStyle: theme.textTheme.labelLarge?.copyWith(
+                  color: cs.onSurface,
+                ),
+                labelBackgroundColor: cs.surfaceContainerHigh,
+                onTap: _onExportPdf,
+              ),
+              SpeedDialChild(
+                child: const Icon(Icons.add),
+                label: 'Adicionar item',
+                backgroundColor: cs.secondaryContainer,
+                foregroundColor: cs.onSecondaryContainer,
+                labelStyle: theme.textTheme.labelLarge?.copyWith(
+                  color: cs.onSurface,
+                ),
+                labelBackgroundColor: cs.surfaceContainerHigh,
+                onTap: _onAddProgramItem,
+              ),
+            ],
+          );
+        }
+
+        // Outras abas: FAB simples (sem alteração)
         final action = switch (index) {
           0 when state.isProjectAdmin => (
             icon: Icons.settings_rounded,
@@ -339,10 +384,6 @@ class _EventDetailViewState extends State<_EventDetailView>
           1 when state.isProjectAdmin || state.canAddSongs => (
             icon: Icons.add_rounded,
             onPressed: () => _onAddSongs(state),
-          ),
-          2 when state.isProjectAdmin => (
-            icon: Icons.add_rounded,
-            onPressed: _onAddProgramItem,
           ),
           _ => null,
         };
@@ -370,6 +411,27 @@ class _EventDetailViewState extends State<_EventDetailView>
   }
 
   Future<void> _onAddProgramItem() => showProgramTextItemDialog(context);
+
+  Future<void> _onExportPdf() async {
+    AppFeedback.showInfo('Gerando PDF do roteiro...');
+
+    try {
+      final bytes = await context
+          .read<EventProgramRepository>()
+          .downloadRoteiroPdf(widget.eventId);
+
+      final tempDir = await getTemporaryDirectory();
+      final file = File('${tempDir.path}/roteiro_${widget.eventId}.pdf');
+      await file.writeAsBytes(bytes, flush: true);
+
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/pdf')],
+        subject: 'Roteiro do evento',
+      );
+    } catch (_) {
+      if (mounted) AppFeedback.showError('Não foi possível exportar o roteiro em PDF.');
+    }
+  }
 
   Future<void> _onEditEvent() async {
     final event = context.read<EventDetailCubit>().state.event;

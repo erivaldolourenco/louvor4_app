@@ -6,8 +6,6 @@ import 'package:louvor4_app/core/network/api_client.dart';
 import 'package:louvor4_app/core/theme/app_theme_controller.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
-import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
-import 'package:louvor4_app/core/ui/widgets/app_buttons.dart';
 import 'package:louvor4_app/core/ui/widgets/fade_slide_in.dart';
 import 'package:louvor4_app/core/ui/widgets/spring_tap.dart';
 import 'package:louvor4_app/features/auth/presentation/pages/login_page.dart';
@@ -16,6 +14,7 @@ import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_en
 import '../../data/impl/user_repository_impl.dart';
 import '../../data/user_repository.dart';
 import 'edit_profile_page.dart';
+import 'redeem_voucher_page.dart';
 import '../cubit/user_cubit.dart';
 import '../cubit/user_state.dart';
 
@@ -46,23 +45,32 @@ class ProfilePage extends StatelessWidget {
 
               if (state.status == UserStatus.success && state.user != null) {
                 final user = state.user!;
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
-                  child: Column(
-                    children: [
-                      FadeSlideIn(
-                        child: _buildTopCard(
-                          context,
-                          user,
-                          state.isUploadingImage,
+                return RefreshIndicator(
+                  onRefresh: () => context.read<UserCubit>().load(),
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+                    child: Column(
+                      children: [
+                        FadeSlideIn(
+                          child: _buildTopCard(
+                            context,
+                            user,
+                            state.isUploadingImage,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      FadeSlideIn(
-                        delay: const Duration(milliseconds: 90),
-                        child: _buildInfoCard(user, context),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        FadeSlideIn(
+                          delay: const Duration(milliseconds: 90),
+                          child: _buildInfoCard(user, context),
+                        ),
+                        const Divider(indent: 16, endIndent: 16),
+                        FadeSlideIn(
+                          delay: const Duration(milliseconds: 160),
+                          child: _buildActionsCard(context, user),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }
@@ -85,14 +93,10 @@ class ProfilePage extends StatelessWidget {
     final profileImage = user.profileImage?.trim();
     final hasProfileImage = profileImage != null && profileImage.isNotEmpty;
 
-    return SizedBox(
-      width: double.infinity,
-      child: AppCardSurface(
-        padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-        radius: 24,
-        child: Column(
-          children: [
-            SpringTap(
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        SpringTap(
               onTap: isUploadingImage
                   ? null
                   : () => _onChangeProfileImage(context),
@@ -184,107 +188,124 @@ class ProfilePage extends StatelessWidget {
                 color: cs.onSurfaceVariant,
               ),
             ),
+            const SizedBox(height: 8),
           ],
-        ),
-      ),
-    );
+        );
   }
 
   Widget _buildInfoCard(UserDetailEntity user, BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
-    return SizedBox(
-      width: double.infinity,
-      child: AppCardSurface(
-        padding: const EdgeInsets.all(24),
-        radius: 24,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Informações pessoais',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+          child: Text(
+            'Informações pessoais',
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: cs.primary,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
             ),
-            const SizedBox(height: 24),
-            _buildInfoField(context, 'Nome', user.firstName),
-            _buildInfoField(context, 'Sobrenome', user.lastName),
-            _buildInfoField(context, 'Email', user.email),
-            _buildInfoField(
-              context,
-              'Telefone',
-              user.phoneNumber ?? 'Não informado',
-            ),
-            const SizedBox(height: 12),
-            AppSecondaryButton(
-              onPressed: () => _onEditProfile(context),
-              icon: Icons.edit_outlined,
-              child: const Text('Editar perfil'),
-            ),
-            const SizedBox(height: 4),
-            AnimatedBuilder(
-              animation: AppThemeController.instance,
-              builder: (context, _) {
-                return SwitchListTile(
-                  value: AppThemeController.instance.isDarkMode,
-                  onChanged: (value) =>
-                      AppThemeController.instance.setDarkMode(value),
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(
-                    'Modo escuro',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  subtitle: const Text('Ativar tema escuro no aplicativo'),
-                  secondary: const Icon(Icons.dark_mode_outlined),
-                );
-              },
-            ),
-            const SizedBox(height: 4),
-            AppDestructiveButton(
-              onPressed: () async {
-                await AuthService.instance.logout(ApiClient.dio);
-                if (context.mounted) {
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                    LoginPage.routeName,
-                    (route) => false,
-                  );
-                }
-              },
-              icon: Icons.logout_rounded,
-              child: const Text('Sair do aplicativo'),
-            ),
-          ],
+          ),
         ),
-      ),
+        _buildInfoTile(context, Icons.person_outline_rounded, 'Nome', user.firstName),
+        _buildInfoTile(context, Icons.badge_outlined, 'Sobrenome', user.lastName),
+        _buildInfoTile(context, Icons.email_outlined, 'Email', user.email),
+        _buildInfoTile(
+          context,
+          Icons.phone_outlined,
+          'Telefone',
+          user.phoneNumber ?? 'Não informado',
+        ),
+      ],
     );
   }
 
-  Widget _buildInfoField(BuildContext context, String label, String value) {
+  Widget _buildActionsCard(BuildContext context, UserDetailEntity user) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: theme.textTheme.titleMedium?.copyWith(
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+          child: Text(
+            'Configurações',
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: cs.primary,
               fontWeight: FontWeight.w700,
-              color: cs.onSurface,
+              letterSpacing: 0.5,
             ),
           ),
-        ],
+        ),
+        ListTile(
+          leading: Icon(Icons.edit_outlined, color: cs.onSurfaceVariant),
+          title: const Text('Editar perfil'),
+          trailing: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+          onTap: () => _onEditProfile(context),
+        ),
+        ListTile(
+          leading: Icon(Icons.confirmation_number_outlined, color: cs.onSurfaceVariant),
+          title: const Text('Alterar Plano'),
+          trailing: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+          onTap: () => _onRedeemVoucher(context, user),
+        ),
+        AnimatedBuilder(
+          animation: AppThemeController.instance,
+          builder: (context, _) {
+            return SwitchListTile(
+              secondary: Icon(Icons.dark_mode_outlined, color: cs.onSurfaceVariant),
+              title: const Text('Modo escuro'),
+              value: AppThemeController.instance.isDarkMode,
+              onChanged: (value) =>
+                  AppThemeController.instance.setDarkMode(value),
+            );
+          },
+        ),
+        ListTile(
+          leading: Icon(Icons.logout_rounded, color: cs.error),
+          title: Text(
+            'Sair do aplicativo',
+            style: TextStyle(color: cs.error),
+          ),
+          onTap: () async {
+            await AuthService.instance.logout(ApiClient.dio);
+            if (context.mounted) {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                LoginPage.routeName,
+                (route) => false,
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoTile(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+  ) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    return ListTile(
+      leading: Icon(icon, color: cs.onSurfaceVariant),
+      title: Text(
+        label,
+        style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+      ),
+      subtitle: Text(
+        value,
+        style: theme.textTheme.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: cs.onSurface,
+        ),
       ),
     );
   }
@@ -311,6 +332,21 @@ class ProfilePage extends StatelessWidget {
     } else {
       AppFeedback.showError('Não foi possível atualizar a imagem do perfil.');
     }
+  }
+
+  Future<void> _onRedeemVoucher(
+    BuildContext context,
+    UserDetailEntity user,
+  ) async {
+    final result = await Navigator.of(context).push<Object?>(
+      MaterialPageRoute(
+        builder: (_) => RedeemVoucherPage(currentPlanName: user.planName),
+      ),
+    );
+
+    if (!context.mounted || result == null || result == false) return;
+
+    context.read<UserCubit>().load();
   }
 
   Future<void> _onEditProfile(BuildContext context) async {
