@@ -23,6 +23,10 @@ class LyricsPage extends StatefulWidget {
 }
 
 class _LyricsPageState extends State<LyricsPage> {
+  static const double _minFontSize = 16;
+  static const double _maxFontSize = 26;
+  static const double _fontSizeStep = 2;
+
   final _repo = SongsRepositoryImpl();
   final _controller = TextEditingController();
 
@@ -31,6 +35,7 @@ class _LyricsPageState extends State<LyricsPage> {
   bool _isEditing = false;
   String? _errorMessage;
   String _savedLyrics = '';
+  double _fontSize = _minFontSize;
 
   @override
   void initState() {
@@ -74,6 +79,12 @@ class _LyricsPageState extends State<LyricsPage> {
     setState(() => _isEditing = false);
   }
 
+  void _increaseFontSize() {
+    setState(() {
+      _fontSize = (_fontSize + _fontSizeStep).clamp(_minFontSize, _maxFontSize);
+    });
+  }
+
   Future<void> _saveLyrics() async {
     if (!widget.canEdit) return;
     final lyrics = _controller.text.trim();
@@ -97,35 +108,46 @@ class _LyricsPageState extends State<LyricsPage> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final showActions = !_isLoading && _errorMessage == null && widget.canEdit;
+    final showToolbar = !_isLoading && _errorMessage == null;
+    final showEditActions = showToolbar && widget.canEdit;
+    final atMaxFontSize = _fontSize >= _maxFontSize;
 
     return Scaffold(
       appBar: StandardSectionAppBar(
         title: widget.title,
         subtitle: widget.artist,
-        actions: showActions
+        actions: showToolbar
             ? [
-                if (_isEditing)
-                  IconButton(
-                    tooltip: 'Cancelar',
-                    onPressed: _isSaving ? null : _cancelEditing,
-                    icon: const Icon(Icons.close_rounded),
-                  ),
                 IconButton(
-                  tooltip: _isEditing ? 'Salvar letra' : 'Editar letra',
-                  onPressed: _isSaving
-                      ? null
-                      : (_isEditing ? _saveLyrics : _startEditing),
-                  icon: _isSaving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Icon(
-                          _isEditing ? Icons.check_rounded : Icons.edit_rounded,
-                        ),
+                  tooltip: atMaxFontSize
+                      ? 'Tamanho máximo atingido'
+                      : 'Aumentar fonte',
+                  onPressed: atMaxFontSize ? null : _increaseFontSize,
+                  icon: const Icon(Icons.text_increase_rounded),
                 ),
+                if (showEditActions) ...[
+                  if (_isEditing)
+                    IconButton(
+                      tooltip: 'Cancelar',
+                      onPressed: _isSaving ? null : _cancelEditing,
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  IconButton(
+                    tooltip: _isEditing ? 'Salvar letra' : 'Editar letra',
+                    onPressed: _isSaving
+                        ? null
+                        : (_isEditing ? _saveLyrics : _startEditing),
+                    icon: _isSaving
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Icon(
+                            _isEditing ? Icons.check_rounded : Icons.edit_rounded,
+                          ),
+                  ),
+                ],
               ]
             : null,
       ),
@@ -162,7 +184,11 @@ class _LyricsPageState extends State<LyricsPage> {
                         expands: true,
                         maxLines: null,
                         textAlignVertical: TextAlignVertical.top,
-                        style: TextStyle(color: cs.onSurface, height: 1.6),
+                        style: TextStyle(
+                          color: cs.onSurface,
+                          fontSize: _fontSize,
+                          height: 1.6,
+                        ),
                         decoration: const InputDecoration(
                           hintText: 'Digite a letra da música...',
                           filled: false,
@@ -187,7 +213,7 @@ class _LyricsPageState extends State<LyricsPage> {
                             fontStyle: _savedLyrics.isEmpty
                                 ? FontStyle.italic
                                 : FontStyle.normal,
-                            fontSize: 16,
+                            fontSize: _fontSize,
                             height: 1.6,
                           ),
                         ),
