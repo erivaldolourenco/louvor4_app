@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
-import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/impl/songs_repository_impl.dart';
@@ -236,46 +234,42 @@ class _LyricsPageState extends State<LyricsPage> {
             : FadeSlideIn(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: AppCardSurface(
-                    radius: AppRadius.cardLarge,
-                    padding: const EdgeInsets.all(20),
-                    child: _isEditing
-                        ? TextField(
-                            controller: _controller,
-                            autofocus: true,
-                            expands: true,
-                            maxLines: null,
-                            textAlignVertical: TextAlignVertical.top,
+                  child: _isEditing
+                      ? TextField(
+                          controller: _controller,
+                          autofocus: true,
+                          expands: true,
+                          maxLines: null,
+                          textAlignVertical: TextAlignVertical.top,
+                          style: TextStyle(
+                            color: cs.onSurface,
+                            fontSize: _fontSize,
+                            height: 1.6,
+                          ),
+                          decoration: const InputDecoration(
+                            hintText: 'Digite a letra da música...',
+                            filled: false,
+                            contentPadding: EdgeInsets.zero,
+                            border: InputBorder.none,
+                            enabledBorder: InputBorder.none,
+                            focusedBorder: InputBorder.none,
+                            disabledBorder: InputBorder.none,
+                            errorBorder: InputBorder.none,
+                            focusedErrorBorder: InputBorder.none,
+                          ),
+                        )
+                      : _savedLyrics.isEmpty
+                      ? _EmptyLyrics(canEdit: widget.canEdit)
+                      : SingleChildScrollView(
+                          child: Text(
+                            _savedLyrics,
                             style: TextStyle(
                               color: cs.onSurface,
                               fontSize: _fontSize,
                               height: 1.6,
                             ),
-                            decoration: const InputDecoration(
-                              hintText: 'Digite a letra da música...',
-                              filled: false,
-                              contentPadding: EdgeInsets.zero,
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                              disabledBorder: InputBorder.none,
-                              errorBorder: InputBorder.none,
-                              focusedErrorBorder: InputBorder.none,
-                            ),
-                          )
-                        : _savedLyrics.isEmpty
-                        ? _EmptyLyrics(canEdit: widget.canEdit)
-                        : SingleChildScrollView(
-                            child: Text(
-                              _savedLyrics,
-                              style: TextStyle(
-                                color: cs.onSurface,
-                                fontSize: _fontSize,
-                                height: 1.6,
-                              ),
-                            ),
                           ),
-                  ),
+                        ),
                 ),
               ),
       ),
