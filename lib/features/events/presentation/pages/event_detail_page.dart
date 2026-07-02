@@ -31,6 +31,7 @@ import '../cubit/event_program_cubit.dart';
 import '../../domain/entities/event_participant_entity.dart';
 import '../widgets/event_participant_card.dart';
 import '../widgets/event_program_tab.dart';
+import '../../../songs/presentation/pages/lyrics_page.dart';
 import '../widgets/manage_event_participants_sheet.dart';
 import '../widgets/manage_event_songs_sheet.dart';
 import 'edit_event_page.dart';
@@ -900,6 +901,18 @@ class _SongsTab extends StatelessWidget {
                               song.youTubeUrl!.isNotEmpty)
                           ? () => _launchYoutube(song.youTubeUrl!)
                           : null,
+                      onOpenLyrics: song.songId == null
+                          ? null
+                          : () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => LyricsPage(
+                                  songId: song.songId!,
+                                  title: song.title,
+                                  artist: song.artist ?? 'Desconhecido',
+                                  canEdit: state.isSongOwner(song),
+                                ),
+                              ),
+                            ),
                       onDelete:
                           (state.canDeleteSong(song) &&
                               state.deletingSongId != song.id)

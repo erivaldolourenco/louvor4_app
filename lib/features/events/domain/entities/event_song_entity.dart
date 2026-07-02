@@ -4,6 +4,7 @@ enum SetlistItemType { song, medley }
 
 class EventSong {
   final String id;
+  final String? songId;
   final String title;
   final String? artist;
   final String? key;
@@ -18,6 +19,7 @@ class EventSong {
 
   const EventSong({
     required this.id,
+    this.songId,
     required this.title,
     this.artist,
     this.key,
@@ -62,6 +64,7 @@ class EventSong {
         : json;
     return EventSong(
       id: json['id']?.toString() ?? '',
+      songId: song['songId']?.toString(),
       title: song['title']?.toString() ?? '',
       artist: song['artist']?.toString(),
       key: song['key']?.toString(),
