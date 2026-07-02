@@ -84,6 +84,12 @@ class EventDetailState extends Equatable {
     return song.addedByUserId == userId;
   }
 
+  bool isSongOwner(EventSong song) {
+    final userId = currentUserId;
+    if (userId == null || userId.isEmpty) return false;
+    return song.addedByUserId == userId;
+  }
+
   @override
   List<Object?> get props => [
     status,

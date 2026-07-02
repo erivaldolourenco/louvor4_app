@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 class StandardSectionAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final String subtitle;
+  final List<Widget>? actions;
 
   const StandardSectionAppBar({
     super.key,
     required this.title,
     required this.subtitle,
+    this.actions,
   });
 
   @override
@@ -19,6 +21,7 @@ class StandardSectionAppBar extends StatelessWidget implements PreferredSizeWidg
       backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
       surfaceTintColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
       elevation: 0,
+      actions: actions,
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

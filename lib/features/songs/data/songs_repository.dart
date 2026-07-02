@@ -12,4 +12,8 @@ abstract class SongsRepository {
   Future<void> uploadReferenceAudio(String songId, String filePath);
 
   Future<void> deleteSong(String id);
+
+  Future<String?> getSongLyrics(String songId);
+
+  Future<void> updateSongLyrics(String songId, String lyrics);
 }

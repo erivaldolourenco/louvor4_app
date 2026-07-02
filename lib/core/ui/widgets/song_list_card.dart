@@ -12,13 +12,13 @@ class SongListCard extends StatelessWidget {
   final String? musicKey;
   final String? bpm;
   final String? youTubeUrl;
-  final String? notes;
   final bool isMedley;
   final bool hasAudio;
   final VoidCallback? onTap;
   final VoidCallback? onOpenYoutube;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final VoidCallback? onOpenLyrics;
   final Future<bool> Function()? onRemove;
   final bool isRemoving;
   final String? dismissKey;
@@ -30,73 +30,26 @@ class SongListCard extends StatelessWidget {
     this.musicKey,
     this.bpm,
     this.youTubeUrl,
-    this.notes,
     this.isMedley = false,
     this.hasAudio = false,
     this.onTap,
     this.onOpenYoutube,
     this.onEdit,
     this.onDelete,
+    this.onOpenLyrics,
     this.onRemove,
     this.isRemoving = false,
     this.dismissKey,
   });
 
-  bool get _hasNotes => notes != null && notes!.trim().isNotEmpty;
+  bool get _hasLyrics => onOpenLyrics != null;
 
   bool get _hasActions =>
       isRemoving ||
       (!isMedley && onOpenYoutube != null) ||
-      _hasNotes ||
+      _hasLyrics ||
       onEdit != null ||
       onDelete != null;
-
-  void _openNotesModal(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        final cs = Theme.of(dialogContext).colorScheme;
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 24,
-          ),
-          child: AppCardSurface(
-            radius: AppRadius.sheet,
-            padding: const EdgeInsets.all(18),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        'Observações',
-                        style: Theme.of(dialogContext).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: 'Fechar',
-                      onPressed: () => Navigator.of(dialogContext).pop(),
-                      icon: const Icon(Icons.close_rounded),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  notes!.trim(),
-                  style: TextStyle(color: cs.onSurfaceVariant, height: 1.5),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -158,54 +111,60 @@ class SongListCard extends StatelessWidget {
             Divider(height: 1, thickness: 1, color: cs.outlineVariant),
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  if (isRemoving)
-                    const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+              child: isRemoving
+                  ? const Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ],
                     )
-                  else ...[
-                    if (!isMedley && onOpenYoutube != null)
-                      AppCircularActionButton(
-                        onPressed: onOpenYoutube,
-                        assetPath: 'assets/icons/youtube.svg',
-                        iconColor: cs.tertiary,
-                        backgroundColor: cs.tertiaryContainer,
-                        borderColor: cs.tertiary.withValues(alpha: 0.3),
-                      ),
-                    if (!isMedley && onOpenYoutube != null && _hasNotes)
-                      const SizedBox(width: 8),
-                    if (_hasNotes)
-                      _NotesActionButton(
-                        onPressed: () => _openNotesModal(context),
-                      ),
-                    if ((onOpenYoutube != null || _hasNotes) && onEdit != null)
-                      const SizedBox(width: 8),
-                    if (onEdit != null)
-                      AppCircularActionButton(
-                        onPressed: onEdit,
-                        assetPath: 'assets/icons/file-music.svg',
-                        iconColor: cs.onPrimaryContainer,
-                        backgroundColor: cs.primaryContainer,
-                        borderColor: cs.primary.withValues(alpha: 0.3),
-                      ),
-                    if (onDelete != null &&
-                        (onOpenYoutube != null || _hasNotes || onEdit != null))
-                      const SizedBox(width: 8),
-                    if (onDelete != null)
-                      AppCircularActionButton(
-                        onPressed: onDelete,
-                        assetPath: 'assets/icons/trash-2.svg',
-                        iconColor: cs.error,
-                        backgroundColor: cs.errorContainer,
-                        borderColor: cs.error.withValues(alpha: 0.3),
-                      ),
-                  ],
-                ],
-              ),
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            if (!isMedley && onOpenYoutube != null)
+                              AppCircularActionButton(
+                                onPressed: onOpenYoutube,
+                                assetPath: 'assets/icons/youtube.svg',
+                                iconColor: cs.tertiary,
+                                backgroundColor: cs.tertiaryContainer,
+                                borderColor: cs.tertiary.withValues(alpha: 0.3),
+                              ),
+                            if (!isMedley && onOpenYoutube != null && _hasLyrics)
+                              const SizedBox(width: 8),
+                            if (_hasLyrics)
+                              _LyricsActionButton(onPressed: onOpenLyrics!),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            if (onEdit != null)
+                              AppCircularActionButton(
+                                onPressed: onEdit,
+                                assetPath: 'assets/icons/file-music.svg',
+                                iconColor: cs.onPrimaryContainer,
+                                backgroundColor: cs.primaryContainer,
+                                borderColor: cs.primary.withValues(alpha: 0.3),
+                              ),
+                            if (onDelete != null && onEdit != null)
+                              const SizedBox(width: 8),
+                            if (onDelete != null)
+                              AppCircularActionButton(
+                                onPressed: onDelete,
+                                assetPath: 'assets/icons/trash-2.svg',
+                                iconColor: cs.error,
+                                backgroundColor: cs.errorContainer,
+                                borderColor: cs.error.withValues(alpha: 0.3),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
             ),
           ],
         ],
@@ -238,37 +197,22 @@ class SongListCard extends StatelessWidget {
 // Sub-widgets
 // ---------------------------------------------------------------------------
 
-class _NotesActionButton extends StatelessWidget {
+class _LyricsActionButton extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const _NotesActionButton({required this.onPressed});
+  const _LyricsActionButton({required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Tooltip(
-      message: 'Ver observação',
-      child: Material(
-        color: Colors.transparent,
-        shape: const CircleBorder(),
-        child: InkWell(
-          onTap: onPressed,
-          customBorder: const CircleBorder(),
-          child: Ink(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: cs.secondaryContainer,
-              shape: BoxShape.circle,
-              border: Border.all(color: cs.secondary.withValues(alpha: 0.3)),
-            ),
-            child: Icon(
-              Icons.sticky_note_2_rounded,
-              size: 18,
-              color: cs.onSecondaryContainer,
-            ),
-          ),
-        ),
+      message: 'Ver letra',
+      child: AppCircularActionButton(
+        onPressed: onPressed,
+        assetPath: 'assets/icons/list-music.svg',
+        iconColor: cs.onSecondaryContainer,
+        backgroundColor: cs.secondaryContainer,
+        borderColor: cs.secondary.withValues(alpha: 0.3),
       ),
     );
   }

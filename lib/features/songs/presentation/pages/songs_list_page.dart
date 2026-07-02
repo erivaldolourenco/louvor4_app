@@ -19,6 +19,7 @@ import '../../data/impl/songs_repository_impl.dart';
 import '../../domain/entities/song_entity.dart';
 import 'create_song_page.dart';
 import 'edit_song_page.dart';
+import 'lyrics_page.dart';
 
 // ---------------------------------------------------------------------------
 // Entry point — provides MedleyCubit
@@ -146,6 +147,18 @@ class _SongsContentState extends State<_SongsContent>
       MaterialPageRoute(builder: (_) => EditSongPage(songId: songId)),
     );
     if (updated == true) await _loadSongs(silent: true, force: true);
+  }
+
+  void _goToLyrics(SongEntity song) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => LyricsPage(
+          songId: song.id!,
+          title: song.title,
+          artist: song.artist,
+        ),
+      ),
+    );
   }
 
   void _confirmDeleteSong(SongEntity song) {
@@ -436,7 +449,6 @@ class _SongsContentState extends State<_SongsContent>
                   musicKey: song.key,
                   bpm: song.bpm,
                   youTubeUrl: song.youTubeUrl,
-                  notes: song.notes,
                   hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
                   onTap: () => showSongDetailsModal(
                     context,
@@ -453,6 +465,9 @@ class _SongsContentState extends State<_SongsContent>
                   onDelete: song.id == null
                       ? null
                       : () => _confirmDeleteSong(song),
+                  onOpenLyrics: song.id == null
+                      ? null
+                      : () => _goToLyrics(song),
                   isRemoving: song.id != null && _deletingSongId == song.id,
                 );
               },

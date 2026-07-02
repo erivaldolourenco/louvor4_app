@@ -83,6 +83,28 @@ class SongsRepositoryImpl implements SongsRepository {
     }
   }
 
+  @override
+  Future<String?> getSongLyrics(String songId) async {
+    try {
+      final response = await _dio.get('/songs/$songId/lyrics');
+      final data = response.data;
+      final lyrics = data is Map ? data['lyrics'] : data;
+      final normalized = lyrics?.toString().trim();
+      return normalized == null || normalized.isEmpty ? null : normalized;
+    } on DioException catch (e) {
+      throw Exception(_extractApiErrorMessage(e));
+    }
+  }
+
+  @override
+  Future<void> updateSongLyrics(String songId, String lyrics) async {
+    try {
+      await _dio.put('/songs/$songId/lyrics', data: {'lyrics': lyrics});
+    } on DioException catch (e) {
+      throw Exception(_extractApiErrorMessage(e));
+    }
+  }
+
   String _extractApiErrorMessage(DioException e) =>
       extractApiErrorMessage(e);
 }
