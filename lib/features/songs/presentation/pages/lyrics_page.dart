@@ -24,7 +24,7 @@ class LyricsPage extends StatefulWidget {
 
 class _LyricsPageState extends State<LyricsPage> {
   static const double _minFontSize = 16;
-  static const double _maxFontSize = 26;
+  static const double _maxFontSize = 30;
   static const double _fontSizeStep = 2;
 
   final _repo = SongsRepositoryImpl();
@@ -85,6 +85,12 @@ class _LyricsPageState extends State<LyricsPage> {
     });
   }
 
+  void _decreaseFontSize() {
+    setState(() {
+      _fontSize = (_fontSize - _fontSizeStep).clamp(_minFontSize, _maxFontSize);
+    });
+  }
+
   Future<void> _saveLyrics() async {
     if (!widget.canEdit) return;
     final lyrics = _controller.text.trim();
@@ -111,6 +117,7 @@ class _LyricsPageState extends State<LyricsPage> {
     final showToolbar = !_isLoading && _errorMessage == null;
     final showEditActions = showToolbar && widget.canEdit;
     final atMaxFontSize = _fontSize >= _maxFontSize;
+    final atMinFontSize = _fontSize <= _minFontSize;
 
     return Scaffold(
       appBar: StandardSectionAppBar(
@@ -118,6 +125,13 @@ class _LyricsPageState extends State<LyricsPage> {
         subtitle: widget.artist,
         actions: showToolbar
             ? [
+                IconButton(
+                  tooltip: atMinFontSize
+                      ? 'Tamanho mínimo atingido'
+                      : 'Diminuir fonte',
+                  onPressed: atMinFontSize ? null : _decreaseFontSize,
+                  icon: const Icon(Icons.text_decrease_rounded),
+                ),
                 IconButton(
                   tooltip: atMaxFontSize
                       ? 'Tamanho máximo atingido'
