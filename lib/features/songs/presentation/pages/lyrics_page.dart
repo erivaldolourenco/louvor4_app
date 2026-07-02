@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
+import '../../../../core/ui/widgets/app_card_surface.dart';
+import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/impl/songs_repository_impl.dart';
 
@@ -111,6 +114,29 @@ class _LyricsPageState extends State<LyricsPage> {
     }
   }
 
+  Widget _tonalIconButton({
+    required BuildContext context,
+    required String tooltip,
+    required IconData icon,
+    required VoidCallback? onPressed,
+    required Color background,
+    required Color foreground,
+  }) {
+    return IconButton.filledTonal(
+      tooltip: tooltip,
+      visualDensity: VisualDensity.compact,
+      style: IconButton.styleFrom(
+        backgroundColor: background,
+        foregroundColor: foreground,
+        disabledBackgroundColor: background.withValues(alpha: 0.4),
+        disabledForegroundColor: foreground.withValues(alpha: 0.4),
+        shape: const CircleBorder(),
+      ),
+      icon: Icon(icon, size: 18),
+      onPressed: onPressed,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -125,43 +151,51 @@ class _LyricsPageState extends State<LyricsPage> {
         subtitle: widget.artist,
         actions: showToolbar
             ? [
-                IconButton(
+                _tonalIconButton(
+                  context: context,
                   tooltip: atMinFontSize
                       ? 'Tamanho mínimo atingido'
                       : 'Diminuir fonte',
+                  icon: Icons.text_decrease_rounded,
                   onPressed: atMinFontSize ? null : _decreaseFontSize,
-                  icon: const Icon(Icons.text_decrease_rounded),
+                  background: cs.secondaryContainer,
+                  foreground: cs.onSecondaryContainer,
                 ),
-                IconButton(
+                const SizedBox(width: 6),
+                _tonalIconButton(
+                  context: context,
                   tooltip: atMaxFontSize
                       ? 'Tamanho máximo atingido'
                       : 'Aumentar fonte',
+                  icon: Icons.text_increase_rounded,
                   onPressed: atMaxFontSize ? null : _increaseFontSize,
-                  icon: const Icon(Icons.text_increase_rounded),
+                  background: cs.secondaryContainer,
+                  foreground: cs.onSecondaryContainer,
                 ),
                 if (showEditActions) ...[
+                  const SizedBox(width: 6),
                   if (_isEditing)
-                    IconButton(
+                    _tonalIconButton(
+                      context: context,
                       tooltip: 'Cancelar',
+                      icon: Icons.close_rounded,
                       onPressed: _isSaving ? null : _cancelEditing,
-                      icon: const Icon(Icons.close_rounded),
+                      background: cs.surfaceContainerHighest,
+                      foreground: cs.onSurfaceVariant,
                     ),
-                  IconButton(
+                  if (_isEditing) const SizedBox(width: 6),
+                  _tonalIconButton(
+                    context: context,
                     tooltip: _isEditing ? 'Salvar letra' : 'Editar letra',
+                    icon: _isEditing ? Icons.check_rounded : Icons.edit_rounded,
                     onPressed: _isSaving
                         ? null
                         : (_isEditing ? _saveLyrics : _startEditing),
-                    icon: _isSaving
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Icon(
-                            _isEditing ? Icons.check_rounded : Icons.edit_rounded,
-                          ),
+                    background: cs.primaryContainer,
+                    foreground: cs.onPrimaryContainer,
                   ),
                 ],
+                const SizedBox(width: 8),
               ]
             : null,
       ),
@@ -175,64 +209,113 @@ class _LyricsPageState extends State<LyricsPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      Icon(
+                        Icons.error_outline_rounded,
+                        size: 48,
+                        color: cs.onSurfaceVariant,
+                      ),
+                      const SizedBox(height: 12),
                       Text(
                         _errorMessage!,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: cs.error),
+                        style: TextStyle(
+                          color: cs.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                      const SizedBox(height: 12),
-                      FilledButton(
+                      const SizedBox(height: 14),
+                      FilledButton.icon(
                         onPressed: _load,
-                        child: const Text('Tentar novamente'),
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Tentar novamente'),
                       ),
                     ],
                   ),
                 ),
               )
-            : Padding(
-                padding: const EdgeInsets.all(16),
-                child: _isEditing
-                    ? TextField(
-                        controller: _controller,
-                        autofocus: true,
-                        expands: true,
-                        maxLines: null,
-                        textAlignVertical: TextAlignVertical.top,
-                        style: TextStyle(
-                          color: cs.onSurface,
-                          fontSize: _fontSize,
-                          height: 1.6,
-                        ),
-                        decoration: const InputDecoration(
-                          hintText: 'Digite a letra da música...',
-                          filled: false,
-                          contentPadding: EdgeInsets.zero,
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          disabledBorder: InputBorder.none,
-                          errorBorder: InputBorder.none,
-                          focusedErrorBorder: InputBorder.none,
-                        ),
-                      )
-                    : SingleChildScrollView(
-                        child: Text(
-                          _savedLyrics.isEmpty
-                              ? 'Nenhuma letra cadastrada.'
-                              : _savedLyrics,
-                          style: TextStyle(
-                            color: _savedLyrics.isEmpty
-                                ? cs.onSurfaceVariant
-                                : cs.onSurface,
-                            fontStyle: _savedLyrics.isEmpty
-                                ? FontStyle.italic
-                                : FontStyle.normal,
-                            fontSize: _fontSize,
-                            height: 1.6,
+            : FadeSlideIn(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: AppCardSurface(
+                    radius: AppRadius.cardLarge,
+                    padding: const EdgeInsets.all(20),
+                    child: _isEditing
+                        ? TextField(
+                            controller: _controller,
+                            autofocus: true,
+                            expands: true,
+                            maxLines: null,
+                            textAlignVertical: TextAlignVertical.top,
+                            style: TextStyle(
+                              color: cs.onSurface,
+                              fontSize: _fontSize,
+                              height: 1.6,
+                            ),
+                            decoration: const InputDecoration(
+                              hintText: 'Digite a letra da música...',
+                              filled: false,
+                              contentPadding: EdgeInsets.zero,
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                              disabledBorder: InputBorder.none,
+                              errorBorder: InputBorder.none,
+                              focusedErrorBorder: InputBorder.none,
+                            ),
+                          )
+                        : _savedLyrics.isEmpty
+                        ? _EmptyLyrics(canEdit: widget.canEdit)
+                        : SingleChildScrollView(
+                            child: Text(
+                              _savedLyrics,
+                              style: TextStyle(
+                                color: cs.onSurface,
+                                fontSize: _fontSize,
+                                height: 1.6,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
+                  ),
+                ),
               ),
+      ),
+    );
+  }
+}
+
+class _EmptyLyrics extends StatelessWidget {
+  final bool canEdit;
+
+  const _EmptyLyrics({required this.canEdit});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.lyrics_outlined, size: 30, color: cs.onSurfaceVariant),
+          const SizedBox(height: 10),
+          Text(
+            'Nenhuma letra cadastrada',
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            canEdit
+                ? 'Toque em editar para adicionar a letra desta música.'
+                : 'Esta música ainda não tem letra cadastrada.',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        ],
       ),
     );
   }
