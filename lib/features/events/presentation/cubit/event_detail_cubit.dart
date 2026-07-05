@@ -23,6 +23,10 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     : super(const EventDetailState());
 
   Future<void> load(String eventId, {bool force = false}) async {
+    // Emite loading imediatamente para que a tela mostre o skeleton enquanto
+    // busca os dados, evitando exibir a tela de erro/vazio antes do carregamento.
+    emit(state.copyWith(status: EventDetailStatus.loading));
+
     // Carrega o usuário primeiro para validar se o cache pertence a ele.
     // Isso evita que um usuário veja dados em cache de outro (ex: admin → não-admin).
     final currentUser = await _safeLoad(
@@ -40,8 +44,6 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       emit(cached.state);
       return;
     }
-
-    emit(state.copyWith(status: EventDetailStatus.loading));
 
     try {
       final event = await _repository.getEventDetail(eventId);

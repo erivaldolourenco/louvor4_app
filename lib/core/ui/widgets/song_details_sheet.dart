@@ -23,21 +23,23 @@ Future<void> showSongDetailsModal(
   String? notes,
   String? referenceAudioUrl,
 }) {
-  return showDialog<void>(
+  return showModalBottomSheet<void>(
     context: context,
-    builder: (dialogContext) {
-      return Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        child: SongDetailsSheet(
-          title: title,
-          artist: artist,
-          musicKey: musicKey,
-          bpm: bpm,
-          youTubeUrl: youTubeUrl,
-          notes: notes,
-          referenceAudioUrl: referenceAudioUrl,
-        ),
+    showDragHandle: true,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.bottomSheet)),
+    ),
+    builder: (sheetContext) {
+      return SongDetailsSheet(
+        title: title,
+        artist: artist,
+        musicKey: musicKey,
+        bpm: bpm,
+        youTubeUrl: youTubeUrl,
+        notes: notes,
+        referenceAudioUrl: referenceAudioUrl,
       );
     },
   );
@@ -92,140 +94,136 @@ class SongDetailsSheet extends StatelessWidget {
     final hasAudio =
         referenceAudioUrl != null && referenceAudioUrl!.trim().isNotEmpty;
 
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.82,
-      ),
-      child: AppCardSurface(
-        radius: AppRadius.sheet,
-        padding: const EdgeInsets.all(18),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ── Header: cover + título + artista ──────────────
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      YoutubeUtils.getThumbnail(
-                        youTubeUrl,
-                        quality: 'default',
-                      ),
-                      width: 72,
-                      height: 72,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, _) => Image.asset(
-                        YoutubeUtils.defaultThumb,
-                        width: 72,
-                        height: 72,
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Header: cover + título + artista ──────────────
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(
+                        YoutubeUtils.getThumbnail(
+                          youTubeUrl,
+                          quality: 'default',
+                        ),
+                        width: 64,
+                        height: 64,
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, _) => Image.asset(
+                          YoutubeUtils.defaultThumb,
+                          width: 64,
+                          height: 64,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            artist,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontStyle: FontStyle.italic,
+                              color: mutedColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+
+                // ── Tom e BPM ──────────────────────────────────────
+                if (hasKey || hasBpm) ...[
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      if (hasKey) _MetaBadge(label: 'Tom: $normalizedKey'),
+                      if (hasBpm) _MetaBadge(label: '$normalizedBpm BPM'),
+                    ],
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
+                ],
+
+                // ── Observações ────────────────────────────────────
+                if (hasNotes) ...[
+                  const SizedBox(height: 16),
+                  AppCardSurface(
+                    radius: AppRadius.cardLarge,
+                    padding: const EdgeInsets.all(14),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleLarge?.copyWith(
+                          'Observações',
+                          style: theme.textTheme.titleSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
                         Text(
-                          artist,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontStyle: FontStyle.italic,
-                            color: mutedColor,
-                          ),
+                          normalizedNotes,
+                          style: TextStyle(color: mutedColor, height: 1.5),
                         ),
                       ],
                     ),
                   ),
-                  IconButton(
-                    tooltip: 'Fechar',
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close_rounded),
-                  ),
                 ],
-              ),
 
-              // ── Tom e BPM ──────────────────────────────────────
-              if (hasKey || hasBpm) ...[
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    if (hasKey) _MetaBadge(label: 'Tom: $normalizedKey'),
-                    if (hasBpm) _MetaBadge(label: '$normalizedBpm BPM'),
-                  ],
-                ),
-              ],
+                // ── Player de áudio de referência ──────────────────
+                if (hasAudio) ...[
+                  const SizedBox(height: 16),
+                  _AudioPlayer(url: referenceAudioUrl!),
+                ],
 
-              // ── Observações ────────────────────────────────────
-              if (hasNotes) ...[
-                const SizedBox(height: 16),
-                AppCardSurface(
-                  radius: AppRadius.cardLarge,
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Observações',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                // ── Botão YouTube ──────────────────────────────────
+                if (hasYouTube) ...[
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: () => _openYouTube(context),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: cs.tertiaryContainer,
+                      foregroundColor: cs.onTertiaryContainer,
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.input),
+                        side: BorderSide(color: cs.tertiary.withValues(alpha: 0.4)),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        normalizedNotes,
-                        style: TextStyle(color: mutedColor, height: 1.5),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              // ── Player de áudio de referência ──────────────────
-              if (hasAudio) ...[
-                const SizedBox(height: 16),
-                _AudioPlayer(url: referenceAudioUrl!),
-              ],
-
-              // ── Botão YouTube ──────────────────────────────────
-              if (hasYouTube) ...[
-                const SizedBox(height: 16),
-                FilledButton.icon(
-                  onPressed: () => _openYouTube(context),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: cs.tertiaryContainer,
-                    foregroundColor: cs.onTertiaryContainer,
-                    minimumSize: const Size.fromHeight(50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.input),
-                      side: BorderSide(color: cs.tertiary.withValues(alpha: 0.4)),
+                    ),
+                    icon: const Icon(Icons.ondemand_video_rounded),
+                    label: Text(
+                      'Abrir no YouTube',
+                      style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
                     ),
                   ),
-                  icon: const Icon(Icons.ondemand_video_rounded),
-                  label: Text(
-                    'Abrir no YouTube',
-                    style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
