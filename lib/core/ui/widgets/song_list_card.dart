@@ -189,7 +189,12 @@ class SongListCard extends StatelessWidget {
       );
     }
 
-    return SpringTap(onTap: onTap, pressedScale: 0.97, child: cardContent);
+    return SpringTap(
+      onTap: onTap,
+      pressedScale: 0.97,
+      borderRadius: BorderRadius.circular(22),
+      child: cardContent,
+    );
   }
 }
 
