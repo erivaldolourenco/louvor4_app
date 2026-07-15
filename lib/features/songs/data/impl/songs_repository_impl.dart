@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_error_message.dart';
+import '../../domain/entities/chord_sheet_entity.dart';
 import '../../domain/entities/song_entity.dart';
 import '../songs_repository.dart';
 
@@ -103,6 +105,54 @@ class SongsRepositoryImpl implements SongsRepository {
     } on DioException catch (e) {
       throw Exception(_extractApiErrorMessage(e));
     }
+  }
+
+  @override
+  Future<ChordSheetEntity?> getChordSheet(String songId) async {
+    try {
+      final response = await _dio.get('/songs/$songId/chord-sheet');
+      return _parseChordSheetResponse(response.data);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      throw Exception(_extractApiErrorMessage(e));
+    }
+  }
+
+  @override
+  Future<ChordSheetEntity> saveChordSheet(
+    String songId,
+    ChordSheetEntity chordSheet,
+  ) async {
+    try {
+      final response = await _dio.put(
+        '/songs/$songId/chord-sheet',
+        data: {'chordSheetJson': jsonEncode(chordSheet.toJson())},
+      );
+      final parsed = _parseChordSheetResponse(response.data);
+      if (parsed == null) {
+        throw Exception('Resposta inválida ao salvar a cifra.');
+      }
+      return parsed;
+    } on DioException catch (e) {
+      throw Exception(_extractApiErrorMessage(e));
+    }
+  }
+
+  @override
+  Future<void> deleteChordSheet(String songId) async {
+    try {
+      await _dio.delete('/songs/$songId/chord-sheet');
+    } on DioException catch (e) {
+      throw Exception(_extractApiErrorMessage(e));
+    }
+  }
+
+  ChordSheetEntity? _parseChordSheetResponse(dynamic data) {
+    final raw = data is Map ? data['chordSheetJson'] : null;
+    final normalized = raw?.toString().trim();
+    if (normalized == null || normalized.isEmpty) return null;
+    final decoded = jsonDecode(normalized);
+    return ChordSheetEntity.fromJson(Map<String, dynamic>.from(decoded as Map));
   }
 
   String _extractApiErrorMessage(DioException e) =>

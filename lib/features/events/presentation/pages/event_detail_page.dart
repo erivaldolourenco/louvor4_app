@@ -31,6 +31,7 @@ import '../cubit/event_program_cubit.dart';
 import '../../domain/entities/event_participant_entity.dart';
 import '../widgets/event_participant_card.dart';
 import '../widgets/event_program_tab.dart';
+import '../../../songs/presentation/pages/chord_sheet_page.dart';
 import '../../../songs/presentation/pages/lyrics_page.dart';
 import '../widgets/manage_event_participants_sheet.dart';
 import '../widgets/manage_event_songs_sheet.dart';
@@ -910,6 +911,20 @@ class _SongsTab extends StatelessWidget {
                                   songId: song.songId!,
                                   title: song.title,
                                   artist: song.artist ?? 'Desconhecido',
+                                  canEdit: state.isSongOwner(song),
+                                ),
+                              ),
+                            ),
+                      onOpenChords: song.songId == null
+                          ? null
+                          : () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ChordSheetPage(
+                                  songId: song.songId!,
+                                  title: song.title,
+                                  artist: song.artist ?? 'Desconhecido',
+                                  initialKey: song.key,
+                                  initialBpm: song.bpm,
                                   canEdit: state.isSongOwner(song),
                                 ),
                               ),

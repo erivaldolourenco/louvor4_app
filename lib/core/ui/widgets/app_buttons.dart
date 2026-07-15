@@ -174,7 +174,7 @@ class _ButtonContent extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
-      children: [Icon(icon), const SizedBox(width: 8), child],
+      children: [Icon(icon), const SizedBox(width: 8), Flexible(child: child)],
     );
   }
 }

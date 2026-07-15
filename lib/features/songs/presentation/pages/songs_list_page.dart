@@ -17,6 +17,7 @@ import '../../../medleys/presentation/widgets/medley_card.dart';
 import '../../../medleys/presentation/widgets/medley_form_sheet.dart';
 import '../../data/impl/songs_repository_impl.dart';
 import '../../domain/entities/song_entity.dart';
+import 'chord_sheet_page.dart';
 import 'create_song_page.dart';
 import 'edit_song_page.dart';
 import 'lyrics_page.dart';
@@ -156,6 +157,20 @@ class _SongsContentState extends State<_SongsContent>
           songId: song.id!,
           title: song.title,
           artist: song.artist,
+        ),
+      ),
+    );
+  }
+
+  void _goToChords(SongEntity song) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChordSheetPage(
+          songId: song.id!,
+          title: song.title,
+          artist: song.artist,
+          initialKey: song.key,
+          initialBpm: int.tryParse(song.bpm ?? ''),
         ),
       ),
     );
@@ -468,6 +483,9 @@ class _SongsContentState extends State<_SongsContent>
                   onOpenLyrics: song.id == null
                       ? null
                       : () => _goToLyrics(song),
+                  onOpenChords: song.id == null
+                      ? null
+                      : () => _goToChords(song),
                   isRemoving: song.id != null && _deletingSongId == song.id,
                 );
               },

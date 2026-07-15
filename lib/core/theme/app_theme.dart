@@ -134,6 +134,28 @@ abstract final class AppTheme {
       ),
 
       iconTheme: IconThemeData(color: cs.onSurfaceVariant),
+
+      chipTheme: ChipThemeData(
+        backgroundColor: cs.surfaceContainerLow,
+        side: BorderSide(color: cs.outlineVariant),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.badge),
+        ),
+        labelStyle: TextStyle(
+          fontFamily: 'Outfit',
+          fontWeight: FontWeight.w600,
+          color: cs.onSurface,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      ),
+
+      dialogTheme: DialogThemeData(
+        backgroundColor: cs.surfaceContainerLow,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.cardLarge),
+        ),
+      ),
     );
   }
 
@@ -266,6 +288,28 @@ abstract final class AppTheme {
       ),
 
       iconTheme: IconThemeData(color: cs.onSurfaceVariant),
+
+      chipTheme: ChipThemeData(
+        backgroundColor: cs.surfaceContainerLow,
+        side: BorderSide(color: cs.outlineVariant),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.badge),
+        ),
+        labelStyle: TextStyle(
+          fontFamily: 'Outfit',
+          fontWeight: FontWeight.w600,
+          color: cs.onSurface,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      ),
+
+      dialogTheme: DialogThemeData(
+        backgroundColor: cs.surfaceContainerLow,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.cardLarge),
+        ),
+      ),
     );
   }
 }

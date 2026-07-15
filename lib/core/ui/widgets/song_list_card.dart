@@ -19,6 +19,7 @@ class SongListCard extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
   final VoidCallback? onOpenLyrics;
+  final VoidCallback? onOpenChords;
   final Future<bool> Function()? onRemove;
   final bool isRemoving;
   final String? dismissKey;
@@ -37,6 +38,7 @@ class SongListCard extends StatelessWidget {
     this.onEdit,
     this.onDelete,
     this.onOpenLyrics,
+    this.onOpenChords,
     this.onRemove,
     this.isRemoving = false,
     this.dismissKey,
@@ -44,10 +46,13 @@ class SongListCard extends StatelessWidget {
 
   bool get _hasLyrics => onOpenLyrics != null;
 
+  bool get _hasChords => onOpenChords != null;
+
   bool get _hasActions =>
       isRemoving ||
       (!isMedley && onOpenYoutube != null) ||
       _hasLyrics ||
+      _hasChords ||
       onEdit != null ||
       onDelete != null;
 
@@ -135,10 +140,15 @@ class SongListCard extends StatelessWidget {
                                 backgroundColor: cs.tertiaryContainer,
                                 borderColor: cs.tertiary.withValues(alpha: 0.3),
                               ),
-                            if (!isMedley && onOpenYoutube != null && _hasLyrics)
+                            if (!isMedley &&
+                                onOpenYoutube != null &&
+                                (_hasLyrics || _hasChords))
                               const SizedBox(width: 8),
                             if (_hasLyrics)
                               _LyricsActionButton(onPressed: onOpenLyrics!),
+                            if (_hasLyrics && _hasChords) const SizedBox(width: 8),
+                            if (_hasChords)
+                              _ChordsActionButton(onPressed: onOpenChords!),
                           ],
                         ),
                         Row(
@@ -218,6 +228,27 @@ class _LyricsActionButton extends StatelessWidget {
         iconColor: cs.onSecondaryContainer,
         backgroundColor: cs.secondaryContainer,
         borderColor: cs.secondary.withValues(alpha: 0.3),
+      ),
+    );
+  }
+}
+
+class _ChordsActionButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _ChordsActionButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: 'Ver cifra',
+      child: AppCircularActionButton(
+        onPressed: onPressed,
+        assetPath: 'assets/icons/music.svg',
+        iconColor: cs.onSurfaceVariant,
+        backgroundColor: cs.surfaceContainerHighest,
+        borderColor: cs.outline.withValues(alpha: 0.3),
       ),
     );
   }

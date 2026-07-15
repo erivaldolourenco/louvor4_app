@@ -1,3 +1,4 @@
+import '../domain/entities/chord_sheet_entity.dart';
 import '../domain/entities/song_entity.dart';
 
 abstract class SongsRepository {
@@ -16,4 +17,10 @@ abstract class SongsRepository {
   Future<String?> getSongLyrics(String songId);
 
   Future<void> updateSongLyrics(String songId, String lyrics);
+
+  Future<ChordSheetEntity?> getChordSheet(String songId);
+
+  Future<ChordSheetEntity> saveChordSheet(String songId, ChordSheetEntity chordSheet);
+
+  Future<void> deleteChordSheet(String songId);
 }

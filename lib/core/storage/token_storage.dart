@@ -29,24 +29,29 @@ class TokenStorage {
     await _storage.write(key: _accessTokenKey, value: accessToken);
   }
 
-  Future<String?> getAccessToken() async {
-    return await _storage.read(key: _accessTokenKey);
-  }
+  Future<String?> getAccessToken() => _readSafe(_accessTokenKey);
 
-  Future<String?> getRefreshToken() async {
-    return await _storage.read(key: _refreshTokenKey);
-  }
+  Future<String?> getRefreshToken() => _readSafe(_refreshTokenKey);
 
-  Future<String?> getExpiresAt() async {
-    return await _storage.read(key: _expiresAtKey);
-  }
+  Future<String?> getExpiresAt() => _readSafe(_expiresAtKey);
 
   Future<void> saveDeviceId(String deviceId) async {
     await _storage.write(key: _deviceIdKey, value: deviceId);
   }
 
-  Future<String?> getDeviceId() async {
-    return await _storage.read(key: _deviceIdKey);
+  Future<String?> getDeviceId() => _readSafe(_deviceIdKey);
+
+  // Restoring app data to a new device (Android "switch/restore") copies the
+  // encrypted values but not the Keystore key that encrypted them, so reads
+  // fail with a BadPaddingException. Wipe the unreadable storage instead of
+  // throwing, otherwise callers (e.g. ApiClient's interceptor) hang forever.
+  Future<String?> _readSafe(String key) async {
+    try {
+      return await _storage.read(key: key);
+    } catch (_) {
+      await _storage.deleteAll();
+      return null;
+    }
   }
 
   Future<void> clearSession() async {
