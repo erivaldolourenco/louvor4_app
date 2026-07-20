@@ -103,6 +103,12 @@ class EventDetailCubit extends Cubit<EventDetailState> {
           participants: participants,
           currentUser: currentUser,
         ),
+        canEditChordSheet: _canCurrentUserEditChordSheet(
+          isProjectAdmin: isProjectAdmin,
+          projectMembers: projectMembers,
+          participants: participants,
+          currentUser: currentUser,
+        ),
         currentUserId: currentUser?.id,
         participantsLoadFailed: participantsFailed,
         songsLoadFailed: songsFailed,
@@ -157,6 +163,12 @@ class EventDetailCubit extends Cubit<EventDetailState> {
         participants: participants,
         skillsMap: _buildSkillsMap(skills),
         canAddSongs: _canCurrentUserAddSongs(
+          isProjectAdmin: isProjectAdmin,
+          projectMembers: _projectMembers,
+          participants: participants,
+          currentUser: _currentUser,
+        ),
+        canEditChordSheet: _canCurrentUserEditChordSheet(
           isProjectAdmin: isProjectAdmin,
           projectMembers: _projectMembers,
           participants: participants,
@@ -300,6 +312,37 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     required List<EventParticipant> participants,
     required UserDetailEntity? currentUser,
   }) {
+    return _currentUserHasPermission(
+      EventPermission.addSong,
+      isProjectAdmin: isProjectAdmin,
+      projectMembers: projectMembers,
+      participants: participants,
+      currentUser: currentUser,
+    );
+  }
+
+  bool _canCurrentUserEditChordSheet({
+    required bool isProjectAdmin,
+    required List<ProjectMemberEntity> projectMembers,
+    required List<EventParticipant> participants,
+    required UserDetailEntity? currentUser,
+  }) {
+    return _currentUserHasPermission(
+      EventPermission.editChordSheet,
+      isProjectAdmin: isProjectAdmin,
+      projectMembers: projectMembers,
+      participants: participants,
+      currentUser: currentUser,
+    );
+  }
+
+  bool _currentUserHasPermission(
+    EventPermission permission, {
+    required bool isProjectAdmin,
+    required List<ProjectMemberEntity> projectMembers,
+    required List<EventParticipant> participants,
+    required UserDetailEntity? currentUser,
+  }) {
     if (isProjectAdmin) return true;
 
     final currentUserId = currentUser?.id?.trim();
@@ -310,7 +353,7 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     }).toList();
 
     return participants.any((participant) {
-      if (!participant.permissions.contains(EventPermission.addSong)) {
+      if (!participant.permissions.contains(permission)) {
         return false;
       }
 

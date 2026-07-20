@@ -87,13 +87,16 @@ class _EventDetailView extends StatefulWidget {
 class _EventDetailViewState extends State<_EventDetailView>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  final ScrollController _scrollController = ScrollController();
   bool _programLoaded = false;
+  bool _headerCollapsed = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabChange);
+    _scrollController.addListener(_handleScroll);
   }
 
   void _handleTabChange() {
@@ -103,10 +106,19 @@ class _EventDetailViewState extends State<_EventDetailView>
     }
   }
 
+  void _handleScroll() {
+    final collapsed = _scrollController.offset > 4;
+    if (collapsed != _headerCollapsed) {
+      setState(() => _headerCollapsed = collapsed);
+    }
+  }
+
   @override
   void dispose() {
     _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
+    _scrollController.removeListener(_handleScroll);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -152,11 +164,13 @@ class _EventDetailViewState extends State<_EventDetailView>
           }
 
           return NestedScrollView(
+            controller: _scrollController,
             headerSliverBuilder: (context, innerBoxIsScrolled) {
               return [
                 HeaderProjectEvent(
                   title: event.projectTitle,
                   backgroundImageUrl: event.projectImageUrl,
+                  isCollapsed: _headerCollapsed,
                   actions: [
                     if (state.isProjectAdmin)
                       PopupMenuButton<_EventHeaderAction>(
@@ -426,13 +440,22 @@ class _EventDetailViewState extends State<_EventDetailView>
       final tempDir = await getTemporaryDirectory();
       final file = File('${tempDir.path}/roteiro_${widget.eventId}.pdf');
       await file.writeAsBytes(bytes, flush: true);
+      if (!mounted) return;
 
+      final box = context.findRenderObject() as RenderBox?;
       await Share.shareXFiles(
         [XFile(file.path, mimeType: 'application/pdf')],
         subject: 'Roteiro do evento',
+        sharePositionOrigin: box == null
+            ? null
+            : box.localToGlobal(Offset.zero) & box.size,
       );
-    } catch (_) {
-      if (mounted) AppFeedback.showError('Não foi possível exportar o roteiro em PDF.');
+    } catch (e) {
+      if (mounted) {
+        AppFeedback.showError(
+          'Não foi possível exportar o roteiro em PDF: ${e.toString().replaceFirst('Exception: ', '')}',
+        );
+      }
     }
   }
 
@@ -481,9 +504,11 @@ class _EventDetailTabs extends StatelessWidget {
           controller: controller,
           labelStyle: textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w700,
+            color: cs.primary,
           ),
           unselectedLabelStyle: textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w500,
+            color: cs.onSurfaceVariant,
           ),
           tabs: [
             for (var i = 0; i < tabs.length; i++)
@@ -702,25 +727,49 @@ class _ParticipantsTab extends StatelessWidget {
   }
 
   Widget _buildList(BuildContext context, EventDetailCubit cubit) {
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 2, 16, 36),
-      children: [
-        const SizedBox(height: 4),
-        if (state.participantsLoadFailed && state.participants.isEmpty)
-          _RetryTabState(
-            icon: Icons.group_off_rounded,
-            title: 'Não foi possível carregar a equipe',
-            subtitle: 'Verifique sua conexão e tente novamente.',
-            onRetry: onRefresh,
-          )
-        else if (state.participants.isEmpty)
-          const _EmptyTabState(
-            icon: Icons.group_off_rounded,
-            title: 'Sem participantes',
-            subtitle: 'Nenhum integrante foi vinculado a este evento.',
-          )
-        else
+    final cs = Theme.of(context).colorScheme;
+
+    if (state.participantsLoadFailed && state.participants.isEmpty) {
+      return Material(
+        color: cs.surface,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
+          children: [
+            _RetryTabState(
+              icon: Icons.group_off_rounded,
+              title: 'Não foi possível carregar a equipe',
+              subtitle: 'Verifique sua conexão e tente novamente.',
+              onRetry: onRefresh,
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (state.participants.isEmpty) {
+      return Material(
+        color: cs.surface,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
+          children: const [
+            _EmptyTabState(
+              icon: Icons.group_off_rounded,
+              title: 'Sem participantes',
+              subtitle: 'Nenhum integrante foi vinculado a este evento.',
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Material(
+      color: cs.surface,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(top: 8, bottom: 36),
+        children: [
           ...List.generate(state.participants.length, (index) {
             final participant = state.participants[index];
             final canRespondToInvite =
@@ -735,6 +784,7 @@ class _ParticipantsTab extends StatelessWidget {
                 skill: state.skillsMap[participant.skillId] ?? '',
                 status: participant.status,
                 profileImage: participant.profileImage,
+                showDivider: index < state.participants.length - 1,
                 onTap: () => showUserProfileDialog(
                   context,
                   name: participant.fullName,
@@ -759,7 +809,8 @@ class _ParticipantsTab extends StatelessWidget {
               ),
             );
           }),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -779,6 +830,37 @@ class _SongsTab extends StatelessWidget {
     final uri = Uri.tryParse(url);
     if (uri == null) return;
     await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  void _openLyrics(BuildContext context, dynamic song) {
+    if (song.songId == null) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => LyricsPage(
+          songId: song.songId!,
+          title: song.title,
+          artist: song.artist ?? 'Desconhecido',
+          canEdit: state.isSongOwner(song),
+        ),
+      ),
+    );
+  }
+
+  void _openChords(BuildContext context, dynamic song) {
+    if (song.songId == null) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChordSheetPage(
+          songId: song.songId!,
+          title: song.title,
+          artist: song.artist ?? 'Desconhecido',
+          initialKey: song.key,
+          initialBpm: song.bpm,
+          canEdit: state.canEditChordSheetOf(song),
+          canManageSharing: state.isSongOwner(song),
+        ),
+      ),
+    );
   }
 
   Map<String, List<dynamic>> _groupSongsByAddedBy() {
@@ -810,36 +892,66 @@ class _SongsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    if (state.songsLoadFailed && state.songs.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: () async => onRefresh(),
+        child: Material(
+          color: cs.surface,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
+            children: [
+              _RetryTabState(
+                icon: Icons.music_off_rounded,
+                title: 'Não foi possível carregar o repertório',
+                subtitle: 'Verifique sua conexão e tente novamente.',
+                onRetry: onRefresh,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (state.songs.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: () async => onRefresh(),
+        child: Material(
+          color: cs.surface,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
+            children: const [
+              _EmptyTabState(
+                icon: Icons.music_off_rounded,
+                title: 'Sem músicas',
+                subtitle:
+                    'Ainda não há repertório cadastrado para este evento.',
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final groupedSongs = _groupSongsByAddedBy();
 
     return RefreshIndicator(
       onRefresh: () async => onRefresh(),
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 2, 16, 36),
-        children: [
-          const SizedBox(height: 4),
-          if (state.songsLoadFailed && state.songs.isEmpty)
-            _RetryTabState(
-              icon: Icons.music_off_rounded,
-              title: 'Não foi possível carregar o repertório',
-              subtitle: 'Verifique sua conexão e tente novamente.',
-              onRetry: onRefresh,
-            )
-          else if (state.songs.isEmpty)
-            const _EmptyTabState(
-              icon: Icons.music_off_rounded,
-              title: 'Sem músicas',
-              subtitle: 'Ainda não há repertório cadastrado para este evento.',
-            )
-          else
-            ..._buildGroupedSongSections(
-              context,
-              groupedSongs,
-              state,
-              onRemoveSong,
-            ),
-        ],
+      child: Material(
+        color: cs.surface,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(top: 6, bottom: 36),
+          children: _buildGroupedSongSections(
+            context,
+            groupedSongs,
+            state,
+            onRemoveSong,
+          ),
+        ),
       ),
     );
   }
@@ -856,7 +968,7 @@ class _SongsTab extends StatelessWidget {
     for (final group in groupedSongs.entries) {
       children.add(
         Padding(
-          padding: const EdgeInsets.fromLTRB(4, 4, 4, 10),
+          padding: const EdgeInsets.fromLTRB(20, 4, 20, 10),
           child: Text(
             'Adicionado por: ${group.key}',
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -867,76 +979,60 @@ class _SongsTab extends StatelessWidget {
         ),
       );
       for (final song in group.value) {
+        final isMedleyItem = song.isMedley && song.medleyEntity != null;
+
         children.add(
           FadeSlideIn(
             delay: staggerDelay(staggerIndex++),
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: song.isMedley && song.medleyEntity != null
-                  ? MedleyCard(
-                      medley: song.medleyEntity!,
-                      onDelete:
-                          (state.canDeleteSong(song) &&
-                              state.deletingSongId != song.id)
-                          ? () => onRemoveSong(song.id)
-                          : null,
-                    )
-                  : SongListCard(
+            child: isMedleyItem
+                ? MedleyCard(
+                    medley: song.medleyEntity!,
+                    onDelete:
+                        (state.canDeleteSong(song) &&
+                            state.deletingSongId != song.id)
+                        ? () => onRemoveSong(song.id)
+                        : null,
+                  )
+                : SongListCard(
+                    title: song.title,
+                    artist: song.artist ?? 'Desconhecido',
+                    musicKey: song.key,
+                    bpm: song.bpm?.toString(),
+                    youTubeUrl: song.youTubeUrl,
+                    hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
+                    onTap: () => showSongDetailsModal(
+                      context,
                       title: song.title,
                       artist: song.artist ?? 'Desconhecido',
                       musicKey: song.key,
                       bpm: song.bpm?.toString(),
-                      youTubeUrl: song.youTubeUrl,
-                      hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
-                      onTap: () => showSongDetailsModal(
-                        context,
-                        title: song.title,
-                        artist: song.artist ?? 'Desconhecido',
-                        musicKey: song.key,
-                        bpm: song.bpm?.toString(),
-                        youTubeUrl: song.youTubeUrl ?? '',
-                        notes: song.notes,
-                        referenceAudioUrl: song.referenceAudioUrl,
-                      ),
-                      onOpenYoutube:
-                          (song.youTubeUrl != null &&
-                              song.youTubeUrl!.isNotEmpty)
-                          ? () => _launchYoutube(song.youTubeUrl!)
-                          : null,
+                      youTubeUrl: song.youTubeUrl ?? '',
+                      notes: song.notes,
+                      referenceAudioUrl: song.referenceAudioUrl,
                       onOpenLyrics: song.songId == null
                           ? null
-                          : () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => LyricsPage(
-                                  songId: song.songId!,
-                                  title: song.title,
-                                  artist: song.artist ?? 'Desconhecido',
-                                  canEdit: state.isSongOwner(song),
-                                ),
-                              ),
-                            ),
+                          : () => _openLyrics(context, song),
                       onOpenChords: song.songId == null
                           ? null
-                          : () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => ChordSheetPage(
-                                  songId: song.songId!,
-                                  title: song.title,
-                                  artist: song.artist ?? 'Desconhecido',
-                                  initialKey: song.key,
-                                  initialBpm: song.bpm,
-                                  canEdit: state.isSongOwner(song),
-                                ),
-                              ),
-                            ),
-                      onDelete:
-                          (state.canDeleteSong(song) &&
-                              state.deletingSongId != song.id)
-                          ? () => onRemoveSong(song.id)
-                          : null,
-                      isRemoving: state.deletingSongId == song.id,
+                          : () => _openChords(context, song),
                     ),
-            ),
+                    onOpenYoutube:
+                        (song.youTubeUrl != null && song.youTubeUrl!.isNotEmpty)
+                        ? () => _launchYoutube(song.youTubeUrl!)
+                        : null,
+                    onOpenLyrics: song.songId == null
+                        ? null
+                        : () => _openLyrics(context, song),
+                    onOpenChords: song.songId == null
+                        ? null
+                        : () => _openChords(context, song),
+                    onDelete:
+                        (state.canDeleteSong(song) &&
+                            state.deletingSongId != song.id)
+                        ? () => onRemoveSong(song.id)
+                        : null,
+                    isRemoving: state.deletingSongId == song.id,
+                  ),
           ),
         );
       }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_radius.dart';
 import '../../utils/youtube_utils.dart';
-import 'app_card_surface.dart';
 import 'app_circular_action_button.dart';
 import 'spring_tap.dart';
 
@@ -61,9 +60,13 @@ class SongListCard extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
-    Widget cardContent = AppCardSurface(
-      radius: 22,
-      borderColor: cs.primary.withValues(alpha: 0.3),
+    Widget cardContent = Container(
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerLow,
+        border: Border.symmetric(
+          horizontal: BorderSide(color: cs.outlineVariant),
+        ),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -113,7 +116,6 @@ class SongListCard extends StatelessWidget {
 
           // ── Actions section ───────────────────────────────────────
           if (_hasActions) ...[
-            Divider(height: 1, thickness: 1, color: cs.outlineVariant),
             Padding(
               padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
               child: isRemoving
@@ -187,10 +189,7 @@ class SongListCard extends StatelessWidget {
         direction: DismissDirection.endToStart,
         confirmDismiss: (_) => onRemove!(),
         background: Container(
-          decoration: BoxDecoration(
-            color: cs.error,
-            borderRadius: BorderRadius.circular(22),
-          ),
+          color: cs.error,
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Icon(Icons.delete_outline, color: cs.onError, size: 28),
@@ -199,11 +198,13 @@ class SongListCard extends StatelessWidget {
       );
     }
 
-    return SpringTap(
-      onTap: onTap,
-      pressedScale: 0.97,
-      borderRadius: BorderRadius.circular(22),
-      child: cardContent,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: SpringTap(
+        onTap: onTap,
+        pressedScale: 0.97,
+        child: cardContent,
+      ),
     );
   }
 }

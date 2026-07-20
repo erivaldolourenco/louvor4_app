@@ -147,14 +147,34 @@ class SongsRepositoryImpl implements SongsRepository {
     }
   }
 
+  @override
+  Future<bool> updateChordSheetEditPermission(
+    String songId,
+    bool editPermission,
+  ) async {
+    try {
+      final response = await _dio.put(
+        '/songs/$songId/chord-sheet/edit-permission',
+        data: {'editPermission': editPermission},
+      );
+      final data = response.data;
+      return data is Map && data['editPermission'] == true;
+    } on DioException catch (e) {
+      throw Exception(_extractApiErrorMessage(e));
+    }
+  }
+
   ChordSheetEntity? _parseChordSheetResponse(dynamic data) {
     final raw = data is Map ? data['chordSheetJson'] : null;
     final normalized = raw?.toString().trim();
     if (normalized == null || normalized.isEmpty) return null;
     final decoded = jsonDecode(normalized);
-    return ChordSheetEntity.fromJson(Map<String, dynamic>.from(decoded as Map));
+    final entity = ChordSheetEntity.fromJson(
+      Map<String, dynamic>.from(decoded as Map),
+    );
+    final editPermission = data is Map && data['editPermission'] == true;
+    return entity.copyWith(editPermission: editPermission);
   }
 
-  String _extractApiErrorMessage(DioException e) =>
-      extractApiErrorMessage(e);
+  String _extractApiErrorMessage(DioException e) => extractApiErrorMessage(e);
 }

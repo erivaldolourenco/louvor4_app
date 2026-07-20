@@ -453,44 +453,52 @@ class _SongsContentState extends State<_SongsContent>
                 ),
               ],
             )
-          : ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 90),
-              itemBuilder: (_, index) {
-                final song = filteredSongs[index];
-                return SongListCard(
-                  title: song.title,
-                  artist: song.artist,
-                  musicKey: song.key,
-                  bpm: song.bpm,
-                  youTubeUrl: song.youTubeUrl,
-                  hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
-                  onTap: () => showSongDetailsModal(
-                    context,
+          : Material(
+              color: Theme.of(context).colorScheme.surface,
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.only(top: 10, bottom: 90),
+                itemBuilder: (_, index) {
+                  final song = filteredSongs[index];
+                  return SongListCard(
                     title: song.title,
                     artist: song.artist,
                     musicKey: song.key,
                     bpm: song.bpm,
                     youTubeUrl: song.youTubeUrl,
-                    notes: song.notes,
-                    referenceAudioUrl: song.referenceAudioUrl,
-                  ),
-                  onOpenYoutube: () => _openYouTube(song.youTubeUrl),
-                  onEdit: song.id == null ? null : () => _goToEdit(song.id!),
-                  onDelete: song.id == null
-                      ? null
-                      : () => _confirmDeleteSong(song),
-                  onOpenLyrics: song.id == null
-                      ? null
-                      : () => _goToLyrics(song),
-                  onOpenChords: song.id == null
-                      ? null
-                      : () => _goToChords(song),
-                  isRemoving: song.id != null && _deletingSongId == song.id,
-                );
-              },
-              separatorBuilder: (_, _) => const SizedBox(height: 10),
-              itemCount: filteredSongs.length,
+                    hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
+                    onTap: () => showSongDetailsModal(
+                      context,
+                      title: song.title,
+                      artist: song.artist,
+                      musicKey: song.key,
+                      bpm: song.bpm,
+                      youTubeUrl: song.youTubeUrl,
+                      notes: song.notes,
+                      referenceAudioUrl: song.referenceAudioUrl,
+                      onOpenLyrics: song.id == null
+                          ? null
+                          : () => _goToLyrics(song),
+                      onOpenChords: song.id == null
+                          ? null
+                          : () => _goToChords(song),
+                    ),
+                    onOpenYoutube: () => _openYouTube(song.youTubeUrl),
+                    onEdit: song.id == null ? null : () => _goToEdit(song.id!),
+                    onDelete: song.id == null
+                        ? null
+                        : () => _confirmDeleteSong(song),
+                    onOpenLyrics: song.id == null
+                        ? null
+                        : () => _goToLyrics(song),
+                    onOpenChords: song.id == null
+                        ? null
+                        : () => _goToChords(song),
+                    isRemoving: song.id != null && _deletingSongId == song.id,
+                  );
+                },
+                itemCount: filteredSongs.length,
+              ),
             ),
     );
   }
@@ -554,19 +562,21 @@ class _SongsContentState extends State<_SongsContent>
                     ),
                   ],
                 )
-              : ListView.separated(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
-                  itemCount: filteredMedleys.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 10),
-                  itemBuilder: (_, i) {
-                    final medley = filteredMedleys[i];
-                    return MedleyCard(
-                      medley: medley,
-                      onEdit: () => _openEditMedley(medley),
-                      onDelete: () => _confirmDeleteMedley(medley),
-                    );
-                  },
+              : Material(
+                  color: Theme.of(context).colorScheme.surface,
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.only(top: 12, bottom: 90),
+                    itemCount: filteredMedleys.length,
+                    itemBuilder: (_, i) {
+                      final medley = filteredMedleys[i];
+                      return MedleyCard(
+                        medley: medley,
+                        onEdit: () => _openEditMedley(medley),
+                        onDelete: () => _confirmDeleteMedley(medley),
+                      );
+                    },
+                  ),
                 ),
         );
       },

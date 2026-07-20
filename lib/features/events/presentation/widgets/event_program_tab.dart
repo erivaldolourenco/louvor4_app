@@ -42,7 +42,7 @@ class EventProgramTab extends StatelessWidget {
           return RefreshIndicator(
             onRefresh: cubit.loadProgram,
             child: Material(
-              color: cs.surfaceContainerLow,
+              color: cs.surface,
               child: ListView(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 36),
@@ -60,7 +60,7 @@ class EventProgramTab extends StatelessWidget {
         return RefreshIndicator(
           onRefresh: cubit.loadProgram,
           child: Material(
-            color: cs.surfaceContainerLow,
+            color: cs.surface,
             child: ReorderableListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.only(bottom: 36),

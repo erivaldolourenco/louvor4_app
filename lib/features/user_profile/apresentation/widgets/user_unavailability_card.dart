@@ -25,12 +25,9 @@ class UserUnavailabilityCard extends StatelessWidget {
     final cs = theme.colorScheme;
     final period = _buildPeriodLabel();
     final mappedProjects = _resolveProjects();
-    final subtitleColor = theme.brightness == Brightness.dark
-        ? cs.onSurfaceVariant
-        : cs.onSurfaceVariant;
 
     return AppCardSurface(
-      radius: 24,
+      radius: AppRadius.cardLarge,
       padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,9 +39,7 @@ class UserUnavailabilityCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: theme.brightness == Brightness.dark
-                      ? cs.primaryContainer
-                      : cs.primaryContainer,
+                  color: cs.primaryContainer,
                   borderRadius: BorderRadius.circular(AppRadius.card),
                 ),
                 child: Icon(
@@ -67,7 +62,7 @@ class UserUnavailabilityCard extends StatelessWidget {
                     Text(
                       item.description,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: subtitleColor,
+                        color: cs.onSurfaceVariant,
                         height: 1.45,
                       ),
                     ),
@@ -77,12 +72,20 @@ class UserUnavailabilityCard extends StatelessWidget {
               const SizedBox(width: 12),
               IconButton.filledTonal(
                 tooltip: 'Excluir indisponibilidade',
+                style: IconButton.styleFrom(
+                  foregroundColor: cs.onErrorContainer,
+                  backgroundColor: cs.errorContainer,
+                  shape: const CircleBorder(),
+                ),
                 onPressed: isDeleting ? null : onDelete,
                 icon: isDeleting
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 18,
                         height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: cs.onErrorContainer,
+                        ),
                       )
                     : const Icon(Icons.delete_outline_rounded),
               ),

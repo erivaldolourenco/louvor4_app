@@ -121,6 +121,9 @@ abstract final class AppColors {
   static const warningSubtleLight = Color(0xFFFFF6E5);
   static const warningSubtleDark = Color(0xFF3F2A13);
 
+  static const warningTextLight = Color(0xFF92400E);
+  static const warningTextDark = Color(0xFFFCD34D);
+
   // ── Primary tints (fundos sutis para ícones/badges azuis) ────────────────
 
   static const primarySubtleLight = Color(0xFFEFF6FF);

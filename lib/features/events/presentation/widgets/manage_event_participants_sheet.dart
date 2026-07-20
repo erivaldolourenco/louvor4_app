@@ -54,7 +54,9 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
         return DecoratedBox(
           decoration: BoxDecoration(
             color: cs.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppRadius.sheet),
+            ),
           ),
           child: SafeArea(
             top: false,
@@ -94,19 +96,21 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                                   children: [
                                     Text(
                                       'Gerenciar escala',
-                                      style: theme.textTheme.titleLarge?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                        color: cs.onSurface,
-                                      ),
+                                      style: theme.textTheme.titleLarge
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w700,
+                                            color: cs.onSurface,
+                                          ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
                                       event.title,
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
-                                      style: theme.textTheme.bodyMedium?.copyWith(
-                                        color: cs.onSurfaceVariant,
-                                      ),
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            color: cs.onSurfaceVariant,
+                                          ),
                                     ),
                                   ],
                                 ),
@@ -122,7 +126,9 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: cs.errorContainer,
-                                borderRadius: BorderRadius.circular(AppRadius.card),
+                                borderRadius: BorderRadius.circular(
+                                  AppRadius.card,
+                                ),
                                 border: Border.all(
                                   color: cs.error.withValues(alpha: 0.3),
                                 ),
@@ -181,9 +187,7 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: cs.surface,
                             border: Border(
-                              top: BorderSide(
-                                color: cs.outlineVariant,
-                              ),
+                              top: BorderSide(color: cs.outlineVariant),
                             ),
                           ),
                           child: Row(
@@ -313,10 +317,7 @@ class _SelectableMemberCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Divider(
-                      height: 1,
-                      color: cs.outlineVariant,
-                    ),
+                    Divider(height: 1, color: cs.outlineVariant),
                     const SizedBox(height: 14),
                     Text(
                       'Função no evento',
@@ -355,9 +356,7 @@ class _SelectableMemberCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     SwitchListTile(
-                      value: item.permissions.contains(
-                        EventPermission.addSong,
-                      ),
+                      value: item.permissions.contains(EventPermission.addSong),
                       onChanged: (value) => cubit.togglePermission(
                         item.member.id,
                         EventPermission.addSong,
@@ -365,6 +364,18 @@ class _SelectableMemberCard extends StatelessWidget {
                       ),
                       contentPadding: EdgeInsets.zero,
                       title: const Text('Permite adicionar músicas'),
+                    ),
+                    SwitchListTile(
+                      value: item.permissions.contains(
+                        EventPermission.editChordSheet,
+                      ),
+                      onChanged: (value) => cubit.togglePermission(
+                        item.member.id,
+                        EventPermission.editChordSheet,
+                        value,
+                      ),
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Permite editar cifra'),
                     ),
                   ],
                 ),
@@ -443,10 +454,7 @@ class _MemberAvatar extends StatelessWidget {
       backgroundImage: hasImage ? appCachedImageProvider(imageUrl) : null,
       child: hasImage
           ? null
-          : Icon(
-              Icons.person_rounded,
-              color: cs.onSurfaceVariant,
-            ),
+          : Icon(Icons.person_rounded, color: cs.onSurfaceVariant),
     );
   }
 }

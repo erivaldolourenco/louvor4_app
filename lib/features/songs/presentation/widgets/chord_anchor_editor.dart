@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../domain/entities/chord_sheet_entity.dart';
 import 'chord_line_editor.dart';
 import 'chord_sheet_editor.dart';
@@ -17,23 +16,29 @@ class ChordAnchorEditor extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         for (int i = 0; i < draft.sections.length; i++) ...[
-          if (i > 0) const SizedBox(height: 14),
-          _ChordAnchorSectionCard(section: draft.sections[i], onChanged: onChanged),
+          if (i > 0) ...[
+            const SizedBox(height: 14),
+            Divider(height: 1, color: cs.outlineVariant.withValues(alpha: 0.5)),
+            const SizedBox(height: 14),
+          ],
+          _ChordAnchorSection(section: draft.sections[i], onChanged: onChanged),
         ],
       ],
     );
   }
 }
 
-class _ChordAnchorSectionCard extends StatelessWidget {
+class _ChordAnchorSection extends StatelessWidget {
   final EditableSection section;
   final VoidCallback onChanged;
 
-  const _ChordAnchorSectionCard({required this.section, required this.onChanged});
+  const _ChordAnchorSection({required this.section, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -41,56 +46,53 @@ class _ChordAnchorSectionCard extends StatelessWidget {
     final theme = Theme.of(context);
     final label = section.labelController.text;
 
-    return AppCardSurface(
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: cs.secondaryContainer,
-                  borderRadius: BorderRadius.circular(8),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: cs.secondaryContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                section.type.ptLabel,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: cs.onSecondaryContainer,
+                  fontWeight: FontWeight.w700,
                 ),
+              ),
+            ),
+            if (label.isNotEmpty) ...[
+              const SizedBox(width: 8),
+              Expanded(
                 child: Text(
-                  section.type.ptLabel,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: cs.onSecondaryContainer,
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              if (label.isNotEmpty) ...[
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
             ],
-          ),
-          if (section.type == ChordSectionType.chordSequence) ...[
-            const SizedBox(height: 10),
-            ChordSequenceEditor(section: section, onChanged: onChanged),
-          ] else if (section.lines.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            for (final line in section.lines)
-              Padding(
-                key: ValueKey(line.localId),
-                padding: const EdgeInsets.only(bottom: 4),
-                child: ChordAnchorLineRow(line: line, onChanged: onChanged),
-              ),
           ],
+        ),
+        if (section.type == ChordSectionType.chordSequence) ...[
+          const SizedBox(height: 10),
+          ChordSequenceEditor(section: section, onChanged: onChanged),
+        ] else if (section.lines.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          for (final line in section.lines)
+            Padding(
+              key: ValueKey(line.localId),
+              padding: const EdgeInsets.only(bottom: 4),
+              child: ChordAnchorLineRow(line: line, onChanged: onChanged),
+            ),
         ],
-      ),
+      ],
     );
   }
 }

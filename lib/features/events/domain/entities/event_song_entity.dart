@@ -17,6 +17,10 @@ class EventSong {
   final SetlistItemType type;
   final MedleyEntity? medleyEntity;
 
+  /// Se `true`, o dono da música permitiu que outros membros do evento (com
+  /// a permissão [EventPermission.editChordSheet]) editem a cifra dela.
+  final bool editChordSheetPermission;
+
   const EventSong({
     required this.id,
     this.songId,
@@ -31,6 +35,7 @@ class EventSong {
     this.addedByUserId,
     this.type = SetlistItemType.song,
     this.medleyEntity,
+    this.editChordSheetPermission = false,
   });
 
   bool get isMedley => type == SetlistItemType.medley;
@@ -74,6 +79,7 @@ class EventSong {
       referenceAudioUrl: song['referenceAudioUrl']?.toString(),
       addedBy: json['addedBy']?.toString() ?? '',
       addedByUserId: json['addedByUserId']?.toString(),
+      editChordSheetPermission: song['editChordSheetPermission'] == true,
     );
   }
 

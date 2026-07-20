@@ -22,6 +22,8 @@ Future<void> showSongDetailsModal(
   required String youTubeUrl,
   String? notes,
   String? referenceAudioUrl,
+  VoidCallback? onOpenLyrics,
+  VoidCallback? onOpenChords,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -29,7 +31,9 @@ Future<void> showSongDetailsModal(
     isScrollControlled: true,
     backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.bottomSheet)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppRadius.bottomSheet),
+      ),
     ),
     builder: (sheetContext) {
       return SongDetailsSheet(
@@ -40,6 +44,8 @@ Future<void> showSongDetailsModal(
         youTubeUrl: youTubeUrl,
         notes: notes,
         referenceAudioUrl: referenceAudioUrl,
+        onOpenLyrics: onOpenLyrics,
+        onOpenChords: onOpenChords,
       );
     },
   );
@@ -53,6 +59,8 @@ class SongDetailsSheet extends StatelessWidget {
   final String youTubeUrl;
   final String? notes;
   final String? referenceAudioUrl;
+  final VoidCallback? onOpenLyrics;
+  final VoidCallback? onOpenChords;
 
   const SongDetailsSheet({
     super.key,
@@ -63,6 +71,8 @@ class SongDetailsSheet extends StatelessWidget {
     required this.youTubeUrl,
     this.notes,
     this.referenceAudioUrl,
+    this.onOpenLyrics,
+    this.onOpenChords,
   });
 
   Future<void> _openYouTube(BuildContext context) async {
@@ -81,8 +91,7 @@ class SongDetailsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final mutedColor =
-        cs.onSurfaceVariant;
+    final mutedColor = cs.onSurfaceVariant;
 
     final normalizedKey = musicKey?.trim();
     final normalizedBpm = bpm?.trim();
@@ -201,6 +210,64 @@ class SongDetailsSheet extends StatelessWidget {
                   _AudioPlayer(url: referenceAudioUrl!),
                 ],
 
+                // ── Botão letra ──────────────────────────────────
+                if (onOpenLyrics != null) ...[
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      onOpenLyrics!();
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: cs.secondaryContainer,
+                      foregroundColor: cs.onSecondaryContainer,
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.input),
+                        side: BorderSide(
+                          color: cs.secondary.withValues(alpha: 0.4),
+                        ),
+                      ),
+                    ),
+                    icon: const Icon(Icons.lyrics_outlined),
+                    label: Text(
+                      'Ver letra',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+
+                // ── Botão cifra ──────────────────────────────────
+                if (onOpenChords != null) ...[
+                  const SizedBox(height: 16),
+                  FilledButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      onOpenChords!();
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: cs.primaryContainer,
+                      foregroundColor: cs.onPrimaryContainer,
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.input),
+                        side: BorderSide(
+                          color: cs.primary.withValues(alpha: 0.4),
+                        ),
+                      ),
+                    ),
+                    icon: const Icon(Icons.music_note_rounded),
+                    label: Text(
+                      'Ver cifra',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+
                 // ── Botão YouTube ──────────────────────────────────
                 if (hasYouTube) ...[
                   const SizedBox(height: 16),
@@ -212,13 +279,17 @@ class SongDetailsSheet extends StatelessWidget {
                       minimumSize: const Size.fromHeight(50),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppRadius.input),
-                        side: BorderSide(color: cs.tertiary.withValues(alpha: 0.4)),
+                        side: BorderSide(
+                          color: cs.tertiary.withValues(alpha: 0.4),
+                        ),
                       ),
                     ),
                     icon: const Icon(Icons.ondemand_video_rounded),
                     label: Text(
                       'Abrir no YouTube',
-                      style: theme.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
@@ -322,12 +393,9 @@ class _AudioPlayerState extends State<_AudioPlayer> {
     final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final mutedColor =
-        cs.onSurfaceVariant;
-    final borderColor =
-        cs.outlineVariant;
-    final bgColor =
-        isDark ? cs.surfaceContainerLow : cs.surfaceContainerHigh;
+    final mutedColor = cs.onSurfaceVariant;
+    final borderColor = cs.outlineVariant;
+    final bgColor = isDark ? cs.surfaceContainerLow : cs.surfaceContainerHigh;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
@@ -407,9 +475,10 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                         final maxVal =
                             duration?.inMilliseconds.toDouble() ?? 0.0;
                         final curVal = maxVal > 0
-                            ? position.inMilliseconds
-                                .toDouble()
-                                .clamp(0.0, maxVal)
+                            ? position.inMilliseconds.toDouble().clamp(
+                                0.0,
+                                maxVal,
+                              )
                             : 0.0;
 
                         return Row(
@@ -445,19 +514,18 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                                   SliderTheme(
                                     data: SliderTheme.of(context).copyWith(
                                       trackHeight: 3,
-                                      thumbShape:
-                                          RoundSliderThumbShape(
+                                      thumbShape: RoundSliderThumbShape(
                                         enabledThumbRadius: 6,
                                       ),
-                                      overlayShape:
-                                          RoundSliderOverlayShape(
+                                      overlayShape: RoundSliderOverlayShape(
                                         overlayRadius: 14,
                                       ),
                                       activeTrackColor: cs.primary,
                                       inactiveTrackColor: borderColor,
                                       thumbColor: cs.primary,
-                                      overlayColor: cs.primary
-                                          .withValues(alpha: 0.15),
+                                      overlayColor: cs.primary.withValues(
+                                        alpha: 0.15,
+                                      ),
                                     ),
                                     child: Slider(
                                       value: curVal,
@@ -465,10 +533,8 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                                       max: maxVal > 0 ? maxVal : 1,
                                       onChanged: maxVal > 0
                                           ? (v) => _player.seek(
-                                                Duration(
-                                                  milliseconds: v.toInt(),
-                                                ),
-                                              )
+                                              Duration(milliseconds: v.toInt()),
+                                            )
                                           : null,
                                     ),
                                   ),
@@ -522,8 +588,9 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                   IconButton(
                     icon: Icon(Icons.remove_rounded, size: 20),
                     color: _semitones > -12 ? cs.primary : mutedColor,
-                    onPressed:
-                        _semitones > -12 ? () => _changeSemitones(-1) : null,
+                    onPressed: _semitones > -12
+                        ? () => _changeSemitones(-1)
+                        : null,
                   ),
                   Expanded(
                     child: Text(
@@ -538,8 +605,9 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                   IconButton(
                     icon: Icon(Icons.add_rounded, size: 20),
                     color: _semitones < 12 ? cs.primary : mutedColor,
-                    onPressed:
-                        _semitones < 12 ? () => _changeSemitones(1) : null,
+                    onPressed: _semitones < 12
+                        ? () => _changeSemitones(1)
+                        : null,
                   ),
                 ],
               ),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_radius.dart';
@@ -5,51 +7,33 @@ import '../../../../core/ui/widgets/spring_tap.dart';
 import '../../domain/entities/chord_sheet_entity.dart';
 import 'chord_sheet_editor.dart';
 
-const _monoStyle = TextStyle(fontFamily: 'monospace', fontSize: 15, height: 1.4);
-
-/// Linha da cifra no modo "Editar letra": campo de texto sempre editável,
-/// repetição e remoção. Não lida com acordes.
-class LyricsLineRow extends StatelessWidget {
-  final EditableLine line;
-  final VoidCallback onRemove;
-
-  const LyricsLineRow({super.key, required this.line, required this.onRemove});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: TextField(
-            controller: line.textController,
-            style: _monoStyle,
-            decoration: const InputDecoration(
-              isDense: true,
-              hintText: 'Texto da linha (pode ficar vazio p/ instrumental)',
-            ),
-          ),
-        ),
-        IconButton(
-          tooltip: 'Remover linha',
-          visualDensity: VisualDensity.compact,
-          icon: Icon(Icons.close_rounded, color: cs.onSurfaceVariant),
-          onPressed: onRemove,
-        ),
-      ],
-    );
-  }
-}
+const _monoStyle = TextStyle(
+  fontFamily: 'monospace',
+  fontSize: 15,
+  height: 1.4,
+);
 
 /// Linha da cifra no modo "Cifrar": texto somente leitura com os acordes já
 /// ancorados exibidos acima; tocar em qualquer ponto do texto abre o diálogo
 /// pra adicionar/editar/remover o acorde naquela posição.
-class ChordAnchorLineRow extends StatelessWidget {
+class ChordAnchorLineRow extends StatefulWidget {
   final EditableLine line;
   final VoidCallback onChanged;
 
-  const ChordAnchorLineRow({super.key, required this.line, required this.onChanged});
+  const ChordAnchorLineRow({
+    super.key,
+    required this.line,
+    required this.onChanged,
+  });
+
+  @override
+  State<ChordAnchorLineRow> createState() => _ChordAnchorLineRowState();
+}
+
+class _ChordAnchorLineRowState extends State<ChordAnchorLineRow> {
+  int? _highlightedPosition;
+
+  EditableLine get line => widget.line;
 
   double _charWidth() {
     final painter = TextPainter(
@@ -59,34 +43,58 @@ class ChordAnchorLineRow extends StatelessWidget {
     return painter.width;
   }
 
+  /// Faixa tocável antes do início do texto, pra dar espaço pra ancorar um
+  /// acorde que soa antes da primeira palavra da frase (posição 0).
+  double _leadingWidth() => _charWidth() * 1.5;
+
+  /// Acha o acorde cujo badge cobre o toque em [dx], considerando a largura
+  /// visual inteira do badge (não só o ponto onde ele foi ancorado) — o
+  /// nome do acorde pode ter vários caracteres e o toque pode cair em
+  /// qualquer parte dele, não só bem no início.
+  EditableChordAnchor? _hitTestAnchor(double dx) {
+    const horizontalPadding = 8.0; // Container(padding: horizontal: 4) * 2
+    const slack = 6.0; // folga extra pra facilitar o toque
+    final charWidth = _charWidth();
+    final leadingWidth = _leadingWidth();
+
+    for (final anchor in line.chords) {
+      final left = leadingWidth + anchor.position * charWidth;
+      final width = anchor.chord.length * charWidth + horizontalPadding;
+      if (dx >= left - slack && dx <= left + width + slack) {
+        return anchor;
+      }
+    }
+    return null;
+  }
+
   Future<void> _handleTap(
     BuildContext context,
     TapUpDetails details,
     String text,
   ) async {
-    final painter = TextPainter(
-      text: TextSpan(text: text.isEmpty ? ' ' : text, style: _monoStyle),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    final rawOffset = painter.getPositionForOffset(details.localPosition).offset;
-    final position = rawOffset.clamp(0, text.length);
-
-    final charWidth = _charWidth();
-    EditableChordAnchor? nearest;
-    var nearestDistance = double.infinity;
-    for (final anchor in line.chords) {
-      final distance = (anchor.position - position).abs() * charWidth;
-      if (distance < nearestDistance) {
-        nearestDistance = distance;
-        nearest = anchor;
-      }
+    final dx = details.localPosition.dx - _leadingWidth();
+    final int position;
+    if (dx < 0) {
+      // Toque na faixa extra antes do texto: acorde soa antes da frase.
+      position = -1;
+    } else {
+      final painter = TextPainter(
+        text: TextSpan(text: text.isEmpty ? ' ' : text, style: _monoStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      final rawOffset = painter.getPositionForOffset(Offset(dx, 0)).offset;
+      position = rawOffset.clamp(0, text.length);
     }
-    final existing = nearestDistance <= charWidth / 2 ? nearest : null;
 
-    final result = await showDialog<_ChordAnchorResult>(
-      context: context,
-      builder: (ctx) => _ChordAnchorDialog(initialChord: existing?.chord),
+    final existing = _hitTestAnchor(details.localPosition.dx);
+
+    setState(() => _highlightedPosition = existing?.position ?? position);
+    final result = await _showChordAnchorPopover(
+      context,
+      globalPosition: details.globalPosition,
+      initialChord: existing?.chord,
     );
+    if (mounted) setState(() => _highlightedPosition = null);
     if (result == null) return;
     if (result.remove) {
       if (existing != null) line.chords.remove(existing);
@@ -101,7 +109,7 @@ class ChordAnchorLineRow extends StatelessWidget {
         ),
       );
     }
-    onChanged();
+    widget.onChanged();
   }
 
   @override
@@ -109,6 +117,7 @@ class ChordAnchorLineRow extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final text = line.textController.text;
     final charWidth = _charWidth();
+    final leadingWidth = _leadingWidth();
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -118,8 +127,21 @@ class ChordAnchorLineRow extends StatelessWidget {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
+            if (_highlightedPosition != null)
+              Positioned(
+                left: leadingWidth + _highlightedPosition! * charWidth,
+                top: 20,
+                width: charWidth,
+                height: _monoStyle.fontSize! * (_monoStyle.height ?? 1),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: cs.primary.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
             Padding(
-              padding: const EdgeInsets.only(top: 20),
+              padding: EdgeInsets.only(top: 20, left: leadingWidth),
               child: Text(
                 text.isEmpty
                     ? '(instrumental — toque para ancorar acordes)'
@@ -134,7 +156,7 @@ class ChordAnchorLineRow extends StatelessWidget {
             ),
             for (final anchor in line.chords)
               Positioned(
-                left: anchor.position * charWidth,
+                left: leadingWidth + anchor.position * charWidth,
                 top: 0,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
@@ -196,7 +218,10 @@ class ChordSequenceEditor extends StatelessWidget {
     onChanged();
   }
 
-  Future<void> _editChord(BuildContext context, EditableChordAnchor anchor) async {
+  Future<void> _editChord(
+    BuildContext context,
+    EditableChordAnchor anchor,
+  ) async {
     final result = await showDialog<_ChordAnchorResult>(
       context: context,
       builder: (ctx) => _ChordAnchorDialog(initialChord: anchor.chord),
@@ -303,6 +328,161 @@ class _ChordChip extends StatelessWidget {
   }
 }
 
+/// Mostra um popover compacto ancorado perto de [globalPosition] (o ponto
+/// tocado na linha), em vez de um dialog modal centralizado — assim o
+/// caractere/posição destacada continua visível enquanto o usuário digita o
+/// acorde.
+Future<_ChordAnchorResult?> _showChordAnchorPopover(
+  BuildContext context, {
+  required Offset globalPosition,
+  String? initialChord,
+}) {
+  final completer = Completer<_ChordAnchorResult?>();
+  final overlay = Overlay.of(context);
+  final screenSize = MediaQuery.of(context).size;
+
+  const popoverWidth = 240.0;
+  final showBelow = globalPosition.dy < screenSize.height * 0.55;
+  final left = (globalPosition.dx - popoverWidth / 2).clamp(
+    12.0,
+    screenSize.width - popoverWidth - 12.0,
+  );
+
+  late OverlayEntry entry;
+
+  void dismiss(_ChordAnchorResult? result) {
+    if (completer.isCompleted) return;
+    entry.remove();
+    completer.complete(result);
+  }
+
+  entry = OverlayEntry(
+    builder: (ctx) => Stack(
+      children: [
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () => dismiss(null),
+          ),
+        ),
+        Positioned(
+          left: left,
+          top: showBelow ? globalPosition.dy + 20 : null,
+          bottom: showBelow ? null : screenSize.height - globalPosition.dy + 20,
+          width: popoverWidth,
+          child: Material(
+            elevation: 6,
+            borderRadius: BorderRadius.circular(16),
+            color: Theme.of(ctx).colorScheme.surfaceContainerHigh,
+            child: _ChordAnchorPopoverContent(
+              initialChord: initialChord,
+              onResult: dismiss,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+
+  overlay.insert(entry);
+  return completer.future;
+}
+
+class _ChordAnchorPopoverContent extends StatefulWidget {
+  final String? initialChord;
+  final ValueChanged<_ChordAnchorResult?> onResult;
+
+  const _ChordAnchorPopoverContent({
+    required this.initialChord,
+    required this.onResult,
+  });
+
+  @override
+  State<_ChordAnchorPopoverContent> createState() =>
+      _ChordAnchorPopoverContentState();
+}
+
+class _ChordAnchorPopoverContentState
+    extends State<_ChordAnchorPopoverContent> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialChord ?? '',
+  );
+  String? _error;
+
+  bool get _isEditing => widget.initialChord != null;
+
+  static final _popoverButtonStyle = TextButton.styleFrom(
+    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+    minimumSize: Size.zero,
+    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!isValidChordName(_controller.text)) {
+      setState(() => _error = 'Acorde inválido (ex: C, Am7, D/F#)');
+      return;
+    }
+    widget.onResult(_ChordAnchorResult(chord: _controller.text.trim()));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: _controller,
+            autofocus: true,
+            textCapitalization: TextCapitalization.characters,
+            decoration: InputDecoration(
+              isDense: true,
+              labelText: 'Acorde',
+              hintText: 'Ex: C, Am7, D/F#',
+              errorText: _error,
+            ),
+            onChanged: (_) => setState(() => _error = null),
+            onSubmitted: (_) => _submit(),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            alignment: WrapAlignment.end,
+            spacing: 4,
+            runSpacing: 4,
+            children: [
+              if (_isEditing)
+                TextButton(
+                  style: _popoverButtonStyle,
+                  onPressed: () =>
+                      widget.onResult(const _ChordAnchorResult(remove: true)),
+                  child: const Text('Remover'),
+                ),
+              TextButton(
+                style: _popoverButtonStyle,
+                onPressed: () => widget.onResult(null),
+                child: const Text('Cancelar'),
+              ),
+              FilledButton(
+                style: _popoverButtonStyle,
+                onPressed: _submit,
+                child: const Text('Salvar'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ChordAnchorResult {
   final String? chord;
   final bool remove;
@@ -353,8 +533,9 @@ class _ChordAnchorDialogState extends State<_ChordAnchorDialog> {
       actions: [
         if (isEditing)
           TextButton(
-            onPressed: () =>
-                Navigator.of(context).pop(const _ChordAnchorResult(remove: true)),
+            onPressed: () => Navigator.of(
+              context,
+            ).pop(const _ChordAnchorResult(remove: true)),
             child: const Text('Remover'),
           ),
         TextButton(
@@ -363,11 +544,12 @@ class _ChordAnchorDialogState extends State<_ChordAnchorDialog> {
         ),
         FilledButton(
           onPressed: _isValid
-              ? () => Navigator.of(context).pop(
-                  _ChordAnchorResult(chord: _controller.text.trim()),
-                )
+              ? () => Navigator.of(
+                  context,
+                ).pop(_ChordAnchorResult(chord: _controller.text.trim()))
               : () => setState(
-                  () => _error = 'Formato de acorde inválido (ex: C, Am7, D/F#)',
+                  () =>
+                      _error = 'Formato de acorde inválido (ex: C, Am7, D/F#)',
                 ),
           child: const Text('Salvar'),
         ),

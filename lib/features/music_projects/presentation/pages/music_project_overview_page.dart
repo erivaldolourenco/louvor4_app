@@ -38,6 +38,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
     with SingleTickerProviderStateMixin {
   final _repository = MusicProjectsRepositoryImpl();
   late final TabController _tabController;
+  final ScrollController _scrollController = ScrollController();
 
   bool _isLoading = true;
   bool _hasError = false;
@@ -45,12 +46,21 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
   MusicProjectEntity? _project;
   bool _isAdmin = false;
   String? _memberRole;
+  bool _headerCollapsed = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _scrollController.addListener(_handleScroll);
     _loadOverview();
+  }
+
+  void _handleScroll() {
+    final collapsed = _scrollController.offset > 4;
+    if (collapsed != _headerCollapsed) {
+      setState(() => _headerCollapsed = collapsed);
+    }
   }
 
   @override
@@ -65,6 +75,8 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
   @override
   void dispose() {
     _tabController.dispose();
+    _scrollController.removeListener(_handleScroll);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -191,11 +203,13 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
     final project = _project!;
 
     return NestedScrollView(
+      controller: _scrollController,
       headerSliverBuilder: (context, innerBoxIsScrolled) {
         return [
           HeaderProjectEvent(
             title: project.name,
             subtitle: MusicProjectUiUtils.typeLabel(project.type),
+            isCollapsed: _headerCollapsed,
             actions: [
               if (_isAdmin)
                 PopupMenuButton<String>(
@@ -203,9 +217,9 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.card),
                   ),
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.more_vert_rounded,
-                    color: Colors.white,
+                    color: _headerCollapsed ? cs.onSurface : Colors.white,
                   ),
                   onSelected: (value) {
                     if (value == 'edit') _onEditProject();
@@ -219,7 +233,9 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
                       child: ListTile(
                         leading: const Icon(Icons.bar_chart_rounded),
                         title: const Text('Dashboard'),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
                         dense: true,
                       ),
                     ),
@@ -229,7 +245,9 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
                       child: ListTile(
                         leading: const Icon(Icons.edit_rounded),
                         title: const Text('Editar Projeto'),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
                         dense: true,
                       ),
                     ),
@@ -238,9 +256,17 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
                         value: 'delete',
                         padding: EdgeInsets.zero,
                         child: ListTile(
-                          leading: Icon(Icons.delete_outline_rounded, color: cs.error),
-                          title: Text('Excluir Projeto', style: TextStyle(color: cs.error)),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                          leading: Icon(
+                            Icons.delete_outline_rounded,
+                            color: cs.error,
+                          ),
+                          title: Text(
+                            'Excluir Projeto',
+                            style: TextStyle(color: cs.error),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                          ),
                           dense: true,
                         ),
                       ),
@@ -270,11 +296,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
                   projectId: project.id,
                   canManageMembers: _isAdmin,
                   repository: _repository,
-                  currentUserId: context
-                      .read<UserCubit>()
-                      .state
-                      .user
-                      ?.id,
+                  currentUserId: context.read<UserCubit>().state.user?.id,
                   onLeaveProject: widget.onLeaveProject,
                 ),
                 ProjectSkillsPage(
@@ -336,7 +358,10 @@ class _DeleteProjectDialogState extends State<_DeleteProjectDialog> {
             child: Icon(Icons.warning_amber_rounded, color: cs.error, size: 22),
           ),
           const SizedBox(width: 12),
-          const Text('Excluir projeto', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800)),
+          const Text(
+            'Excluir projeto',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+          ),
         ],
       ),
       content: Column(
@@ -350,14 +375,20 @@ class _DeleteProjectDialogState extends State<_DeleteProjectDialog> {
                 const TextSpan(text: 'Esta ação é '),
                 TextSpan(
                   text: 'irreversível',
-                  style: TextStyle(fontWeight: FontWeight.w800, color: cs.error),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: cs.error,
+                  ),
                 ),
                 const TextSpan(text: '. O projeto '),
                 TextSpan(
                   text: widget.projectName,
                   style: const TextStyle(fontWeight: FontWeight.w800),
                 ),
-                const TextSpan(text: ' será removido permanentemente, incluindo todos os eventos e histórico associados.'),
+                const TextSpan(
+                  text:
+                      ' será removido permanentemente, incluindo todos os eventos e histórico associados.',
+                ),
               ],
             ),
           ),
@@ -379,7 +410,10 @@ class _DeleteProjectDialogState extends State<_DeleteProjectDialog> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 12,
+              ),
             ),
           ),
         ],

@@ -15,17 +15,18 @@ import '../../../../../core/utils/youtube_utils.dart';
 import '../../domain/entities/medley_entity.dart';
 import '../../domain/entities/medley_item_entity.dart';
 
-Future<void> showMedleyDetailsModal(
-  BuildContext context,
-  MedleyEntity medley,
-) {
-  return showDialog<void>(
+Future<void> showMedleyDetailsModal(BuildContext context, MedleyEntity medley) {
+  return showModalBottomSheet<void>(
     context: context,
-    builder: (_) => Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      child: _MedleyDetailsSheet(medley: medley),
+    showDragHandle: true,
+    isScrollControlled: true,
+    backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppRadius.bottomSheet),
+      ),
     ),
+    builder: (sheetContext) => _MedleyDetailsSheet(medley: medley),
   );
 }
 
@@ -41,143 +42,129 @@ class _MedleyDetailsSheet extends StatelessWidget {
     final mutedColor = cs.onSurfaceVariant;
     final count = medley.items.length;
     final hasNotes = medley.notes != null && medley.notes!.isNotEmpty;
-    final hasAudio = medley.referenceAudioUrl != null &&
+    final hasAudio =
+        medley.referenceAudioUrl != null &&
         medley.referenceAudioUrl!.trim().isNotEmpty;
 
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
-      ),
-      child: AppCardSurface(
-        radius: AppRadius.sheet,
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ── Header ────────────────────────────────────────────
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: cs.secondaryContainer,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.queue_music_rounded,
-                      color: cs.onSecondaryContainer,
-                      size: 28,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        medley.name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      if (medley.description != null &&
-                          medley.description!.isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          medley.description!,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontStyle: FontStyle.italic,
-                            color: mutedColor,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 6),
-                      Text(
-                        count == 1 ? '1 música' : '$count músicas',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: mutedColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  tooltip: 'Fechar',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close_rounded),
-                ),
-              ],
-            ),
-
-            // ── Notas ─────────────────────────────────────────────
-            if (hasNotes) ...[
-              const SizedBox(height: 14),
-              AppCardSurface(
-                radius: AppRadius.cardLarge,
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // ── Header: ícone + nome + descrição ───────────────
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      'Observações',
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: cs.secondaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.queue_music_rounded,
+                          color: cs.onSecondaryContainer,
+                          size: 32,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      medley.notes!,
-                      style: TextStyle(color: mutedColor, height: 1.5),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-
-            // ── Player de áudio de referência ──────────────────────
-            if (hasAudio) ...[
-              const SizedBox(height: 14),
-              _AudioPlayer(url: medley.referenceAudioUrl!),
-            ],
-
-            const SizedBox(height: 14),
-
-            // ── Lista de músicas ───────────────────────────────────
-            Flexible(
-              child: count == 0
-                  ? Center(
-                      child: Text(
-                        'Nenhuma música neste medley.',
-                        style: TextStyle(color: mutedColor),
-                      ),
-                    )
-                  : SingleChildScrollView(
+                    const SizedBox(width: 14),
+                    Expanded(
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          for (int i = 0; i < medley.items.length; i++) ...[
-                            _SongItemCard(
-                              item: medley.items[i],
+                          Text(
+                            medley.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w700,
                             ),
-                            if (i < medley.items.length - 1)
-                              const SizedBox(height: 8),
+                          ),
+                          if (medley.description != null &&
+                              medley.description!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              medley.description!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontStyle: FontStyle.italic,
+                                color: mutedColor,
+                              ),
+                            ),
                           ],
+                          const SizedBox(height: 4),
+                          Text(
+                            count == 1 ? '1 música' : '$count músicas',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: mutedColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ],
                       ),
                     ),
+                  ],
+                ),
+
+                // ── Notas ─────────────────────────────────────────
+                if (hasNotes) ...[
+                  const SizedBox(height: 16),
+                  AppCardSurface(
+                    radius: AppRadius.cardLarge,
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Observações',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          medley.notes!,
+                          style: TextStyle(color: mutedColor, height: 1.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                // ── Player de áudio de referência ──────────────────
+                if (hasAudio) ...[
+                  const SizedBox(height: 16),
+                  _AudioPlayer(url: medley.referenceAudioUrl!),
+                ],
+
+                // ── Lista de músicas ────────────────────────────────
+                const SizedBox(height: 16),
+                if (count == 0)
+                  Center(
+                    child: Text(
+                      'Nenhuma música neste medley.',
+                      style: TextStyle(color: mutedColor),
+                    ),
+                  )
+                else
+                  for (int i = 0; i < medley.items.length; i++) ...[
+                    _SongItemCard(item: medley.items[i]),
+                    if (i < medley.items.length - 1) const SizedBox(height: 8),
+                  ],
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -201,8 +188,7 @@ class _SongItemCard extends StatelessWidget {
       AppFeedback.showError('URL do YouTube inválida.');
       return;
     }
-    final launched =
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!launched) AppFeedback.showError('Não foi possível abrir o YouTube.');
   }
 
@@ -212,19 +198,15 @@ class _SongItemCard extends StatelessWidget {
     final theme = Theme.of(context);
     final hasNotes = item.notes != null && item.notes!.isNotEmpty;
     final hasYouTube = item.youTubeUrl != null && item.youTubeUrl!.isNotEmpty;
-    final mutedColor =
-        cs.onSurfaceVariant;
-    final dividerColor =
-        cs.outlineVariant;
+    final mutedColor = cs.onSurfaceVariant;
+    final dividerColor = cs.outlineVariant;
     final thumbnailUrl = YoutubeUtils.getThumbnail(item.youTubeUrl);
 
     return Container(
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: cs.outlineVariant,
-        ),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -354,9 +336,7 @@ class _SongItemCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  _YoutubeButton(onTap: _openYouTube),
-                ],
+                children: [_YoutubeButton(onTap: _openYouTube)],
               ),
             ),
           ],
@@ -537,9 +517,10 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                         final maxVal =
                             duration?.inMilliseconds.toDouble() ?? 0.0;
                         final curVal = maxVal > 0
-                            ? position.inMilliseconds
-                                .toDouble()
-                                .clamp(0.0, maxVal)
+                            ? position.inMilliseconds.toDouble().clamp(
+                                0.0,
+                                maxVal,
+                              )
                             : 0.0;
 
                         return Row(
@@ -575,19 +556,18 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                                   SliderTheme(
                                     data: SliderTheme.of(context).copyWith(
                                       trackHeight: 3,
-                                      thumbShape:
-                                          RoundSliderThumbShape(
+                                      thumbShape: RoundSliderThumbShape(
                                         enabledThumbRadius: 6,
                                       ),
-                                      overlayShape:
-                                          RoundSliderOverlayShape(
+                                      overlayShape: RoundSliderOverlayShape(
                                         overlayRadius: 14,
                                       ),
                                       activeTrackColor: cs.primary,
                                       inactiveTrackColor: borderColor,
                                       thumbColor: cs.primary,
-                                      overlayColor: cs.primary
-                                          .withValues(alpha: 0.15),
+                                      overlayColor: cs.primary.withValues(
+                                        alpha: 0.15,
+                                      ),
                                     ),
                                     child: Slider(
                                       value: curVal,
@@ -595,10 +575,8 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                                       max: maxVal > 0 ? maxVal : 1,
                                       onChanged: maxVal > 0
                                           ? (v) => _player.seek(
-                                                Duration(
-                                                  milliseconds: v.toInt(),
-                                                ),
-                                              )
+                                              Duration(milliseconds: v.toInt()),
+                                            )
                                           : null,
                                     ),
                                   ),
@@ -652,8 +630,9 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                   IconButton(
                     icon: Icon(Icons.remove_rounded, size: 20),
                     color: _semitones > -12 ? cs.primary : mutedColor,
-                    onPressed:
-                        _semitones > -12 ? () => _changeSemitones(-1) : null,
+                    onPressed: _semitones > -12
+                        ? () => _changeSemitones(-1)
+                        : null,
                   ),
                   Expanded(
                     child: Text(
@@ -661,16 +640,16 @@ class _AudioPlayerState extends State<_AudioPlayer> {
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color:
-                            _semitones == 0 ? mutedColor : cs.primary,
+                        color: _semitones == 0 ? mutedColor : cs.primary,
                       ),
                     ),
                   ),
                   IconButton(
                     icon: Icon(Icons.add_rounded, size: 20),
                     color: _semitones < 12 ? cs.primary : mutedColor,
-                    onPressed:
-                        _semitones < 12 ? () => _changeSemitones(1) : null,
+                    onPressed: _semitones < 12
+                        ? () => _changeSemitones(1)
+                        : null,
                   ),
                 ],
               ),
@@ -704,11 +683,7 @@ class _YoutubeButton extends StatelessWidget {
           border: Border.all(color: cs.error.withValues(alpha: 0.3)),
         ),
         child: Center(
-          child: Icon(
-            Icons.ondemand_video_rounded,
-            size: 18,
-            color: cs.error,
-          ),
+          child: Icon(Icons.ondemand_video_rounded, size: 18, color: cs.error),
         ),
       ),
     );
@@ -731,9 +706,7 @@ class _KeyChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.badge),
-        border: Border.all(
-          color: cs.outlineVariant,
-        ),
+        border: Border.all(color: cs.outlineVariant),
       ),
       child: RichText(
         text: TextSpan(

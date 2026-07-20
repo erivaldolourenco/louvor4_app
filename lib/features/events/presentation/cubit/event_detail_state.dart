@@ -16,6 +16,7 @@ class EventDetailState extends Equatable {
   final Map<String, String> skillsMap;
   final bool isProjectAdmin;
   final bool canAddSongs;
+  final bool canEditChordSheet;
   final String? currentUserId;
   final String? deletingSongId;
   final bool participantsLoadFailed;
@@ -31,6 +32,7 @@ class EventDetailState extends Equatable {
     this.skillsMap = const {},
     this.isProjectAdmin = false,
     this.canAddSongs = false,
+    this.canEditChordSheet = false,
     this.currentUserId,
     this.deletingSongId,
     this.participantsLoadFailed = false,
@@ -48,6 +50,7 @@ class EventDetailState extends Equatable {
     Map<String, String>? skillsMap,
     bool? isProjectAdmin,
     bool? canAddSongs,
+    bool? canEditChordSheet,
     String? currentUserId,
     String? deletingSongId,
     bool clearDeletingSongId = false,
@@ -66,6 +69,7 @@ class EventDetailState extends Equatable {
       skillsMap: skillsMap ?? this.skillsMap,
       isProjectAdmin: isProjectAdmin ?? this.isProjectAdmin,
       canAddSongs: canAddSongs ?? this.canAddSongs,
+      canEditChordSheet: canEditChordSheet ?? this.canEditChordSheet,
       currentUserId: currentUserId ?? this.currentUserId,
       deletingSongId: clearDeletingSongId
           ? null
@@ -90,6 +94,12 @@ class EventDetailState extends Equatable {
     return song.addedByUserId == userId;
   }
 
+  bool canEditChordSheetOf(EventSong song) {
+    if (isSongOwner(song)) return true;
+    if (!canEditChordSheet) return false;
+    return song.editChordSheetPermission;
+  }
+
   @override
   List<Object?> get props => [
     status,
@@ -101,6 +111,7 @@ class EventDetailState extends Equatable {
     skillsMap,
     isProjectAdmin,
     canAddSongs,
+    canEditChordSheet,
     currentUserId,
     deletingSongId,
     participantsLoadFailed,

@@ -10,24 +10,31 @@ class HeaderProjectEvent extends StatelessWidget {
   final List<Widget>? actions;
   final String? backgroundImageUrl;
 
+  /// `true` quando o header já está colapsado no tamanho fixo (a imagem de
+  /// capa não está mais visível, só o fundo `cs.surface`) — nesse caso o
+  /// texto precisa de uma cor escura para continuar legível.
+  final bool isCollapsed;
+
   const HeaderProjectEvent({
     super.key,
     required this.title,
     this.subtitle,
     this.actions,
     this.backgroundImageUrl,
+    this.isCollapsed = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final foregroundColor = isCollapsed ? cs.onSurface : cs.onPrimary;
     return SliverAppBar(
       expandedHeight: 64,
       pinned: true,
       stretch: true,
       backgroundColor: cs.surface,
-      foregroundColor: cs.onPrimary,
+      foregroundColor: foregroundColor,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
@@ -41,7 +48,7 @@ class HeaderProjectEvent extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.titleMedium?.copyWith(
-              color: cs.onPrimary,
+              color: foregroundColor,
               fontWeight: FontWeight.w700,
               fontSize: 20,
             ),
@@ -52,7 +59,7 @@ class HeaderProjectEvent extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: cs.onPrimary.withValues(alpha: 0.85),
+                color: foregroundColor.withValues(alpha: 0.85),
                 fontWeight: FontWeight.w500,
               ),
             ),

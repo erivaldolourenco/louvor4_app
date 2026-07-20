@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:louvor4_app/core/theme/app_radius.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/app_buttons.dart';
-import 'package:louvor4_app/core/ui/widgets/app_form_sheet.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/music_project_entity.dart';
 import 'package:louvor4_app/features/user_profile/apresentation/cubit/user_unavailability_cubit.dart';
 import 'package:louvor4_app/features/user_profile/apresentation/cubit/user_unavailability_state.dart';
@@ -13,9 +12,14 @@ import 'package:louvor4_app/features/user_profile/domain/entities/create_user_un
 Future<bool?> showAddUserUnavailabilitySheet(BuildContext context) {
   return showModalBottomSheet<bool>(
     context: context,
+    showDragHandle: true,
     isScrollControlled: true,
-    useSafeArea: true,
-    backgroundColor: Colors.transparent,
+    backgroundColor: Theme.of(context).bottomSheetTheme.backgroundColor,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppRadius.bottomSheet),
+      ),
+    ),
     builder: (_) => BlocProvider.value(
       value: context.read<UserUnavailabilityCubit>(),
       child: const AddUserUnavailabilitySheet(),
@@ -162,167 +166,225 @@ class _AddUserUnavailabilitySheetState
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final state = context.watch<UserUnavailabilityCubit>().state;
     final projects = state.projects;
     final isSubmitting =
         state.submission == UserUnavailabilitySubmission.creating;
 
-    return AppFormSheet(
-      title: 'Nova indisponibilidade',
-      subtitle:
-          'Defina o período em que você não poderá participar e aplique para todos os projetos ou apenas alguns deles.',
-      icon: Icons.event_busy_rounded,
-      child: Form(
-        key: _formKey,
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextFormField(
-              controller: _descriptionController,
-              enabled: !isSubmitting,
-              minLines: 2,
-              maxLines: 4,
-              maxLength: 180,
-              decoration: const InputDecoration(
-                labelText: 'Descrição',
-                hintText: 'Ex: Viagem com a família, compromisso profissional',
-                prefixIcon: Icon(Icons.notes_rounded),
-                alignLabelWithHint: true,
-              ),
-              validator: (value) {
-                final text = (value ?? '').trim();
-                if (text.isEmpty) {
-                  return 'Informe uma descrição.';
-                }
-                if (text.length < 3) {
-                  return 'Use ao menos 3 caracteres.';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 18),
-            _DateField(
-              label: 'Data inicial',
-              value: _startDate == null
-                  ? 'Selecionar data'
-                  : _dateFormat.format(_startDate!),
-              icon: Icons.calendar_today_rounded,
-              enabled: !isSubmitting,
-              onTap: _pickStartDate,
-            ),
-            const SizedBox(height: 14),
-            SwitchListTile.adaptive(
-              contentPadding: EdgeInsets.zero,
-              value: _isDateRange,
-              onChanged: isSubmitting
-                  ? null
-                  : (value) {
-                      setState(() {
-                        _isDateRange = value;
-                        _endDate = value ? _endDate : _startDate;
-                      });
-                    },
-              title: const Text(
-                'Período com intervalo',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              subtitle: const Text(
-                'Ative para informar uma data final diferente da inicial.',
-              ),
-            ),
-            if (_isDateRange) ...[
-              const SizedBox(height: 6),
-              _DateField(
-                label: 'Data final',
-                value: _endDate == null
-                    ? 'Selecionar data'
-                    : _dateFormat.format(_endDate!),
-                icon: Icons.event_rounded,
-                enabled: !isSubmitting,
-                onTap: _pickEndDate,
-              ),
-            ],
-            const SizedBox(height: 18),
-            SwitchListTile.adaptive(
-              contentPadding: EdgeInsets.zero,
-              value: _appliesToAllProjects,
-              onChanged: isSubmitting
-                  ? null
-                  : (value) {
-                      setState(() {
-                        _appliesToAllProjects = value;
-                        if (value) {
-                          _selectedProjectIds.clear();
-                        }
-                      });
-                    },
-              title: const Text(
-                'Aplicar para todos os projetos',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              subtitle: const Text(
-                'Desative para escolher projetos específicos.',
-              ),
-            ),
-            if (!_appliesToAllProjects) ...[
-              const SizedBox(height: 10),
-              const _FieldLabel(label: 'Projetos'),
-              if (projects.isEmpty)
-                const _InlineInfo(
-                  message: 'Nenhum projeto disponível para seleção no momento.',
-                )
-              else
-                _ProjectSelectorWrap(
-                  projects: projects,
-                  selectedProjectIds: _selectedProjectIds,
-                  enabled: !isSubmitting,
-                  onToggle: (projectId) {
-                    setState(() {
-                      if (_selectedProjectIds.contains(projectId)) {
-                        _selectedProjectIds.remove(projectId);
-                      } else {
-                        _selectedProjectIds.add(projectId);
-                      }
-                    });
-                  },
-                ),
-            ],
-            if (state.actionErrorMessage != null) ...[
-              const SizedBox(height: 16),
-              _InlineError(message: state.actionErrorMessage!),
-            ],
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: AppSecondaryButton(
-                    onPressed: isSubmitting
-                        ? null
-                        : () => Navigator.of(context).maybePop(false),
-                    child: const Text('Cancelar'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: AppPrimaryButton(
-                    onPressed: isSubmitting ? null : _submit,
-                    child: isSubmitting
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: cs.onPrimary,
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          20,
+          4,
+          20,
+          MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85,
+          ),
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: cs.secondaryContainer,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            Icons.event_busy_rounded,
+                            color: cs.onSecondaryContainer,
+                            size: 32,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Nova indisponibilidade',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          )
-                        : const Text('Salvar'),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Defina o período em que você não poderá participar e aplique para todos os projetos ou apenas alguns deles.',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: cs.onSurfaceVariant,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    controller: _descriptionController,
+                    enabled: !isSubmitting,
+                    minLines: 2,
+                    maxLines: 4,
+                    maxLength: 180,
+                    decoration: const InputDecoration(
+                      labelText: 'Descrição',
+                      hintText:
+                          'Ex: Viagem com a família, compromisso profissional',
+                      prefixIcon: Icon(Icons.notes_rounded),
+                      alignLabelWithHint: true,
+                    ),
+                    validator: (value) {
+                      final text = (value ?? '').trim();
+                      if (text.isEmpty) {
+                        return 'Informe uma descrição.';
+                      }
+                      if (text.length < 3) {
+                        return 'Use ao menos 3 caracteres.';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 18),
+                  _DateField(
+                    label: 'Data inicial',
+                    value: _startDate == null
+                        ? 'Selecionar data'
+                        : _dateFormat.format(_startDate!),
+                    icon: Icons.calendar_today_rounded,
+                    enabled: !isSubmitting,
+                    onTap: _pickStartDate,
+                  ),
+                  const SizedBox(height: 14),
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    value: _isDateRange,
+                    onChanged: isSubmitting
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _isDateRange = value;
+                              _endDate = value ? _endDate : _startDate;
+                            });
+                          },
+                    title: const Text(
+                      'Período com intervalo',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    subtitle: const Text(
+                      'Ative para informar uma data final diferente da inicial.',
+                    ),
+                  ),
+                  if (_isDateRange) ...[
+                    const SizedBox(height: 6),
+                    _DateField(
+                      label: 'Data final',
+                      value: _endDate == null
+                          ? 'Selecionar data'
+                          : _dateFormat.format(_endDate!),
+                      icon: Icons.event_rounded,
+                      enabled: !isSubmitting,
+                      onTap: _pickEndDate,
+                    ),
+                  ],
+                  const SizedBox(height: 18),
+                  SwitchListTile.adaptive(
+                    contentPadding: EdgeInsets.zero,
+                    value: _appliesToAllProjects,
+                    onChanged: isSubmitting
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _appliesToAllProjects = value;
+                              if (value) {
+                                _selectedProjectIds.clear();
+                              }
+                            });
+                          },
+                    title: const Text(
+                      'Aplicar para todos os projetos',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    subtitle: const Text(
+                      'Desative para escolher projetos específicos.',
+                    ),
+                  ),
+                  if (!_appliesToAllProjects) ...[
+                    const SizedBox(height: 10),
+                    const _FieldLabel(label: 'Projetos'),
+                    if (projects.isEmpty)
+                      const _InlineInfo(
+                        message:
+                            'Nenhum projeto disponível para seleção no momento.',
+                      )
+                    else
+                      _ProjectSelectorWrap(
+                        projects: projects,
+                        selectedProjectIds: _selectedProjectIds,
+                        enabled: !isSubmitting,
+                        onToggle: (projectId) {
+                          setState(() {
+                            if (_selectedProjectIds.contains(projectId)) {
+                              _selectedProjectIds.remove(projectId);
+                            } else {
+                              _selectedProjectIds.add(projectId);
+                            }
+                          });
+                        },
+                      ),
+                  ],
+                  if (state.actionErrorMessage != null) ...[
+                    const SizedBox(height: 16),
+                    _InlineError(message: state.actionErrorMessage!),
+                  ],
+                  const SizedBox(height: 24),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppSecondaryButton(
+                          onPressed: isSubmitting
+                              ? null
+                              : () => Navigator.of(context).maybePop(false),
+                          child: const Text('Cancelar'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: AppPrimaryButton(
+                          onPressed: isSubmitting ? null : _submit,
+                          child: isSubmitting
+                              ? SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: cs.onPrimary,
+                                  ),
+                                )
+                              : const Text('Salvar'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -347,24 +409,18 @@ class _DateField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-  final cs = theme.colorScheme;
+    final cs = theme.colorScheme;
     final textColor = theme.textTheme.bodyLarge?.color;
-    final mutedColor = theme.brightness == Brightness.dark
-        ? cs.onSurfaceVariant
-        : cs.onSurfaceVariant;
 
     return InkWell(
       onTap: enabled ? onTap : null,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(AppRadius.input),
       child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon),
-        ),
+        decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
         child: Text(
           value,
           style: theme.textTheme.bodyLarge?.copyWith(
-            color: value == 'Selecionar data' ? mutedColor : textColor,
+            color: value == 'Selecionar data' ? cs.onSurfaceVariant : textColor,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -460,23 +516,17 @@ class _InlineError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? cs.errorContainer : cs.errorContainer,
+        color: cs.errorContainer,
         borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(
-          color: cs.error.withValues(alpha: 0.35),
-        ),
+        border: Border.all(color: cs.error.withValues(alpha: 0.35)),
       ),
       child: Text(
         message,
-        style: TextStyle(
-          color: cs.error,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(color: cs.error, fontWeight: FontWeight.w600),
       ),
     );
   }

@@ -97,6 +97,22 @@ class ChordEntity extends Equatable {
   List<Object?> get props => [position, chord];
 }
 
+/// Monta uma linha de texto com os acordes de [chords] alinhados por coluna
+/// acima de [text] (usando espaços), pra exibir com fonte monoespaçada.
+/// Usado tanto na visualização somente leitura quanto na exportação em PDF.
+String buildChordLineText(String text, List<ChordEntity> chords) {
+  final sorted = [...chords]..sort((a, b) => a.position.compareTo(b.position));
+  final buf = StringBuffer();
+  var cursor = 0;
+  for (final c in sorted) {
+    final pos = c.position.clamp(cursor, text.length);
+    if (pos > cursor) buf.write(' ' * (pos - cursor));
+    buf.write(c.chord);
+    cursor = pos + c.chord.length;
+  }
+  return buf.toString();
+}
+
 class ChordLineEntity extends Equatable {
   final String text;
   final List<ChordEntity> chords;
@@ -114,7 +130,10 @@ class ChordLineEntity extends Equatable {
       text: (json['text'] ?? '').toString(),
       chords: rawChords is List
           ? rawChords
-                .map((c) => ChordEntity.fromJson(Map<String, dynamic>.from(c as Map)))
+                .map(
+                  (c) =>
+                      ChordEntity.fromJson(Map<String, dynamic>.from(c as Map)),
+                )
                 .toList()
           : const [],
       repeat: (json['repeat'] as num?)?.toInt(),
@@ -145,11 +164,17 @@ class ChordSectionEntity extends Equatable {
   factory ChordSectionEntity.fromJson(Map<String, dynamic> json) {
     final rawLines = json['lines'];
     return ChordSectionEntity(
-      type: ChordSectionTypeX.fromApiValue((json['type'] ?? 'other').toString()),
+      type: ChordSectionTypeX.fromApiValue(
+        (json['type'] ?? 'other').toString(),
+      ),
       label: (json['label'] ?? '').toString(),
       lines: rawLines is List
           ? rawLines
-                .map((l) => ChordLineEntity.fromJson(Map<String, dynamic>.from(l as Map)))
+                .map(
+                  (l) => ChordLineEntity.fromJson(
+                    Map<String, dynamic>.from(l as Map),
+                  ),
+                )
                 .toList()
           : const [],
     );
@@ -190,11 +215,25 @@ class ChordSheetEntity extends Equatable {
   final ChordSheetSongInfo song;
   final List<ChordSectionEntity> sections;
 
+  /// Se `true`, o dono da música permitiu que outros membros (com a
+  /// permissão de evento correspondente) editem essa cifra. Não faz parte
+  /// do `chordSheetJson` persistido — vem/é alterado por fora, via
+  /// `SongsRepository.updateChordSheetEditPermission`.
+  final bool editPermission;
+
   const ChordSheetEntity({
     required this.schemaVersion,
     required this.song,
     this.sections = const [],
+    this.editPermission = false,
   });
+
+  ChordSheetEntity copyWith({bool? editPermission}) => ChordSheetEntity(
+    schemaVersion: schemaVersion,
+    song: song,
+    sections: sections,
+    editPermission: editPermission ?? this.editPermission,
+  );
 
   factory ChordSheetEntity.empty({String? originalKey, int? bpm}) {
     return ChordSheetEntity(
@@ -214,7 +253,11 @@ class ChordSheetEntity extends Equatable {
           : const ChordSheetSongInfo(),
       sections: rawSections is List
           ? rawSections
-                .map((s) => ChordSectionEntity.fromJson(Map<String, dynamic>.from(s as Map)))
+                .map(
+                  (s) => ChordSectionEntity.fromJson(
+                    Map<String, dynamic>.from(s as Map),
+                  ),
+                )
                 .toList()
           : const [],
     );
@@ -227,5 +270,5 @@ class ChordSheetEntity extends Equatable {
   };
 
   @override
-  List<Object?> get props => [schemaVersion, song, sections];
+  List<Object?> get props => [schemaVersion, song, sections, editPermission];
 }

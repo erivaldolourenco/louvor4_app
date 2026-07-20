@@ -20,7 +20,16 @@ abstract class SongsRepository {
 
   Future<ChordSheetEntity?> getChordSheet(String songId);
 
-  Future<ChordSheetEntity> saveChordSheet(String songId, ChordSheetEntity chordSheet);
+  Future<ChordSheetEntity> saveChordSheet(
+    String songId,
+    ChordSheetEntity chordSheet,
+  );
 
   Future<void> deleteChordSheet(String songId);
+
+  /// Retorna o valor de `editPermission` confirmado pelo backend.
+  Future<bool> updateChordSheetEditPermission(
+    String songId,
+    bool editPermission,
+  );
 }

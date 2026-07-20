@@ -203,70 +203,83 @@ class _ProjectSkillCard extends StatelessWidget {
     final titleColor = theme.textTheme.titleMedium?.color;
     final isDeleting = state.isDeletingSkill(skill.id);
 
-    return Material(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(AppRadius.cardLarge),
-      child: Ink(
-        decoration: appCardDecoration(context),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(
-                  color: cs.primaryContainer,
-                  borderRadius: BorderRadius.circular(AppRadius.card),
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    skillIconAsset(skill.iconKey),
-                    width: 26,
-                    height: 26,
-                    colorFilter: ColorFilter.mode(cs.primary, BlendMode.srcIn),
+    final decoration = appCardDecoration(context);
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: decoration.borderRadius,
+        boxShadow: decoration.boxShadow,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
+        clipBehavior: Clip.antiAlias,
+        child: Ink(
+          decoration: decoration.copyWith(boxShadow: const []),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  width: 46,
+                  height: 46,
+                  decoration: BoxDecoration(
+                    color: cs.primaryContainer,
+                    borderRadius: BorderRadius.circular(AppRadius.card),
+                  ),
+                  child: Center(
+                    child: SvgPicture.asset(
+                      skillIconAsset(skill.iconKey),
+                      width: 26,
+                      height: 26,
+                      colorFilter: ColorFilter.mode(
+                        cs.primary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  skill.name,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: titleColor,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    skill.name,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: titleColor,
+                    ),
                   ),
                 ),
-              ),
-              if (state.canManageSkills) ...[
-                const SizedBox(width: 10),
-                if (isDeleting)
-                  const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                else ...[
-                  CircularIconActionButton(
-                    tooltip: 'Editar função',
-                    onPressed: () => _showEditSkillSheet(context, cubit, skill),
-                    assetPath: 'assets/icons/wrench.svg',
-                    iconColor: cs.onPrimaryContainer,
-                    backgroundColor: cs.primaryContainer,
-                    borderColor: cs.primary.withValues(alpha: 0.3),
-                  ),
-                  const SizedBox(width: 6),
-                  CircularIconActionButton(
-                    tooltip: 'Excluir função',
-                    onPressed: () => _onDeleteSkill(context, cubit, skill),
-                    assetPath: 'assets/icons/trash-2.svg',
-                    iconColor: cs.onErrorContainer,
-                    backgroundColor: cs.errorContainer,
-                    borderColor: cs.error.withValues(alpha: 0.3),
-                  ),
+                if (state.canManageSkills) ...[
+                  const SizedBox(width: 10),
+                  if (isDeleting)
+                    const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  else ...[
+                    CircularIconActionButton(
+                      tooltip: 'Editar função',
+                      onPressed: () =>
+                          _showEditSkillSheet(context, cubit, skill),
+                      assetPath: 'assets/icons/wrench.svg',
+                      iconColor: cs.onPrimaryContainer,
+                      backgroundColor: cs.primaryContainer,
+                      borderColor: cs.primary.withValues(alpha: 0.3),
+                    ),
+                    const SizedBox(width: 6),
+                    CircularIconActionButton(
+                      tooltip: 'Excluir função',
+                      onPressed: () => _onDeleteSkill(context, cubit, skill),
+                      assetPath: 'assets/icons/trash-2.svg',
+                      iconColor: cs.onErrorContainer,
+                      backgroundColor: cs.errorContainer,
+                      borderColor: cs.error.withValues(alpha: 0.3),
+                    ),
+                  ],
                 ],
               ],
-            ],
+            ),
           ),
         ),
       ),

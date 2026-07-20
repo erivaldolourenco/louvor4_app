@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_radius.dart';
 import '../../domain/entities/chord_sheet_entity.dart';
 
 /// Renderização somente leitura de uma cifra, com acordes alinhados acima
@@ -27,11 +26,7 @@ class ChordSheetView extends StatelessWidget {
           const SizedBox(height: 14),
         ],
         for (int i = 0; i < chordSheet.sections.length; i++) ...[
-          if (i > 0) ...[
-            const SizedBox(height: 14),
-            Divider(height: 1, thickness: 1, color: cs.outlineVariant),
-            const SizedBox(height: 14),
-          ],
+          if (i > 0) const SizedBox(height: 24),
           _ChordSectionContent(section: chordSheet.sections[i]),
         ],
       ],
@@ -59,7 +54,8 @@ class _ChordSheetInfoHeader extends StatelessWidget {
           const SizedBox(width: 4),
           Text('Tom ${song.originalKey}', style: style),
         ],
-        if (song.originalKey != null && song.bpm != null) const SizedBox(width: 16),
+        if (song.originalKey != null && song.bpm != null)
+          const SizedBox(width: 16),
         if (song.bpm != null) ...[
           Icon(Icons.speed_rounded, size: 16, color: cs.onSurfaceVariant),
           const SizedBox(width: 4),
@@ -86,10 +82,13 @@ class _ChordSectionContent extends StatelessWidget {
           section.label.isNotEmpty ? section.label : section.type.ptLabel,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
         ),
         if (section.type == ChordSectionType.chordSequence) ...[
-          if (section.lines.isNotEmpty && section.lines.first.chords.isNotEmpty) ...[
+          if (section.lines.isNotEmpty &&
+              section.lines.first.chords.isNotEmpty) ...[
             const SizedBox(height: 10),
             _ChordSequenceRow(chords: section.lines.first.chords),
           ],
@@ -120,27 +119,21 @@ class _ChordSequenceRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final sorted = [...chords]..sort((a, b) => a.position.compareTo(b.position));
+    final sorted = [...chords]
+      ..sort((a, b) => a.position.compareTo(b.position));
 
     return Wrap(
-      spacing: 8,
+      spacing: 16,
       runSpacing: 8,
       children: [
         for (final chord in sorted)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: cs.primaryContainer,
-              borderRadius: BorderRadius.circular(AppRadius.badge),
-            ),
-            child: Text(
-              chord.chord,
-              style: TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: cs.onPrimaryContainer,
-              ),
+          Text(
+            chord.chord,
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: cs.primary,
             ),
           ),
       ],
@@ -153,19 +146,6 @@ class _ChordLine extends StatelessWidget {
 
   const _ChordLine({required this.line});
 
-  static String _buildChordLine(String text, List<ChordEntity> chords) {
-    final sorted = [...chords]..sort((a, b) => a.position.compareTo(b.position));
-    final buf = StringBuffer();
-    var cursor = 0;
-    for (final c in sorted) {
-      final pos = c.position.clamp(cursor, text.length);
-      if (pos > cursor) buf.write(' ' * (pos - cursor));
-      buf.write(c.chord);
-      cursor = pos + c.chord.length;
-    }
-    return buf.toString();
-  }
-
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -176,7 +156,24 @@ class _ChordLine extends StatelessWidget {
       color: cs.onSurface,
     );
 
-    final chordLine = _buildChordLine(line.text, line.chords);
+    // Se algum acorde soa antes do início da frase (posição negativa,
+    // ancorado na faixa extra do editor), desloca a letra e os acordes
+    // juntos pra manter o alinhamento por coluna do texto monoespaçado.
+    final minPosition = line.chords.isEmpty
+        ? 0
+        : line.chords.map((c) => c.position).reduce((a, b) => a < b ? a : b);
+    final leadingPad = minPosition < 0 ? -minPosition : 0;
+    final displayChords = leadingPad == 0
+        ? line.chords
+        : [
+            for (final c in line.chords)
+              ChordEntity(position: c.position + leadingPad, chord: c.chord),
+          ];
+    final displayText = leadingPad == 0
+        ? line.text
+        : '${' ' * leadingPad}${line.text}';
+
+    final chordLine = buildChordLineText(displayText, displayChords);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -192,7 +189,7 @@ class _ChordLine extends StatelessWidget {
               ),
             ),
           Text(
-            line.text.isEmpty ? '(instrumental)' : line.text,
+            line.text.isEmpty ? '(instrumental)' : displayText,
             style: line.text.isEmpty
                 ? monoStyle.copyWith(
                     color: cs.onSurfaceVariant,

@@ -4,6 +4,7 @@ enum EventPermission {
   removeSong, // pode remover música do repertório
   manageParticipants, // pode adicionar/remover participantes
   editEvent,
+  editChordSheet, // pode editar a cifra de músicas do evento marcadas como editáveis pelo dono
 }
 
 enum EventParticipantStatus { pending, accepted, declined, unknown }
@@ -36,6 +37,8 @@ extension EventPermissionApiValue on EventPermission {
         return 'MANAGE_PARTICIPANTS';
       case EventPermission.editEvent:
         return 'EDIT_EVENT';
+      case EventPermission.editChordSheet:
+        return 'EDIT_CHORD_SHEET';
     }
   }
 }
@@ -186,6 +189,9 @@ class EventParticipant {
       case 'EDIT_EVENT':
       case 'EDITEVENT':
         return EventPermission.editEvent;
+      case 'EDIT_CHORD_SHEET':
+      case 'EDITCHORDSHEET':
+        return EventPermission.editChordSheet;
       default:
         return null;
     }
