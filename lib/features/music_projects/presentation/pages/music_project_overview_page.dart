@@ -165,7 +165,6 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
   Widget _buildBody() {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
 
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -346,21 +345,22 @@ class _DeleteProjectDialogState extends State<_DeleteProjectDialog> {
     final cs = Theme.of(context).colorScheme;
 
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       title: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: cs.errorContainer,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppRadius.badge),
             ),
             child: Icon(Icons.warning_amber_rounded, color: cs.error, size: 22),
           ),
           const SizedBox(width: 12),
-          const Text(
+          Text(
             'Excluir projeto',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
         ],
       ),
@@ -405,12 +405,9 @@ class _DeleteProjectDialogState extends State<_DeleteProjectDialog> {
           TextField(
             controller: _controller,
             autofocus: true,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'excluir',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
+              contentPadding: EdgeInsets.symmetric(
                 horizontal: 14,
                 vertical: 12,
               ),

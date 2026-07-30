@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
+import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 import 'package:louvor4_app/core/ui/widgets/song_details_sheet.dart';
 import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 import 'package:louvor4_app/core/ui/widgets/header_project_event.dart';
@@ -124,8 +125,6 @@ class _EventDetailViewState extends State<_EventDetailView>
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     return Scaffold(
       floatingActionButton: BlocBuilder<EventDetailCubit, EventDetailState>(
         builder: (context, state) {
@@ -173,35 +172,10 @@ class _EventDetailViewState extends State<_EventDetailView>
                   isCollapsed: _headerCollapsed,
                   actions: [
                     if (state.isProjectAdmin)
-                      PopupMenuButton<_EventHeaderAction>(
-                        tooltip: 'Ações do evento',
-                        color: cs.surface,
-                        icon: const Icon(Icons.more_vert),
-                        onSelected: _onHeaderActionSelected,
-                        itemBuilder: (context) => [
-                          PopupMenuItem(
-                            value: _EventHeaderAction.edit,
-                            child: ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: Icon(Icons.edit_outlined),
-                              title: Text('Editar evento'),
-                            ),
-                          ),
-                          PopupMenuItem(
-                            value: _EventHeaderAction.delete,
-                            child: ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: Icon(
-                                Icons.delete_outline,
-                                color: cs.error,
-                              ),
-                              title: Text(
-                                'Deletar evento',
-                                style: TextStyle(color: cs.error),
-                              ),
-                            ),
-                          ),
-                        ],
+                      IconButton(
+                        tooltip: 'Editar evento',
+                        icon: const Icon(Icons.edit_outlined),
+                        onPressed: _onEditEvent,
                       ),
                   ],
                 ),
@@ -224,26 +198,31 @@ class _EventDetailViewState extends State<_EventDetailView>
                     ),
                   ),
                 ),
-                SliverToBoxAdapter(
-                  child: _EventDetailTabs(controller: _tabController),
-                ),
               ];
             },
-            body: TabBarView(
-              controller: _tabController,
+            body: Column(
               children: [
-                _ParticipantsTab(
-                  state: state,
-                  onRefresh: () =>
-                      context.read<EventDetailCubit>().refreshParticipants(),
+                _EventDetailTabs(controller: _tabController),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _ParticipantsTab(
+                        state: state,
+                        onRefresh: () => context
+                            .read<EventDetailCubit>()
+                            .refreshParticipants(),
+                      ),
+                      _SongsTab(
+                        state: state,
+                        onRemoveSong: _onRemoveSong,
+                        onRefresh: () =>
+                            context.read<EventDetailCubit>().refreshSongs(),
+                      ),
+                      EventProgramTab(isAdmin: state.isProjectAdmin),
+                    ],
+                  ),
                 ),
-                _SongsTab(
-                  state: state,
-                  onRemoveSong: _onRemoveSong,
-                  onRefresh: () =>
-                      context.read<EventDetailCubit>().refreshSongs(),
-                ),
-                EventProgramTab(isAdmin: state.isProjectAdmin),
               ],
             ),
           );
@@ -329,22 +308,6 @@ class _EventDetailViewState extends State<_EventDetailView>
       state.actionErrorMessage ?? 'Erro ao remover música.',
     );
     return false;
-  }
-
-  Future<void> _onHeaderActionSelected(_EventHeaderAction action) async {
-    switch (action) {
-      case _EventHeaderAction.edit:
-        await _onEditEvent();
-        break;
-      case _EventHeaderAction.delete:
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Deletar evento ainda não foi implementado.'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        break;
-    }
   }
 
   Widget _buildFab(EventDetailState state) {
@@ -477,8 +440,6 @@ class _EventDetailViewState extends State<_EventDetailView>
   }
 }
 
-enum _EventHeaderAction { edit, delete }
-
 class _EventDetailTabs extends StatelessWidget {
   final TabController controller;
 
@@ -487,7 +448,6 @@ class _EventDetailTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     const tabs = [
       (assetPath: 'assets/icons/users-round.svg', label: 'Equipe'),
       (assetPath: 'assets/icons/music.svg', label: 'Músicas'),
@@ -502,14 +462,21 @@ class _EventDetailTabs extends StatelessWidget {
 
         return TabBar(
           controller: controller,
-          labelStyle: textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: cs.primary,
+          indicator: BoxDecoration(
+            color: cs.primaryContainer,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
-          unselectedLabelStyle: textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w500,
-            color: cs.onSurfaceVariant,
+          indicatorSize: TabBarIndicatorSize.tab,
+          indicatorPadding: const EdgeInsets.symmetric(
+            vertical: 8,
+            horizontal: 6,
           ),
+          dividerColor: Colors.transparent,
+          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+          labelColor: cs.primary,
+          unselectedLabelColor: cs.onSurfaceVariant,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
           tabs: [
             for (var i = 0; i < tabs.length; i++)
               Tab(
@@ -768,7 +735,7 @@ class _ParticipantsTab extends StatelessWidget {
       color: cs.surface,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.only(top: 8, bottom: 36),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 36),
         children: [
           ...List.generate(state.participants.length, (index) {
             final participant = state.participants[index];
@@ -784,7 +751,6 @@ class _ParticipantsTab extends StatelessWidget {
                 skill: state.skillsMap[participant.skillId] ?? '',
                 status: participant.status,
                 profileImage: participant.profileImage,
-                showDivider: index < state.participants.length - 1,
                 onTap: () => showUserProfileDialog(
                   context,
                   name: participant.fullName,
@@ -944,7 +910,7 @@ class _SongsTab extends StatelessWidget {
         color: cs.surface,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(top: 6, bottom: 36),
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
           children: _buildGroupedSongSections(
             context,
             groupedSongs,
@@ -1143,11 +1109,7 @@ class _RetryTabState extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: cs.outlineVariant),
-      ),
+      decoration: appCardDecoration(context, radius: AppRadius.cardHero),
       child: Column(
         children: [
           Icon(icon, size: 30, color: cs.onSurfaceVariant),
@@ -1197,11 +1159,7 @@ class _EmptyTabState extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: cs.outlineVariant),
-      ),
+      decoration: appCardDecoration(context, radius: AppRadius.cardHero),
       child: Column(
         children: [
           Icon(icon, size: 30, color: cs.onSurfaceVariant),

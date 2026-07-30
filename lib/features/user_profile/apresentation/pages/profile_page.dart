@@ -8,6 +8,7 @@ import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/fade_slide_in.dart';
 import 'package:louvor4_app/core/ui/widgets/spring_tap.dart';
+import 'package:louvor4_app/core/ui/widgets/standard_section_app_bar.dart';
 import 'package:louvor4_app/features/auth/presentation/pages/login_page.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 
@@ -30,7 +31,10 @@ class ProfilePage extends StatelessWidget {
       child: BlocProvider(
         create: (context) => UserCubit(context.read<UserRepository>())..load(),
         child: Scaffold(
-          appBar: AppBar(title: const Text('Perfil')),
+          appBar: const StandardSectionAppBar(
+            title: 'Perfil',
+            subtitle: 'Gerencie sua conta e preferências',
+          ),
           body: BlocBuilder<UserCubit, UserState>(
             builder: (context, state) {
               if (state.status == UserStatus.loading ||
@@ -181,6 +185,9 @@ class ProfilePage extends StatelessWidget {
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 6),
             Text(
@@ -188,6 +195,9 @@ class ProfilePage extends StatelessWidget {
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: cs.onSurfaceVariant,
               ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
           ],
@@ -273,15 +283,7 @@ class ProfilePage extends StatelessWidget {
             'Sair do aplicativo',
             style: TextStyle(color: cs.error),
           ),
-          onTap: () async {
-            await AuthService.instance.logout(ApiClient.dio);
-            if (context.mounted) {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                LoginPage.routeName,
-                (route) => false,
-              );
-            }
-          },
+          onTap: () => _onLogout(context),
         ),
       ],
     );
@@ -309,6 +311,39 @@ class ProfilePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _onLogout(BuildContext context) async {
+    final cs = Theme.of(context).colorScheme;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Sair do aplicativo'),
+          content: const Text('Tem certeza que deseja sair da sua conta?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: FilledButton.styleFrom(backgroundColor: cs.error),
+              child: const Text('Sair'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    await AuthService.instance.logout(ApiClient.dio);
+    if (context.mounted) {
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(LoginPage.routeName, (route) => false);
+    }
   }
 
   Future<void> _onChangeProfileImage(BuildContext context) async {

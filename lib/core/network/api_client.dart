@@ -24,10 +24,20 @@ class ApiClient {
       return 'http://10.0.2.2:8080';
     }
 
-    // iOS Simulator shares the host network, so localhost reaches the Mac directly.
+    // iOS Simulator and desktop builds (macOS/Windows/Linux) share the host
+    // network, so localhost reaches the local API directly.
     if (!kIsWeb &&
         !kReleaseMode &&
-        defaultTargetPlatform == TargetPlatform.iOS) {
+        (defaultTargetPlatform == TargetPlatform.iOS ||
+            defaultTargetPlatform == TargetPlatform.macOS ||
+            defaultTargetPlatform == TargetPlatform.windows ||
+            defaultTargetPlatform == TargetPlatform.linux)) {
+      return 'http://localhost:8080';
+    }
+
+    // Web debug builds (flutter run -d chrome) also reach the local API via
+    // localhost. The API itself still needs to allow CORS for the dev origin.
+    if (kIsWeb && !kReleaseMode) {
       return 'http://localhost:8080';
     }
 

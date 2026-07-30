@@ -15,7 +15,7 @@ abstract final class AppColors {
   // ── Brand ────────────────────────────────────────────────────────────────
 
   /// Cor principal: botões primários, FABs, destaques.
-  static const primary = Color(0xFF0166FF);
+  static const primary = Color(0xFF4F64E8);
 
   /// Variante mais escura: pressed / hover.
   static const primaryDark = Color(0xFF1D4ED8);

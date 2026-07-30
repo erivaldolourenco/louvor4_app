@@ -66,7 +66,7 @@ class _MedleyDetailsSheet extends StatelessWidget {
                       height: 64,
                       decoration: BoxDecoration(
                         color: cs.secondaryContainer,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppRadius.card),
                       ),
                       child: Center(
                         child: Icon(
@@ -205,7 +205,7 @@ class _SongItemCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(color: cs.outlineVariant),
       ),
       child: Column(
@@ -220,7 +220,7 @@ class _SongItemCard extends StatelessWidget {
                 Stack(
                   children: [
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppRadius.badge),
                       child: Image.network(
                         thumbnailUrl,
                         width: 60,
@@ -231,7 +231,7 @@ class _SongItemCard extends StatelessWidget {
                           height: 60,
                           decoration: BoxDecoration(
                             color: cs.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppRadius.badge),
                           ),
                           child: Icon(
                             Icons.music_note_rounded,
@@ -673,13 +673,13 @@ class _YoutubeButton extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(AppRadius.pill),
       child: Container(
         width: 36,
         height: 36,
         decoration: BoxDecoration(
           color: cs.errorContainer,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppRadius.pill),
           border: Border.all(color: cs.error.withValues(alpha: 0.3)),
         ),
         child: Center(

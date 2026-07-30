@@ -6,6 +6,7 @@ import '../../../../../core/utils/youtube_utils.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
+import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../domain/entities/program_item_entity.dart';
 import '../../domain/entities/program_item_input_entity.dart';
@@ -63,7 +64,7 @@ class EventProgramTab extends StatelessWidget {
             color: cs.surface,
             child: ReorderableListView(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 36),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 36),
               buildDefaultDragHandles: false,
               onReorder: (oldIndex, newIndex) {
                 if (!isAdmin) return;
@@ -83,20 +84,19 @@ class EventProgramTab extends StatelessWidget {
                       position: i + 1,
                       isAdmin: isAdmin,
                       itemIndex: i,
-                      showDivider: i < state.items.length - 1,
                       onEdit: isAdmin && state.items[i] is TextProgramItemEntity
                           ? () => _showTextItemDialog(
-                                context,
-                                item: state.items[i] as TextProgramItemEntity,
-                              )
+                              context,
+                              item: state.items[i] as TextProgramItemEntity,
+                            )
                           : null,
                       onDelete:
                           isAdmin && state.items[i] is TextProgramItemEntity
-                              ? () => _confirmDelete(
-                                    context,
-                                    state.items[i] as TextProgramItemEntity,
-                                  )
-                              : null,
+                          ? () => _confirmDelete(
+                              context,
+                              state.items[i] as TextProgramItemEntity,
+                            )
+                          : null,
                     ),
                   ),
               ],
@@ -199,7 +199,6 @@ class _ProgramItemTile extends StatelessWidget {
   final int position;
   final bool isAdmin;
   final int itemIndex;
-  final bool showDivider;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
@@ -208,7 +207,6 @@ class _ProgramItemTile extends StatelessWidget {
     required this.position,
     required this.isAdmin,
     required this.itemIndex,
-    required this.showDivider,
     this.onEdit,
     this.onDelete,
   });
@@ -325,56 +323,68 @@ class _ProgramItemTile extends StatelessWidget {
       );
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        ListTile(
-          minLeadingWidth: 0,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 12,
-          ),
-          leading: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 20,
-                child: Text(
-                  '$position',
-                  style: theme.textTheme.labelMedium?.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.end,
-                ),
-              ),
-              const SizedBox(width: 8),
-              avatar,
-            ],
-          ),
-          title: Text(
-            titleText,
-            style: theme.textTheme.bodyLarge,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          subtitle: subtitleText != null
-              ? Text(
-                  subtitleText,
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          if (!isEditable) ...[avatar, const SizedBox(width: 12)],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  titleText,
+                  style: isEditable
+                      ? theme.textTheme.titleLarge
+                      : theme.textTheme.bodyLarge,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                )
-              : null,
-          trailing: isAdmin ? trailing : null,
-        ),
-        if (showDivider)
-          Divider(
-            height: 1,
-            indent: 72,
-            endIndent: 16,
-            color: cs.outlineVariant.withValues(alpha: 0.5),
+                ),
+                if (subtitleText != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitleText,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
-      ],
+          if (isAdmin) ...[const SizedBox(width: 8), trailing],
+        ],
+      ),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 6),
+            child: Text(
+              '$position',
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: cs.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          isEditable
+              ? content
+              : DecoratedBox(
+                  decoration: appCardDecoration(context, radius: AppRadius.cardHero),
+                  child: content,
+                ),
+        ],
+      ),
     );
   }
 }

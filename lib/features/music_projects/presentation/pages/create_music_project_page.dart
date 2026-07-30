@@ -70,6 +70,7 @@ class _CreateMusicProjectViewState extends State<_CreateMusicProjectView> {
           padding: const EdgeInsets.all(16),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

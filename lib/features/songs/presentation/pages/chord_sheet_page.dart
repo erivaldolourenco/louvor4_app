@@ -277,9 +277,12 @@ class _ChordSheetPageState extends State<ChordSheetPage> {
       );
       if (!mounted) return;
       setState(() {
-        _savedChordSheet = _savedChordSheet?.copyWith(
-          editPermission: confirmedValue,
-        );
+        _savedChordSheet =
+            _savedChordSheet?.copyWith(editPermission: confirmedValue) ??
+            ChordSheetEntity.empty(
+              originalKey: widget.initialKey,
+              bpm: widget.initialBpm,
+            ).copyWith(editPermission: confirmedValue);
       });
       AppFeedback.showSuccess(
         confirmedValue
@@ -437,7 +440,7 @@ class _ChordSheetPageState extends State<ChordSheetPage> {
                           ),
                         ),
                       ],
-                      if (_hasLyricsContent && widget.canManageSharing) ...[
+                      if (widget.canManageSharing) ...[
                         PopupMenuItem(
                           value:
                               _ChordSheetMenuAction.toggleCollaborativeEditing,
@@ -549,7 +552,7 @@ class _ChordSheetPageState extends State<ChordSheetPage> {
                           draft: _draft!,
                           onChanged: () => setState(() {}),
                         )
-                      : _savedChordSheet == null
+                      : !_hasLyricsContent
                       ? _EmptyChordSheet(canEdit: widget.canEdit)
                       : ChordSheetView(chordSheet: _savedChordSheet!),
                 ),

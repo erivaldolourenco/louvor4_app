@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
+import '../../../../core/ui/widgets/app_inline_error_message.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/user_repository.dart';
 import '../../domain/entities/update_user_input_entity.dart';
@@ -159,7 +159,7 @@ class _EditProfileViewState extends State<_EditProfileView> {
                       ),
                       if (state.errorMessage != null) ...[
                         const SizedBox(height: 12),
-                        _InlineErrorMessage(message: state.errorMessage!),
+                        AppInlineErrorMessage(message: state.errorMessage!),
                       ],
                       const SizedBox(height: 22),
                       AppPrimaryButton(
@@ -206,33 +206,5 @@ class _EditProfileViewState extends State<_EditProfileView> {
 
     if (!mounted || updated == null) return;
     Navigator.of(context).pop(updated);
-  }
-}
-
-class _InlineErrorMessage extends StatelessWidget {
-  final String message;
-
-  const _InlineErrorMessage({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.errorContainer,
-        borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(color: cs.error.withValues(alpha: 0.35)),
-      ),
-      child: Text(
-        message,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: cs.onErrorContainer,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
   }
 }

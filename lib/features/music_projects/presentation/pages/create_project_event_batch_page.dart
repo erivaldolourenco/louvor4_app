@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_inline_error_message.dart';
@@ -9,27 +10,29 @@ import '../../../../core/ui/widgets/app_text_area_theme.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../data/music_projects_repository.dart';
-import '../../domain/entities/create_project_event_input.dart';
-import '../cubit/create_project_event_cubit.dart';
+import '../../domain/entities/create_project_event_batch_input.dart';
+import '../cubit/create_project_event_batch_cubit.dart';
 
-Future<bool?> openCreateProjectEventPage(
+Future<bool?> openCreateProjectEventBatchPage(
   BuildContext context, {
   required String projectId,
   required MusicProjectsRepository repository,
 }) {
   return Navigator.of(context).push<bool>(
     MaterialPageRoute(
-      builder: (_) =>
-          CreateProjectEventPage(projectId: projectId, repository: repository),
+      builder: (_) => CreateProjectEventBatchPage(
+        projectId: projectId,
+        repository: repository,
+      ),
     ),
   );
 }
 
-class CreateProjectEventPage extends StatelessWidget {
+class CreateProjectEventBatchPage extends StatelessWidget {
   final String projectId;
   final MusicProjectsRepository repository;
 
-  const CreateProjectEventPage({
+  const CreateProjectEventBatchPage({
     super.key,
     required this.projectId,
     required this.repository,
@@ -38,38 +41,38 @@ class CreateProjectEventPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => CreateProjectEventCubit(repository),
-      child: _CreateProjectEventView(projectId: projectId),
+      create: (_) => CreateProjectEventBatchCubit(repository),
+      child: _CreateProjectEventBatchView(projectId: projectId),
     );
   }
 }
 
-class _CreateProjectEventView extends StatefulWidget {
+class _CreateProjectEventBatchView extends StatefulWidget {
   final String projectId;
 
-  const _CreateProjectEventView({required this.projectId});
+  const _CreateProjectEventBatchView({required this.projectId});
 
   @override
-  State<_CreateProjectEventView> createState() =>
-      _CreateProjectEventViewState();
+  State<_CreateProjectEventBatchView> createState() =>
+      _CreateProjectEventBatchViewState();
 }
 
-class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
+class _CreateProjectEventBatchViewState
+    extends State<_CreateProjectEventBatchView> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _dateController = TextEditingController();
   final _timeController = TextEditingController();
   final _locationController = TextEditingController();
 
-  DateTime? _selectedDate;
+  final List<DateTime> _selectedDates = [];
   TimeOfDay? _selectedTime;
+  String? _datesError;
 
   @override
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _dateController.dispose();
     _timeController.dispose();
     _locationController.dispose();
     super.dispose();
@@ -78,13 +81,13 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final cubit = context.read<CreateProjectEventCubit>();
-    final state = context.watch<CreateProjectEventCubit>().state;
+    final cubit = context.read<CreateProjectEventBatchCubit>();
+    final state = context.watch<CreateProjectEventBatchCubit>().state;
 
     return Scaffold(
       appBar: const StandardSectionAppBar(
-        title: 'Novo Evento',
-        subtitle: 'Adicione um evento ao projeto atual',
+        title: 'Novo Evento em Lote',
+        subtitle: 'Crie o mesmo evento em várias datas de uma vez',
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -140,49 +143,34 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _dateController,
-                        enabled: !state.isSubmitting,
-                        readOnly: true,
-                        onTap: state.isSubmitting ? null : _pickDate,
-                        decoration: const InputDecoration(
-                          labelText: 'Data',
-                          hintText: 'Selecione',
-                          prefixIcon: Icon(Icons.calendar_month_rounded),
-                        ),
-                        validator: (value) {
-                          if ((value ?? '').trim().isEmpty) {
-                            return 'Informe a data.';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _timeController,
-                        enabled: !state.isSubmitting,
-                        readOnly: true,
-                        onTap: state.isSubmitting ? null : _pickTime,
-                        decoration: const InputDecoration(
-                          labelText: 'Hora',
-                          hintText: 'Selecione',
-                          prefixIcon: Icon(Icons.schedule_rounded),
-                        ),
-                        validator: (value) {
-                          if ((value ?? '').trim().isEmpty) {
-                            return 'Informe a hora.';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-                  ],
+                _DatesField(
+                  dates: _selectedDates,
+                  enabled: !state.isSubmitting,
+                  errorText: _datesError,
+                  onAddDate: _pickDate,
+                  onRemoveDate: (date) {
+                    setState(() {
+                      _selectedDates.remove(date);
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _timeController,
+                  enabled: !state.isSubmitting,
+                  readOnly: true,
+                  onTap: state.isSubmitting ? null : _pickTime,
+                  decoration: const InputDecoration(
+                    labelText: 'Hora',
+                    hintText: 'Selecione',
+                    prefixIcon: Icon(Icons.schedule_rounded),
+                  ),
+                  validator: (value) {
+                    if ((value ?? '').trim().isEmpty) {
+                      return 'Informe a hora.';
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -219,7 +207,11 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
                             color: cs.onPrimary,
                           ),
                         )
-                      : const Text('Adicionar evento'),
+                      : Text(
+                          _selectedDates.length > 1
+                              ? 'Adicionar ${_selectedDates.length} eventos'
+                              : 'Adicionar eventos',
+                        ),
                 ),
                 const SizedBox(height: 10),
                 AppSecondaryButton(
@@ -240,17 +232,23 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
     final now = DateTime.now();
     final selected = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? now,
+      initialDate: now,
       firstDate: DateTime(now.year - 1),
       lastDate: DateTime(now.year + 5),
+      selectableDayPredicate: (day) =>
+          !_selectedDates.any((d) => _isSameDay(d, day)),
     );
 
     if (!mounted || selected == null) return;
     setState(() {
-      _selectedDate = selected;
-      _dateController.text = formatDate(selected);
+      _selectedDates.add(selected);
+      _selectedDates.sort();
+      _datesError = null;
     });
   }
+
+  bool _isSameDay(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
 
   Future<void> _pickTime() async {
     final selected = await showTimePicker(
@@ -266,9 +264,14 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
     });
   }
 
-  Future<void> _submit(CreateProjectEventCubit cubit) async {
-    if (!_formKey.currentState!.validate()) return;
-    if (_selectedDate == null || _selectedTime == null) return;
+  Future<void> _submit(CreateProjectEventBatchCubit cubit) async {
+    final formValid = _formKey.currentState!.validate();
+    setState(() {
+      _datesError = _selectedDates.isEmpty
+          ? 'Selecione pelo menos uma data.'
+          : null;
+    });
+    if (!formValid || _selectedDates.isEmpty || _selectedTime == null) return;
 
     final dateFormatter = DateFormat('yyyy-MM-dd');
     final startTime =
@@ -276,10 +279,10 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
 
     final success = await cubit.submit(
       projectId: widget.projectId,
-      input: CreateProjectEventInput(
+      input: CreateProjectEventBatchInput(
         title: _titleController.text,
         description: _descriptionController.text,
-        startDate: dateFormatter.format(_selectedDate!),
+        dates: _selectedDates.map(dateFormatter.format).toList(),
         startTime: startTime,
         location: _locationController.text,
       ),
@@ -287,12 +290,101 @@ class _CreateProjectEventViewState extends State<_CreateProjectEventView> {
 
     if (!mounted) return;
     if (success) {
-      AppFeedback.showSuccess(
-        'Evento criado com sucesso. Crie outro evento ou feche para voltar.',
-      );
+      AppFeedback.showSuccess('Eventos criados com sucesso.');
       Navigator.of(context).pop(true);
     } else if (cubit.state.errorMessage != null) {
       AppFeedback.showError(cubit.state.errorMessage!);
     }
+  }
+}
+
+class _DatesField extends StatelessWidget {
+  final List<DateTime> dates;
+  final bool enabled;
+  final String? errorText;
+  final VoidCallback onAddDate;
+  final ValueChanged<DateTime> onRemoveDate;
+
+  const _DatesField({
+    required this.dates,
+    required this.enabled,
+    required this.errorText,
+    required this.onAddDate,
+    required this.onRemoveDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: errorText != null ? cs.error : cs.outlineVariant,
+        ),
+        borderRadius: BorderRadius.circular(AppRadius.textarea),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.event_repeat_rounded, color: cs.onSurfaceVariant),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Datas',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ),
+              TextButton.icon(
+                onPressed: enabled ? onAddDate : null,
+                icon: const Icon(Icons.add_rounded, size: 18),
+                label: const Text('Adicionar data'),
+              ),
+            ],
+          ),
+          if (dates.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 4, top: 2, bottom: 4),
+              child: Text(
+                'Nenhuma data selecionada.',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: dates
+                    .map(
+                      (date) => Chip(
+                        label: Text(formatDate(date)),
+                        onDeleted: enabled ? () => onRemoveDate(date) : null,
+                      ),
+                    )
+                    .toList(),
+              ),
+            ),
+          if (errorText != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 4, top: 4),
+              child: Text(
+                errorText!,
+                style: theme.textTheme.bodySmall?.copyWith(color: cs.error),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }

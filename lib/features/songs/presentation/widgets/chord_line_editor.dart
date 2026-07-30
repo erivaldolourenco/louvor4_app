@@ -30,8 +30,19 @@ class ChordAnchorLineRow extends StatefulWidget {
   State<ChordAnchorLineRow> createState() => _ChordAnchorLineRowState();
 }
 
+/// Deslocamento mínimo (em pixels) que um gesto precisa percorrer antes de
+/// ser tratado como arraste de reposicionamento em vez de um toque simples.
+const _dragSlackPx = 4.0;
+
 class _ChordAnchorLineRowState extends State<ChordAnchorLineRow> {
   int? _highlightedPosition;
+
+  /// Acorde sendo arrastado no momento (null quando nenhum arraste ativo).
+  EditableChordAnchor? _draggingAnchor;
+  double _dragStartX = 0;
+  double _dragDeltaX = 0;
+  int _dragFromPosition = 0;
+  bool _dragCrossedSlack = false;
 
   EditableLine get line => widget.line;
 
@@ -112,6 +123,63 @@ class _ChordAnchorLineRowState extends State<ChordAnchorLineRow> {
     widget.onChanged();
   }
 
+  void _handleChordDragStart(
+    EditableChordAnchor anchor,
+    DragStartDetails details,
+  ) {
+    _draggingAnchor = anchor;
+    _dragStartX = details.globalPosition.dx;
+    _dragFromPosition = anchor.position;
+    _dragDeltaX = 0;
+    _dragCrossedSlack = false;
+  }
+
+  void _handleChordDragUpdate(DragUpdateDetails details) {
+    if (_draggingAnchor == null) return;
+    final delta = details.globalPosition.dx - _dragStartX;
+    if (!_dragCrossedSlack && delta.abs() <= _dragSlackPx) return;
+    setState(() {
+      _dragCrossedSlack = true;
+      _dragDeltaX = delta;
+    });
+  }
+
+  void _handleChordDragEnd(DragEndDetails details) {
+    final anchor = _draggingAnchor;
+    if (anchor == null) return;
+    final wasDragging = _dragCrossedSlack;
+    final deltaPx = _dragDeltaX;
+
+    setState(() {
+      _draggingAnchor = null;
+      _dragDeltaX = 0;
+      _dragCrossedSlack = false;
+    });
+
+    if (!wasDragging) return;
+
+    final charWidth = _charWidth();
+    final deltaColumns = (deltaPx / charWidth).round();
+    if (deltaColumns == 0) return;
+    final direction = deltaColumns > 0 ? 1 : -1;
+    final maxPos = line.textController.text.length - 1;
+    final requestedPosition = (_dragFromPosition + deltaColumns).clamp(
+      -1,
+      maxPos,
+    );
+
+    final resolvedPosition = _resolveChordDropPosition(
+      line,
+      _dragFromPosition,
+      requestedPosition,
+      direction,
+    );
+
+    if (resolvedPosition == anchor.position) return;
+    setState(() => anchor.position = resolvedPosition);
+    widget.onChanged();
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -158,21 +226,36 @@ class _ChordAnchorLineRowState extends State<ChordAnchorLineRow> {
               Positioned(
                 left: leadingWidth + anchor.position * charWidth,
                 top: 0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 4,
-                    vertical: 1,
-                  ),
-                  decoration: BoxDecoration(
-                    color: cs.primaryContainer,
-                    borderRadius: BorderRadius.circular(AppRadius.badge),
-                  ),
-                  child: Text(
-                    anchor.chord,
-                    style: _monoStyle.copyWith(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: cs.onPrimaryContainer,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragStart: (details) =>
+                      _handleChordDragStart(anchor, details),
+                  onHorizontalDragUpdate: _handleChordDragUpdate,
+                  onHorizontalDragEnd: _handleChordDragEnd,
+                  child: Transform.translate(
+                    offset: identical(anchor, _draggingAnchor)
+                        ? Offset(_dragDeltaX, 0)
+                        : Offset.zero,
+                    child: Opacity(
+                      opacity: identical(anchor, _draggingAnchor) ? 0.7 : 1,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 1,
+                        ),
+                        decoration: BoxDecoration(
+                          color: cs.primaryContainer,
+                          borderRadius: BorderRadius.circular(AppRadius.badge),
+                        ),
+                        child: Text(
+                          anchor.chord,
+                          style: _monoStyle.copyWith(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: cs.onPrimaryContainer,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -182,6 +265,29 @@ class _ChordAnchorLineRowState extends State<ChordAnchorLineRow> {
       ),
     );
   }
+}
+
+/// Resolve a posição final de um acorde arrastado a partir de [fromPosition]
+/// até [requested], "empurrando" na direção [direction] quando a posição
+/// pedida já está ocupada por outro acorde ancorado — a própria posição de
+/// origem não conta como ocupada, já que é o acorde sendo movido.
+int _resolveChordDropPosition(
+  EditableLine line,
+  int fromPosition,
+  int requested,
+  int direction,
+) {
+  final maxPos = line.textController.text.length - 1;
+  bool isOccupied(int p) =>
+      p != fromPosition && line.chords.any((c) => c.position == p);
+
+  var pos = requested;
+  while (isOccupied(pos)) {
+    final next = pos + direction;
+    if (next < -1 || next > maxPos) return pos;
+    pos = next;
+  }
+  return pos;
 }
 
 /// Editor de uma seção do tipo [ChordSectionType.chordSequence]: lista de
@@ -372,7 +478,7 @@ Future<_ChordAnchorResult?> _showChordAnchorPopover(
           width: popoverWidth,
           child: Material(
             elevation: 6,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadius.card),
             color: Theme.of(ctx).colorScheme.surfaceContainerHigh,
             child: _ChordAnchorPopoverContent(
               initialChord: initialChord,
@@ -412,9 +518,8 @@ class _ChordAnchorPopoverContentState
   bool get _isEditing => widget.initialChord != null;
 
   static final _popoverButtonStyle = TextButton.styleFrom(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-    minimumSize: Size.zero,
-    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    minimumSize: const Size(48, 48),
   );
 
   @override

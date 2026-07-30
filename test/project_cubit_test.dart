@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:louvor4_app/features/music_projects/data/music_projects_repository.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/add_project_member_input.dart';
+import 'package:louvor4_app/features/music_projects/domain/entities/create_project_event_batch_input.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/create_project_event_input.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/music_event_detail_entity.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/music_project_entity.dart';
@@ -88,6 +89,14 @@ class _FakeMusicProjectsRepository implements MusicProjectsRepository {
   Future<void> createProjectEvent(
     String projectId,
     CreateProjectEventInput input,
+  ) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> createProjectEventBatch(
+    String projectId,
+    CreateProjectEventBatchInput input,
   ) async {
     throw UnimplementedError();
   }

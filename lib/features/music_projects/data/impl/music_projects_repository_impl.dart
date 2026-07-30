@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_error_message.dart';
 import '../../domain/entities/add_project_member_input.dart';
+import '../../domain/entities/create_project_event_batch_input.dart';
 import '../../domain/entities/create_project_event_input.dart';
 import '../../domain/entities/create_music_project_input.dart';
 import '../../domain/entities/music_event_detail_entity.dart';
@@ -263,6 +264,27 @@ class MusicProjectsRepositoryImpl implements MusicProjectsRepository {
         _extractApiErrorMessage(
           e,
           fallback: 'Não foi possível adicionar o evento. Tente novamente.',
+        ),
+      );
+    }
+  }
+
+  @override
+  Future<void> createProjectEventBatch(
+    String projectId,
+    CreateProjectEventBatchInput input,
+  ) async {
+    try {
+      await _dio.post(
+        '/music-project/$projectId/events-lote',
+        data: input.toJson(),
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback:
+              'Não foi possível adicionar os eventos em lote. Tente novamente.',
         ),
       );
     }

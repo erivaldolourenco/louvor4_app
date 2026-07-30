@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/ui/widgets/app_text_area_theme.dart';
 import '../utils/song_validators.dart';
 
 class SongFormFields extends StatelessWidget {
@@ -89,19 +90,21 @@ class SongFormFields extends StatelessWidget {
           onChanged: (_) => onChanged(),
         ),
         const SizedBox(height: 12),
-        TextFormField(
-          controller: notesController,
-          keyboardType: TextInputType.multiline,
-          textInputAction: TextInputAction.newline,
-          minLines: 4,
-          maxLines: 6,
-          decoration: const InputDecoration(
-            labelText: 'Observações',
-            hintText: 'Cifra simplificada, instruções de arranjo...',
-            alignLabelWithHint: true,
-            prefixIcon: Icon(Icons.notes_rounded),
+        AppTextAreaTheme(
+          child: TextFormField(
+            controller: notesController,
+            keyboardType: TextInputType.multiline,
+            textInputAction: TextInputAction.newline,
+            minLines: 4,
+            maxLines: 6,
+            decoration: const InputDecoration(
+              labelText: 'Observações',
+              hintText: 'Cifra simplificada, instruções de arranjo...',
+              alignLabelWithHint: true,
+              prefixIcon: Icon(Icons.notes_rounded),
+            ),
+            onChanged: (_) => onChanged(),
           ),
-          onChanged: (_) => onChanged(),
         ),
       ],
     );

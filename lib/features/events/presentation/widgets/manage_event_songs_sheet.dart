@@ -7,6 +7,7 @@ import 'package:louvor4_app/features/songs/domain/entities/song_entity.dart';
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
+import '../../../../core/ui/widgets/app_inline_error_message.dart';
 import '../../../../core/utils/youtube_utils.dart';
 import '../../data/events_repository.dart';
 import '../cubit/manage_event_songs_cubit.dart';
@@ -138,7 +139,7 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                       if (state.errorMessage != null)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 12),
-                          child: _InlineErrorMessage(message: state.errorMessage!),
+                          child: AppInlineErrorMessage(message: state.errorMessage!),
                         ),
                       // Tab content — each tab subscribes to the cubit directly
                       Expanded(
@@ -616,7 +617,7 @@ class _SelectableSongCard extends StatelessWidget {
                 child: Row(
                   children: [
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(AppRadius.card),
                       child: Image.network(
                         YoutubeUtils.getThumbnail(song.youTubeUrl),
                         width: 72,
@@ -797,35 +798,6 @@ class _EmptyMedleysState extends StatelessWidget {
               style: TextStyle(color: subtitleColor),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InlineErrorMessage extends StatelessWidget {
-  final String message;
-
-  const _InlineErrorMessage({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.errorContainer,
-        borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(
-          color: cs.error.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Text(
-        message,
-        style: TextStyle(
-          color: cs.onErrorContainer,
-          fontWeight: FontWeight.w600,
         ),
       ),
     );

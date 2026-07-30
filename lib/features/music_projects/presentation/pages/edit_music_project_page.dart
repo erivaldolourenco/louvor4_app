@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_cached_network_image.dart';
+import '../../../../core/ui/widgets/app_inline_error_message.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/music_projects_repository.dart';
 import '../../domain/entities/music_project_entity.dart';
@@ -38,7 +39,6 @@ class EditMusicProjectPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return BlocProvider(
       create: (_) => EditMusicProjectCubit(repository)..loadProject(projectId),
       child: const _EditMusicProjectView(),
@@ -94,6 +94,7 @@ class _EditMusicProjectViewState extends State<_EditMusicProjectView> {
                 padding: const EdgeInsets.all(16),
                 child: Form(
                   key: _formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -153,7 +154,7 @@ class _EditMusicProjectViewState extends State<_EditMusicProjectView> {
                       ),
                       if (state.errorMessage != null) ...[
                         const SizedBox(height: 12),
-                        _InlineErrorMessage(message: state.errorMessage!),
+                        AppInlineErrorMessage(message: state.errorMessage!),
                       ],
                       const SizedBox(height: 22),
                       AppPrimaryButton(
@@ -253,7 +254,7 @@ class _ProjectImageCard extends StatelessWidget {
         children: [
           InkWell(
             onTap: isBusy ? null : onTap,
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(AppRadius.pill),
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -324,30 +325,5 @@ class _ProjectImageCard extends StatelessWidget {
     if (parts.isEmpty) return 'P';
     final chars = parts.take(2).map((e) => e[0].toUpperCase()).join();
     return chars.isEmpty ? 'P' : chars;
-  }
-}
-
-class _InlineErrorMessage extends StatelessWidget {
-  final String message;
-
-  const _InlineErrorMessage({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isDark ? cs.errorContainer : cs.errorContainer,
-        borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(color: cs.error.withValues(alpha: 0.35)),
-      ),
-      child: Text(
-        message,
-        style: TextStyle(color: cs.error, fontWeight: FontWeight.w600),
-      ),
-    );
   }
 }

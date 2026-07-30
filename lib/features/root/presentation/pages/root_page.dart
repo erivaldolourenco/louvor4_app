@@ -213,7 +213,9 @@ class _RootPageState extends State<RootPage>
             builder: (context, userState) {
               return Scaffold(
                 key: _scaffoldKey,
-                drawerScrimColor: Colors.black.withValues(alpha: 0.28),
+                drawerScrimColor: Theme.of(
+                  context,
+                ).colorScheme.scrim.withValues(alpha: 0.28),
                 drawer: RootNavigationDrawer(
                   user: userState.user,
                   isLoadingUser: userState.status == UserStatus.loading,

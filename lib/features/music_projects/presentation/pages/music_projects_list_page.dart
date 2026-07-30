@@ -260,7 +260,6 @@ class _CreateProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Material(
       color: Colors.transparent,
@@ -272,9 +271,7 @@ class _CreateProjectCard extends StatelessWidget {
           decoration: appCardDecoration(
             context,
             radius: AppRadius.card,
-            borderColor: isDark
-                ? Color(0xFF3B82F6)
-                : cs.onSurfaceVariant,
+            borderColor: cs.primary,
             color: Theme.of(context).cardColor,
           ),
           child: Row(

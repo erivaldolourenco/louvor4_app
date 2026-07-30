@@ -316,25 +316,18 @@ class _ProjectSkillCard extends StatelessWidget {
       builder: (dialogContext) {
         final cs = Theme.of(context).colorScheme;
         return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.card),
-          ),
           title: const Text('Excluir função'),
           content: Text(
             'Deseja excluir a função "${skill.name}"? Essa ação não poderá ser desfeita.',
           ),
           actions: [
             TextButton(
-              style: TextButton.styleFrom(shape: const StadiumBorder()),
               onPressed: () => Navigator.of(dialogContext).pop(false),
               child: const Text('Cancelar'),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
-              style: FilledButton.styleFrom(
-                backgroundColor: cs.error,
-                shape: const StadiumBorder(),
-              ),
+              style: FilledButton.styleFrom(backgroundColor: cs.error),
               child: const Text('Excluir'),
             ),
           ],

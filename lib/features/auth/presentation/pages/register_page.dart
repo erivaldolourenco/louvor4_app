@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
+import '../../../../core/ui/widgets/app_logo.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/impl/auth_repository_impl.dart';
 import '../../domain/entities/create_user_input_entity.dart';
@@ -97,10 +97,7 @@ class _RegisterViewState extends State<_RegisterView> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        SvgPicture.asset(
-                          'assets/images/logos/logo.svg',
-                          height: 42,
-                        ),
+                        const AppLogo(height: 42),
                         const SizedBox(height: 22),
                         Text(
                           'Crie sua conta para gerenciar bandas, ministérios e eventos',

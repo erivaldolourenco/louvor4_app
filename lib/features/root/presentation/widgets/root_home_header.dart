@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:louvor4_app/core/ui/widgets/app_logo.dart';
 import 'package:louvor4_app/features/root/presentation/widgets/root_user_avatar.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 
@@ -7,14 +7,12 @@ class RootHomeHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onAvatarTap;
   final UserDetailEntity? user;
   final bool isLoadingUser;
-  final bool elevated;
 
   const RootHomeHeader({
     super.key,
     required this.onAvatarTap,
     required this.user,
     required this.isLoadingUser,
-    this.elevated = false,
   });
 
   @override
@@ -26,29 +24,33 @@ class RootHomeHeader extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       automaticallyImplyLeading: false,
       backgroundColor: surfaceColor,
-      surfaceTintColor: cs.surfaceTint,
-      elevation: elevated ? 3 : 0,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
       scrolledUnderElevation: 0,
-      shadowColor: cs.shadow,
       centerTitle: true,
       toolbarHeight: 68,
       leadingWidth: 68,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 16, top: 10, bottom: 10),
+      leading: Center(
         child: Material(
           color: Colors.transparent,
           child: InkWell(
             onTap: onAvatarTap,
             customBorder: const CircleBorder(),
-            child: RootUserAvatar(
-              user: user,
-              radius: 12,
-              isLoading: isLoadingUser,
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: Center(
+                child: RootUserAvatar(
+                  user: user,
+                  radius: 18,
+                  isLoading: isLoadingUser,
+                ),
+              ),
             ),
           ),
         ),
       ),
-      title: SvgPicture.asset('assets/images/logos/logo-icon.svg', height: 34),
+      title: const AppLogo(height: 34),
       actions: const [SizedBox(width: 68)],
     );
   }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
+import '../../../../core/ui/widgets/app_logo.dart';
 import '../../data/repositories/auth_repository.dart';
 import '../../data/repositories/impl/auth_repository_impl.dart';
 import '../cubit/forgot_password_cubit.dart';
@@ -88,7 +89,7 @@ class _ForgotPasswordViewState extends State<_ForgotPasswordView> {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           const SizedBox(height: 20),
-                          SvgPicture.asset('assets/images/logos/logo.svg', height: 42),
+                          const AppLogo(height: 42),
                           const SizedBox(height: 22),
                           Text(
                             _titleForStep(state.step),
@@ -297,7 +298,7 @@ class _ChannelOption extends StatelessWidget {
             color: selected ? colorScheme.primary : colorScheme.outline.withValues(alpha: 0.5),
             width: selected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadius.card),
         ),
         child: Row(
           children: [

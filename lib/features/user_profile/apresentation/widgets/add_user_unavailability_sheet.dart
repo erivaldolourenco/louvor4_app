@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:louvor4_app/core/theme/app_radius.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/app_buttons.dart';
+import 'package:louvor4_app/core/ui/widgets/app_inline_error_message.dart';
+import 'package:louvor4_app/core/ui/widgets/app_text_area_theme.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/music_project_entity.dart';
 import 'package:louvor4_app/features/user_profile/apresentation/cubit/user_unavailability_cubit.dart';
 import 'package:louvor4_app/features/user_profile/apresentation/cubit/user_unavailability_state.dart';
@@ -200,7 +202,7 @@ class _AddUserUnavailabilitySheetState
                         height: 64,
                         decoration: BoxDecoration(
                           color: cs.secondaryContainer,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppRadius.card),
                         ),
                         child: Center(
                           child: Icon(
@@ -236,29 +238,31 @@ class _AddUserUnavailabilitySheetState
                     ],
                   ),
                   const SizedBox(height: 20),
-                  TextFormField(
-                    controller: _descriptionController,
-                    enabled: !isSubmitting,
-                    minLines: 2,
-                    maxLines: 4,
-                    maxLength: 180,
-                    decoration: const InputDecoration(
-                      labelText: 'Descrição',
-                      hintText:
-                          'Ex: Viagem com a família, compromisso profissional',
-                      prefixIcon: Icon(Icons.notes_rounded),
-                      alignLabelWithHint: true,
+                  AppTextAreaTheme(
+                    child: TextFormField(
+                      controller: _descriptionController,
+                      enabled: !isSubmitting,
+                      minLines: 2,
+                      maxLines: 4,
+                      maxLength: 180,
+                      decoration: const InputDecoration(
+                        labelText: 'Descrição',
+                        hintText:
+                            'Ex: Viagem com a família, compromisso profissional',
+                        prefixIcon: Icon(Icons.notes_rounded),
+                        alignLabelWithHint: true,
+                      ),
+                      validator: (value) {
+                        final text = (value ?? '').trim();
+                        if (text.isEmpty) {
+                          return 'Informe uma descrição.';
+                        }
+                        if (text.length < 3) {
+                          return 'Use ao menos 3 caracteres.';
+                        }
+                        return null;
+                      },
                     ),
-                    validator: (value) {
-                      final text = (value ?? '').trim();
-                      if (text.isEmpty) {
-                        return 'Informe uma descrição.';
-                      }
-                      if (text.length < 3) {
-                        return 'Use ao menos 3 caracteres.';
-                      }
-                      return null;
-                    },
                   ),
                   const SizedBox(height: 18),
                   _DateField(
@@ -350,7 +354,7 @@ class _AddUserUnavailabilitySheetState
                   ],
                   if (state.actionErrorMessage != null) ...[
                     const SizedBox(height: 16),
-                    _InlineError(message: state.actionErrorMessage!),
+                    AppInlineErrorMessage(message: state.actionErrorMessage!),
                   ],
                   const SizedBox(height: 24),
                   Row(
@@ -503,30 +507,6 @@ class _FieldLabel extends StatelessWidget {
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
           color: Theme.of(context).textTheme.bodyMedium?.color,
         ),
-      ),
-    );
-  }
-}
-
-class _InlineError extends StatelessWidget {
-  final String message;
-
-  const _InlineError({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.errorContainer,
-        borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(color: cs.error.withValues(alpha: 0.35)),
-      ),
-      child: Text(
-        message,
-        style: TextStyle(color: cs.error, fontWeight: FontWeight.w600),
       ),
     );
   }

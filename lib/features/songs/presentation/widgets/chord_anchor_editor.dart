@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_radius.dart';
 import '../../domain/entities/chord_sheet_entity.dart';
 import 'chord_line_editor.dart';
 import 'chord_sheet_editor.dart';
@@ -55,7 +56,7 @@ class _ChordAnchorSection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: cs.secondaryContainer,
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppRadius.badge),
               ),
               child: Text(
                 section.type.ptLabel,

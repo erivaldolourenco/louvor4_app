@@ -352,9 +352,8 @@ class _SongsContentState extends State<_SongsContent>
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.input),
                   borderSide: BorderSide(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outlineVariant.withValues(alpha: 0.25),
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 1.5,
                   ),
                 ),
               ),
@@ -457,7 +456,7 @@ class _SongsContentState extends State<_SongsContent>
               color: Theme.of(context).colorScheme.surface,
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.only(top: 10, bottom: 90),
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 90),
                 itemBuilder: (_, index) {
                   final song = filteredSongs[index];
                   return SongListCard(
@@ -566,7 +565,7 @@ class _SongsContentState extends State<_SongsContent>
                   color: Theme.of(context).colorScheme.surface,
                   child: ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(top: 12, bottom: 90),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
                     itemCount: filteredMedleys.length,
                     itemBuilder: (_, i) {
                       final medley = filteredMedleys[i];
@@ -597,7 +596,7 @@ class _SongsTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
-    return TabBar(
+    return TabBar.secondary(
       controller: controller,
       labelColor: cs.primary,
       unselectedLabelColor: cs.onSurfaceVariant,

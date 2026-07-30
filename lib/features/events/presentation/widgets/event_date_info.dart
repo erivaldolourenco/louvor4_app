@@ -64,7 +64,7 @@ class EventDateInfo extends StatelessWidget {
             date.day.toString(),
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w700,
-              color: cs.primaryContainer,
+              color: cs.onPrimaryContainer,
               height: 1,
             ),
           ),

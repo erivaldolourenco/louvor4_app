@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
+import '../../../../core/ui/widgets/app_logo.dart';
 import '../../../../core/notifications/push_notification_service.dart';
 import '../../../root/presentation/pages/root_page.dart';
 import '../../data/repositories/impl/auth_repository_impl.dart';
@@ -121,10 +121,7 @@ class _LoginViewState extends State<_LoginView> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SvgPicture.asset(
-                      'assets/images/logos/logo.svg',
-                      height: 42,
-                    ),
+                    const AppLogo(height: 42),
                     const SizedBox(height: 22),
                     Text(
                       'Gerencie bandas, ministérios e eventos com simplicidade',

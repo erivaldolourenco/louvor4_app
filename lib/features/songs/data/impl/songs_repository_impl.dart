@@ -167,12 +167,20 @@ class SongsRepositoryImpl implements SongsRepository {
   ChordSheetEntity? _parseChordSheetResponse(dynamic data) {
     final raw = data is Map ? data['chordSheetJson'] : null;
     final normalized = raw?.toString().trim();
-    if (normalized == null || normalized.isEmpty) return null;
+    final editPermission = data is Map && data['editPermission'] == true;
+
+    if (normalized == null || normalized.isEmpty) {
+      // Sem cifra salva ainda, mas a permissão colaborativa pode já ter
+      // sido concedida pelo dono — preserva essa informação em vez de
+      // descartá-la junto com o conteúdo vazio.
+      if (!editPermission) return null;
+      return ChordSheetEntity.empty().copyWith(editPermission: true);
+    }
+
     final decoded = jsonDecode(normalized);
     final entity = ChordSheetEntity.fromJson(
       Map<String, dynamic>.from(decoded as Map),
     );
-    final editPermission = data is Map && data['editPermission'] == true;
     return entity.copyWith(editPermission: editPermission);
   }
 

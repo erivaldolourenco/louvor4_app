@@ -15,7 +15,7 @@ abstract final class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
-      fontFamily: 'Outfit',
+      fontFamily: 'FamiljenGrotesk',
       brightness: Brightness.light,
       colorScheme: cs,
       scaffoldBackgroundColor: cs.surface,
@@ -116,14 +116,14 @@ abstract final class AppTheme {
               color: cs.primary,
               fontWeight: FontWeight.w700,
               fontSize: 12,
-              fontFamily: 'Outfit',
+              fontFamily: 'FamiljenGrotesk',
             );
           }
           return TextStyle(
             color: cs.onSurfaceVariant,
             fontWeight: FontWeight.w500,
             fontSize: 12,
-            fontFamily: 'Outfit',
+            fontFamily: 'FamiljenGrotesk',
           );
         }),
       ),
@@ -142,7 +142,7 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.badge),
         ),
         labelStyle: TextStyle(
-          fontFamily: 'Outfit',
+          fontFamily: 'FamiljenGrotesk',
           fontWeight: FontWeight.w600,
           color: cs.onSurface,
         ),
@@ -169,7 +169,7 @@ abstract final class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
-      fontFamily: 'Outfit',
+      fontFamily: 'FamiljenGrotesk',
       brightness: Brightness.dark,
       colorScheme: cs,
       scaffoldBackgroundColor: cs.surface,
@@ -270,14 +270,14 @@ abstract final class AppTheme {
               color: cs.primary,
               fontWeight: FontWeight.w700,
               fontSize: 12,
-              fontFamily: 'Outfit',
+              fontFamily: 'FamiljenGrotesk',
             );
           }
           return TextStyle(
             color: cs.onSurfaceVariant,
             fontWeight: FontWeight.w500,
             fontSize: 12,
-            fontFamily: 'Outfit',
+            fontFamily: 'FamiljenGrotesk',
           );
         }),
       ),
@@ -296,7 +296,7 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.badge),
         ),
         labelStyle: TextStyle(
-          fontFamily: 'Outfit',
+          fontFamily: 'FamiljenGrotesk',
           fontWeight: FontWeight.w600,
           color: cs.onSurface,
         ),
@@ -319,80 +319,80 @@ const _textTheme = TextTheme(
   displayLarge: TextStyle(
     fontSize: 57,
     fontWeight: FontWeight.w400,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   displayMedium: TextStyle(
     fontSize: 45,
     fontWeight: FontWeight.w400,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   displaySmall: TextStyle(
     fontSize: 36,
     fontWeight: FontWeight.w400,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   // Headline — seções e cabeçalhos
   headlineLarge: TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.w400,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   headlineMedium: TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w400,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   headlineSmall: TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.w400,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   // Title — títulos de card, sheet, appbar
   titleLarge: TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w700,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   titleMedium: TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w700,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   titleSmall: TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w700,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   // Body — texto corrido
   bodyLarge: TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w400,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   bodyMedium: TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   bodySmall: TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w400,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   // Label — chips, badges, legendas
   labelLarge: TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w500,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   labelMedium: TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w500,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
   labelSmall: TextStyle(
     fontSize: 11,
     fontWeight: FontWeight.w500,
-    fontFamily: 'Outfit',
+    fontFamily: 'FamiljenGrotesk',
   ),
 );

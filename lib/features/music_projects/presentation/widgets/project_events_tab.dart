@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/features/events/presentation/pages/event_detail_page.dart';
 
@@ -7,11 +8,11 @@ import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_cached_network_image.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
-import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/ui/widgets/spring_tap.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../data/music_projects_repository.dart';
 import '../../domain/entities/music_event_detail_entity.dart';
+import '../pages/create_project_event_batch_page.dart';
 import '../pages/create_project_event_page.dart';
 
 class ProjectEventsTab extends StatefulWidget {
@@ -96,6 +97,22 @@ class _ProjectEventsTabState extends State<ProjectEventsTab>
     }
   }
 
+  Future<void> _onCreateEventBatch() async {
+    if (!widget.isAdmin) {
+      AppFeedback.showError('Apenas administradores podem criar eventos.');
+      return;
+    }
+    final created = await openCreateProjectEventBatchPage(
+      context,
+      projectId: widget.projectId,
+      repository: widget.repository,
+    );
+
+    if (created == true) {
+      await _loadEvents(silent: true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -163,7 +180,41 @@ class _ProjectEventsTabState extends State<ProjectEventsTab>
             Positioned(
               right: 16,
               bottom: 16,
-              child: PrimaryAddFab(onPressed: _onCreateEvent),
+              child: SpeedDial(
+                heroTag: 'project_events_fab',
+                icon: Icons.add_rounded,
+                activeIcon: Icons.close_rounded,
+                backgroundColor: cs.primary,
+                foregroundColor: cs.onPrimary,
+                shape: const CircleBorder(),
+                elevation: 4,
+                spacing: 10,
+                spaceBetweenChildren: 10,
+                children: [
+                  SpeedDialChild(
+                    child: const Icon(Icons.event_rounded),
+                    label: 'Adicionar evento',
+                    backgroundColor: cs.secondaryContainer,
+                    foregroundColor: cs.onSecondaryContainer,
+                    labelStyle: theme.textTheme.labelLarge?.copyWith(
+                      color: cs.onSurface,
+                    ),
+                    labelBackgroundColor: cs.surfaceContainerHigh,
+                    onTap: _onCreateEvent,
+                  ),
+                  SpeedDialChild(
+                    child: const Icon(Icons.event_repeat_rounded),
+                    label: 'Adicionar evento em lote',
+                    backgroundColor: cs.secondaryContainer,
+                    foregroundColor: cs.onSecondaryContainer,
+                    labelStyle: theme.textTheme.labelLarge?.copyWith(
+                      color: cs.onSurface,
+                    ),
+                    labelBackgroundColor: cs.surfaceContainerHigh,
+                    onTap: _onCreateEventBatch,
+                  ),
+                ],
+              ),
             ),
         ],
       ),

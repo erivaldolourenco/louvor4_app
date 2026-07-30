@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_radius.dart';
+import '../../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../../core/ui/widgets/app_circular_action_button.dart';
 import '../../../../../core/ui/widgets/spring_tap.dart';
 import '../../domain/entities/medley_entity.dart';
@@ -26,13 +27,10 @@ class MedleyCard extends StatelessWidget {
     final cs = theme.colorScheme;
     final count = medley.items.length;
 
-    final card = Container(
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        border: Border.symmetric(
-          horizontal: BorderSide(color: cs.outlineVariant),
-        ),
-      ),
+    final cardBody = SpringTap(
+      onTap: onTap ?? () => showMedleyDetailsModal(context, medley),
+      pressedScale: 0.97,
+      borderRadius: BorderRadius.circular(AppRadius.cardHero),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -47,7 +45,7 @@ class MedleyCard extends StatelessWidget {
                   height: 64,
                   decoration: BoxDecoration(
                     color: cs.secondaryContainer,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(AppRadius.thumbnail),
                   ),
                   child: Center(
                     child: Icon(
@@ -126,10 +124,9 @@ class MedleyCard extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: SpringTap(
-        onTap: onTap ?? () => showMedleyDetailsModal(context, medley),
-        pressedScale: 0.97,
-        child: card,
+      child: DecoratedBox(
+        decoration: appCardDecoration(context, radius: AppRadius.cardHero),
+        child: cardBody,
       ),
     );
   }

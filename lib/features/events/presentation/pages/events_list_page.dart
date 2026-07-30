@@ -116,7 +116,6 @@ class _EventsListViewState extends State<_EventsListView>
   late final TabController _tabController;
   final ScrollController _pastScrollController = ScrollController();
   bool _pastLoaded = false;
-  bool _scrolled = false;
 
   @override
   void initState() {
@@ -150,14 +149,6 @@ class _EventsListViewState extends State<_EventsListView>
     }
   }
 
-  bool _handleContentScroll(ScrollNotification notification) {
-    final scrolled = notification.metrics.pixels > 4;
-    if (scrolled != _scrolled) {
-      setState(() => _scrolled = scrolled);
-    }
-    return false;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -165,21 +156,17 @@ class _EventsListViewState extends State<_EventsListView>
         onAvatarTap: widget.onOpenDrawer,
         user: widget.user,
         isLoadingUser: widget.isLoadingUser,
-        elevated: _scrolled,
       ),
       body: Column(
         children: [
           _HomeTabBar(controller: _tabController),
           Expanded(
-            child: NotificationListener<ScrollNotification>(
-              onNotification: _handleContentScroll,
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _UpcomingTab(),
-                  _PastTab(scrollController: _pastScrollController),
-                ],
-              ),
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _UpcomingTab(),
+                _PastTab(scrollController: _pastScrollController),
+              ],
             ),
           ),
         ],
@@ -404,7 +391,6 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return IntrinsicHeight(
       child: Row(

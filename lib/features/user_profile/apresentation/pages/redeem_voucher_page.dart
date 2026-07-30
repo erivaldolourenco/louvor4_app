@@ -109,7 +109,7 @@ class _RedeemVoucherPageState extends State<RedeemVoucherPage> {
             children: [
               AppCardSurface(
                 padding: const EdgeInsets.all(24),
-                radius: 24,
+                radius: AppRadius.cardLarge,
                 child: Column(
                   children: [
                     Container(
@@ -199,7 +199,7 @@ class _RedeemVoucherPageState extends State<RedeemVoucherPage> {
                           borderRadius: BorderRadius.circular(AppRadius.input),
                         ),
                         filled: true,
-                        fillColor: cs.surfaceContainerLowest,
+                        fillColor: cs.surfaceContainerLow,
                       ),
                       onChanged: (_) {
                         if (_fieldError != null) {

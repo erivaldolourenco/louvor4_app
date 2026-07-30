@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../theme/app_radius.dart';
 import '../../utils/youtube_utils.dart';
+import 'app_card_surface.dart';
 import 'app_circular_action_button.dart';
 import 'spring_tap.dart';
 
@@ -60,13 +61,10 @@ class SongListCard extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
-    Widget cardContent = Container(
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
-        border: Border.symmetric(
-          horizontal: BorderSide(color: cs.outlineVariant),
-        ),
-      ),
+    Widget cardBody = SpringTap(
+      onTap: onTap,
+      pressedScale: 0.97,
+      borderRadius: BorderRadius.circular(AppRadius.cardHero),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -148,7 +146,8 @@ class SongListCard extends StatelessWidget {
                               const SizedBox(width: 8),
                             if (_hasLyrics)
                               _LyricsActionButton(onPressed: onOpenLyrics!),
-                            if (_hasLyrics && _hasChords) const SizedBox(width: 8),
+                            if (_hasLyrics && _hasChords)
+                              const SizedBox(width: 8),
                             if (_hasChords)
                               _ChordsActionButton(onPressed: onOpenChords!),
                           ],
@@ -183,13 +182,21 @@ class SongListCard extends StatelessWidget {
       ),
     );
 
+    Widget cardContent = DecoratedBox(
+      decoration: appCardDecoration(context, radius: AppRadius.cardHero),
+      child: cardBody,
+    );
+
     if (onRemove != null) {
       cardContent = Dismissible(
         key: ValueKey(dismissKey ?? title),
         direction: DismissDirection.endToStart,
         confirmDismiss: (_) => onRemove!(),
         background: Container(
-          color: cs.error,
+          decoration: BoxDecoration(
+            color: cs.error,
+            borderRadius: BorderRadius.circular(AppRadius.cardHero),
+          ),
           alignment: Alignment.centerRight,
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Icon(Icons.delete_outline, color: cs.onError, size: 28),
@@ -200,11 +207,7 @@ class SongListCard extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: SpringTap(
-        onTap: onTap,
-        pressedScale: 0.97,
-        child: cardContent,
-      ),
+      child: cardContent,
     );
   }
 }
@@ -270,7 +273,7 @@ class _Thumbnail extends StatelessWidget {
         height: 64,
         decoration: BoxDecoration(
           color: cs.secondaryContainer,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(AppRadius.thumbnail),
         ),
         child: Center(
           child: Icon(
@@ -283,7 +286,7 @@ class _Thumbnail extends StatelessWidget {
     }
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(AppRadius.thumbnail),
       child: Image.network(
         YoutubeUtils.getThumbnail(youTubeUrl, quality: 'default'),
         width: 64,
@@ -335,7 +338,7 @@ class _AudioTag extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
       decoration: BoxDecoration(
         color: cs.secondaryContainer,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(AppRadius.badge),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

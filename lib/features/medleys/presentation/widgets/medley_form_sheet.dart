@@ -6,6 +6,7 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_circular_action_button.dart';
+import '../../../../core/ui/widgets/app_text_area_theme.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../core/utils/youtube_utils.dart';
 import '../../../../features/songs/domain/entities/song_entity.dart';
@@ -258,14 +259,16 @@ class _MedleyFormPageState extends State<_MedleyFormPage> {
                 ),
                 const SizedBox(height: 12),
 
-                TextFormField(
-                  controller: _descCtrl,
-                  enabled: !isActioning,
-                  maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Descrição (opcional)',
-                    hintText: 'Uma breve descrição...',
-                    alignLabelWithHint: true,
+                AppTextAreaTheme(
+                  child: TextFormField(
+                    controller: _descCtrl,
+                    enabled: !isActioning,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Descrição (opcional)',
+                      hintText: 'Uma breve descrição...',
+                      alignLabelWithHint: true,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 22),
@@ -622,7 +625,7 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
                               height: 42,
                               decoration: BoxDecoration(
                                 color: cs.surfaceContainerLow,
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(AppRadius.card),
                               ),
                               child: Icon(
                                 Icons.music_note_rounded,
@@ -743,29 +746,30 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
 
   InputDecoration _fieldDecoration({String? hint, int maxLines = 1}) {
     final cs = Theme.of(context).colorScheme;
+    final radius = maxLines > 1 ? AppRadius.textarea : AppRadius.input;
     return InputDecoration(
       hintText: hint,
       hintStyle: TextStyle(color: cs.onSurfaceVariant),
       filled: true,
       fillColor: cs.surfaceContainerLow,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.input),
+        borderRadius: BorderRadius.circular(radius),
         borderSide: BorderSide(color: cs.outlineVariant),
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.input),
+        borderRadius: BorderRadius.circular(radius),
         borderSide: BorderSide(color: cs.outlineVariant),
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.input),
+        borderRadius: BorderRadius.circular(radius),
         borderSide: BorderSide(color: cs.primary, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.input),
+        borderRadius: BorderRadius.circular(radius),
         borderSide: BorderSide(color: cs.error),
       ),
       focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppRadius.input),
+        borderRadius: BorderRadius.circular(radius),
         borderSide: BorderSide(color: cs.error, width: 1.5),
       ),
       contentPadding: EdgeInsets.symmetric(

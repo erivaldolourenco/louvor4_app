@@ -57,11 +57,11 @@ class _MusicProjectTypeBadgeState extends State<MusicProjectTypeBadge>
   Color _badgeColor(MusicProjectType type, ColorScheme cs) {
     switch (type) {
       case MusicProjectType.ministry:
-        return const Color(0xFF0E7490);
+        return cs.secondary;
       case MusicProjectType.band:
         return cs.primary;
       case MusicProjectType.singer:
-        return const Color(0xFF9333EA);
+        return cs.tertiary;
       case MusicProjectType.unknown:
         return cs.onSurfaceVariant;
     }

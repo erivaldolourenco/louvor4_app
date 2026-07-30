@@ -6,6 +6,7 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
+import '../../../../core/ui/widgets/app_inline_error_message.dart';
 import '../../../../core/utils/skill_icon.dart';
 import '../../domain/entities/project_skill_entity.dart';
 import '../state/project_skills_cubit.dart';
@@ -99,7 +100,7 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
             ],
             if (state.actionErrorMessage != null) ...[
               const SizedBox(height: 12),
-              _InlineError(message: state.actionErrorMessage!),
+              AppInlineErrorMessage(message: state.actionErrorMessage!),
             ],
             const SizedBox(height: 22),
             Row(
@@ -182,8 +183,7 @@ class _IconPickerGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-  final cs = theme.colorScheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
     final icons = skillIconLabels.entries.toList();
 
     return GridView.builder(
@@ -206,20 +206,10 @@ class _IconPickerGrid extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
             decoration: BoxDecoration(
-              color: isSelected
-                  ? (isDark
-                        ? cs.primaryContainer
-                        : cs.primaryContainer)
-                  : (isDark
-                        ? cs.surfaceContainer
-                        : cs.surfaceContainer),
+              color: isSelected ? cs.primaryContainer : cs.surfaceContainer,
               borderRadius: BorderRadius.circular(AppRadius.input),
               border: Border.all(
-                color: isSelected
-                    ? cs.primary
-                    : (isDark
-                          ? cs.outlineVariant
-                          : cs.outlineVariant),
+                color: isSelected ? cs.primary : cs.outlineVariant,
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -231,11 +221,7 @@ class _IconPickerGrid extends StatelessWidget {
                   width: 32,
                   height: 32,
                   colorFilter: ColorFilter.mode(
-                    isSelected
-                        ? cs.primary
-                        : (isDark
-                              ? cs.onSurfaceVariant
-                              : cs.onSurfaceVariant),
+                    isSelected ? cs.primary : cs.onSurfaceVariant,
                     BlendMode.srcIn,
                   ),
                 ),
@@ -245,11 +231,7 @@ class _IconPickerGrid extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected
-                        ? cs.primary
-                        : (isDark
-                              ? cs.onSurfaceVariant
-                              : cs.onSurfaceVariant),
+                    color: isSelected ? cs.primary : cs.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -257,37 +239,6 @@ class _IconPickerGrid extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-
-class _InlineError extends StatelessWidget {
-  final String message;
-
-  const _InlineError({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isDark ? cs.errorContainer : cs.errorContainer,
-        borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(
-          color: cs.error.withValues(alpha: 0.35),
-        ),
-      ),
-      child: Text(
-        message,
-        style: TextStyle(
-          color: cs.error,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
     );
   }
 }

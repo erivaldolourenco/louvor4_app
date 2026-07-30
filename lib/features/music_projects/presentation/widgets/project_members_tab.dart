@@ -8,6 +8,7 @@ import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
+import '../../../../core/ui/widgets/app_inline_error_message.dart';
 import '../../../../core/ui/widgets/circular_icon_action_button.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
@@ -556,7 +557,7 @@ class _AddProjectMemberSheetState extends State<_AddProjectMemberSheet> {
             ),
             if (state.actionErrorMessage != null) ...[
               const SizedBox(height: 12),
-              _InlineErrorMessage(message: state.actionErrorMessage!),
+              AppInlineErrorMessage(message: state.actionErrorMessage!),
             ],
             const SizedBox(height: 18),
             Row(
@@ -679,7 +680,7 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const _InlineErrorMessage(
+                      const AppInlineErrorMessage(
                         message: 'Não foi possível abrir este membro.',
                       ),
                       const SizedBox(height: 18),
@@ -784,7 +785,7 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
                       ),
                     if (state.actionErrorMessage != null) ...[
                       const SizedBox(height: 14),
-                      _InlineErrorMessage(message: state.actionErrorMessage!),
+                      AppInlineErrorMessage(message: state.actionErrorMessage!),
                     ],
                     const SizedBox(height: 22),
                     AppPrimaryButton(
@@ -1084,7 +1085,7 @@ class _LockedOwnerBanner extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: cs.tertiaryContainer,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(color: cs.tertiary.withValues(alpha: 0.4)),
       ),
       child: Row(
@@ -1101,31 +1102,6 @@ class _LockedOwnerBanner extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _InlineErrorMessage extends StatelessWidget {
-  final String message;
-
-  const _InlineErrorMessage({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.errorContainer,
-        borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(color: cs.error.withValues(alpha: 0.35)),
-      ),
-      child: Text(
-        message,
-        style: TextStyle(color: cs.error, fontWeight: FontWeight.w600),
       ),
     );
   }

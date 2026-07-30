@@ -84,7 +84,6 @@ class NotificationCard extends StatelessWidget {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.close_rounded),
-                    visualDensity: VisualDensity.compact,
                   ),
               ],
             ),

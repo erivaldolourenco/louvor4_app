@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
+import '../../../../core/ui/widgets/app_inline_error_message.dart';
+import '../../../../core/ui/widgets/app_text_area_theme.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../data/events_repository.dart';
@@ -35,7 +36,6 @@ class EditEventPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return BlocProvider(
       create: (_) => EditEventCubit(repository)..startEditing(),
       child: _EditEventView(event: event),
@@ -112,6 +112,7 @@ class _EditEventViewState extends State<_EditEventView> {
           padding: const EdgeInsets.all(16),
           child: Form(
             key: _formKey,
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -137,25 +138,27 @@ class _EditEventViewState extends State<_EditEventView> {
                   },
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
-                  controller: _descriptionController,
-                  enabled: !state.isSubmitting,
-                  maxLength: 500,
-                  minLines: 3,
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                    labelText: 'Descrição',
-                    hintText: 'Descrição do evento (opcional)',
-                    prefixIcon: Icon(Icons.notes_rounded),
-                    alignLabelWithHint: true,
+                AppTextAreaTheme(
+                  child: TextFormField(
+                    controller: _descriptionController,
+                    enabled: !state.isSubmitting,
+                    maxLength: 500,
+                    minLines: 3,
+                    maxLines: 5,
+                    decoration: const InputDecoration(
+                      labelText: 'Descrição',
+                      hintText: 'Descrição do evento (opcional)',
+                      prefixIcon: Icon(Icons.notes_rounded),
+                      alignLabelWithHint: true,
+                    ),
+                    validator: (value) {
+                      final text = (value ?? '').trim();
+                      if (text.length > 500) {
+                        return 'A descrição deve ter no máximo 500 caracteres.';
+                      }
+                      return null;
+                    },
                   ),
-                  validator: (value) {
-                    final text = (value ?? '').trim();
-                    if (text.length > 500) {
-                      return 'A descrição deve ter no máximo 500 caracteres.';
-                    }
-                    return null;
-                  },
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -223,7 +226,7 @@ class _EditEventViewState extends State<_EditEventView> {
                 ),
                 if (state.errorMessage != null) ...[
                   const SizedBox(height: 12),
-                  _InlineErrorMessage(message: state.errorMessage!),
+                  AppInlineErrorMessage(message: state.errorMessage!),
                 ],
                 const SizedBox(height: 22),
                 AppPrimaryButton(
@@ -313,29 +316,5 @@ class _EditEventViewState extends State<_EditEventView> {
 
   String _formatTimeOfDay(TimeOfDay time) {
     return '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-  }
-}
-
-class _InlineErrorMessage extends StatelessWidget {
-  final String message;
-
-  const _InlineErrorMessage({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.errorContainer,
-        borderRadius: BorderRadius.circular(AppRadius.input),
-        border: Border.all(color: cs.error.withValues(alpha: 0.35)),
-      ),
-      child: Text(
-        message,
-        style: TextStyle(color: cs.error, fontWeight: FontWeight.w600),
-      ),
-    );
   }
 }

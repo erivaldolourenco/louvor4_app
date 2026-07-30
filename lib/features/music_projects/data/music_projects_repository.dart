@@ -1,4 +1,5 @@
 import '../domain/entities/create_project_event_input.dart';
+import '../domain/entities/create_project_event_batch_input.dart';
 import '../domain/entities/create_music_project_input.dart';
 import '../domain/entities/add_project_member_input.dart';
 import '../domain/entities/project_member_entity.dart';
@@ -45,6 +46,11 @@ abstract class MusicProjectsRepository {
   Future<void> createProjectEvent(
     String projectId,
     CreateProjectEventInput input,
+  );
+
+  Future<void> createProjectEventBatch(
+    String projectId,
+    CreateProjectEventBatchInput input,
   );
 
   Future<MusicProjectEntity> updateProject(
