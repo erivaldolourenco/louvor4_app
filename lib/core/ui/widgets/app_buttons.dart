@@ -71,6 +71,7 @@ class AppSecondaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final Widget child;
   final IconData? icon;
+  final Widget? leading;
   final double height;
 
   const AppSecondaryButton({
@@ -78,6 +79,7 @@ class AppSecondaryButton extends StatelessWidget {
     required this.onPressed,
     required this.child,
     this.icon,
+    this.leading,
     this.height = 56,
   });
 
@@ -106,7 +108,7 @@ class AppSecondaryButton extends StatelessWidget {
           data: IconThemeData(color: fgColor, size: 20),
           child: DefaultTextStyle.merge(
             style: TextStyle(color: fgColor, fontWeight: FontWeight.w700),
-            child: _ButtonContent(icon: icon, child: child),
+            child: _ButtonContent(icon: icon, leading: leading, child: child),
           ),
         ),
       ),
@@ -164,17 +166,19 @@ class AppDestructiveButton extends StatelessWidget {
 
 class _ButtonContent extends StatelessWidget {
   final IconData? icon;
+  final Widget? leading;
   final Widget child;
 
-  const _ButtonContent({required this.icon, required this.child});
+  const _ButtonContent({required this.icon, this.leading, required this.child});
 
   @override
   Widget build(BuildContext context) {
-    if (icon == null) return child;
+    final leadingWidget = leading ?? (icon != null ? Icon(icon) : null);
+    if (leadingWidget == null) return child;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
-      children: [Icon(icon), const SizedBox(width: 8), Flexible(child: child)],
+      children: [leadingWidget, const SizedBox(width: 8), Flexible(child: child)],
     );
   }
 }

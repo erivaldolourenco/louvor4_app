@@ -5,6 +5,8 @@ import '../../domain/entities/forgot_password_channels_entity.dart';
 abstract class AuthRepository {
   Future<AuthenticatedUserEntity> login(String username, String password);
 
+  Future<AuthenticatedUserEntity> loginWithGoogle(String idToken);
+
   Future<void> register(CreateUserInputEntity input);
 
   Future<ForgotPasswordChannelsEntity> getAvailableChannels(String identifier);

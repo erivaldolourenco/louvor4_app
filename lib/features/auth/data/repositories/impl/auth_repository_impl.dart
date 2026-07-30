@@ -39,20 +39,12 @@ class AuthRepositoryImpl implements AuthRepository {
         refreshToken: login.refreshToken,
         expiresAt: login.expiresAt,
       );
-      final userJson = login.user;
-
-      final user = UserEntity(
-        id: userJson['id'].toString(),
-        firstName: (userJson['firstName'] ?? '').toString(),
-        lastName: (userJson['lastName'] ?? '').toString(),
-        email: (userJson['email'] ?? '').toString(),
-      );
 
       return AuthenticatedUserEntity(
         accessToken: login.accessToken,
         refreshToken: login.refreshToken,
         expiresAt: login.expiresAt,
-        user: user,
+        user: _userFromJson(login.user),
       );
     } on DioException catch (e) {
       final status = e.response?.statusCode;
@@ -67,6 +59,52 @@ class AuthRepositoryImpl implements AuthRepository {
 
       throw AuthRequestException(message: message, statusCode: status);
     }
+  }
+
+  @override
+  Future<AuthenticatedUserEntity> loginWithGoogle(String idToken) async {
+    try {
+      final response = await _dio.post(
+        '/auth/login/google',
+        data: {'idToken': idToken},
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      final login = LoginResponseDto.fromJson(data);
+
+      if (login.accessToken.isEmpty || login.refreshToken.isEmpty) {
+        throw Exception('Resposta de autenticação inválida');
+      }
+
+      await TokenStorage().saveSession(
+        accessToken: login.accessToken,
+        refreshToken: login.refreshToken,
+        expiresAt: login.expiresAt,
+      );
+
+      return AuthenticatedUserEntity(
+        accessToken: login.accessToken,
+        refreshToken: login.refreshToken,
+        expiresAt: login.expiresAt,
+        user: _userFromJson(login.user),
+      );
+    } on DioException catch (e) {
+      final status = e.response?.statusCode;
+      final message = _extractApiErrorMessage(e);
+      throw AuthRequestException(message: message, statusCode: status);
+    }
+  }
+
+  UserEntity _userFromJson(Map<String, dynamic> json) {
+    return UserEntity(
+      id: json['id'].toString(),
+      firstName: (json['firstName'] ?? '').toString(),
+      lastName: (json['lastName'] ?? '').toString(),
+      email: (json['email'] ?? '').toString(),
+      planName: json['planName']?.toString(),
+      profileImage: json['profileImage']?.toString(),
+      profileImageHash: json['profileImageHash']?.toString(),
+    );
   }
 
   @override

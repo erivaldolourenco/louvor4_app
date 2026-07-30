@@ -3,10 +3,13 @@ import '../../domain/entities/authenticated_user_entity.dart';
 
 enum LoginStatus { initial, loading, success, failure }
 
+enum LoginMethod { none, password, google }
+
 class LoginState extends Equatable {
   final String username;
   final String password;
   final LoginStatus status;
+  final LoginMethod method;
   final String? errorMessage;
   final int? errorStatusCode;
   final AuthenticatedUserEntity? auth;
@@ -15,6 +18,7 @@ class LoginState extends Equatable {
     this.username = '',
     this.password = '',
     this.status = LoginStatus.initial,
+    this.method = LoginMethod.none,
     this.errorMessage,
     this.errorStatusCode,
     this.auth,
@@ -24,6 +28,7 @@ class LoginState extends Equatable {
     String? username,
     String? password,
     LoginStatus? status,
+    LoginMethod? method,
     String? errorMessage,
     int? errorStatusCode,
     AuthenticatedUserEntity? auth,
@@ -32,6 +37,7 @@ class LoginState extends Equatable {
       username: username ?? this.username,
       password: password ?? this.password,
       status: status ?? this.status,
+      method: method ?? this.method,
       errorMessage: errorMessage,
       errorStatusCode: errorStatusCode,
       auth: auth ?? this.auth,
@@ -43,6 +49,7 @@ class LoginState extends Equatable {
     username,
     password,
     status,
+    method,
     errorMessage,
     errorStatusCode,
     auth,

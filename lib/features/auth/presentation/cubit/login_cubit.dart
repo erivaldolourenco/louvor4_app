@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../core/auth/google_auth_service.dart';
 import '../../domain/exceptions/auth_request_exception.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'login_state.dart';
@@ -26,6 +27,7 @@ class LoginCubit extends Cubit<LoginState> {
     emit(
       state.copyWith(
         status: LoginStatus.loading,
+        method: LoginMethod.password,
         errorMessage: null,
         errorStatusCode: null,
       ),
@@ -36,6 +38,45 @@ class LoginCubit extends Cubit<LoginState> {
         state.username.trim(),
         state.password,
       );
+
+      emit(state.copyWith(status: LoginStatus.success, auth: auth));
+    } on AuthRequestException catch (e) {
+      emit(
+        state.copyWith(
+          status: LoginStatus.failure,
+          errorMessage: e.message,
+          errorStatusCode: e.statusCode,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: LoginStatus.failure,
+          errorMessage: e.toString().replaceAll('Exception: ', ''),
+          errorStatusCode: null,
+        ),
+      );
+    }
+  }
+
+  Future<void> loginWithGoogle() async {
+    emit(
+      state.copyWith(
+        status: LoginStatus.loading,
+        method: LoginMethod.google,
+        errorMessage: null,
+        errorStatusCode: null,
+      ),
+    );
+
+    try {
+      final idToken = await GoogleAuthService.instance.signInAndGetIdToken();
+      if (idToken == null) {
+        emit(state.copyWith(status: LoginStatus.initial));
+        return;
+      }
+
+      final auth = await _authRepository.loginWithGoogle(idToken);
 
       emit(state.copyWith(status: LoginStatus.success, auth: auth));
     } on AuthRequestException catch (e) {
