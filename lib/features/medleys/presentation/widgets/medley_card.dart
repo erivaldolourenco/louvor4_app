@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../../core/ui/widgets/app_card_surface.dart';
-import '../../../../../core/ui/widgets/app_circular_action_button.dart';
 import '../../../../../core/ui/widgets/spring_tap.dart';
 import '../../domain/entities/medley_entity.dart';
 import 'medley_details_sheet.dart';
@@ -10,15 +9,19 @@ import 'medley_details_sheet.dart';
 class MedleyCard extends StatelessWidget {
   final MedleyEntity medley;
   final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
   final VoidCallback? onTap;
+  final Future<bool> Function()? onRemove;
+  final bool isRemoving;
+  final String? dismissKey;
 
   const MedleyCard({
     super.key,
     required this.medley,
     this.onEdit,
-    this.onDelete,
     this.onTap,
+    this.onRemove,
+    this.isRemoving = false,
+    this.dismissKey,
   });
 
   @override
@@ -27,8 +30,10 @@ class MedleyCard extends StatelessWidget {
     final cs = theme.colorScheme;
     final count = medley.items.length;
 
-    final cardBody = SpringTap(
-      onTap: onTap ?? () => showMedleyDetailsModal(context, medley),
+    Widget cardBody = SpringTap(
+      onTap:
+          onTap ??
+          () => showMedleyDetailsModal(context, medley, onEdit: onEdit),
       pressedScale: 0.97,
       borderRadius: BorderRadius.circular(AppRadius.cardHero),
       child: Column(
@@ -88,46 +93,59 @@ class MedleyCard extends StatelessWidget {
               ],
             ),
           ),
-
-          // ── Actions ────────────────────────────────────────────────
-          if (onEdit != null || onDelete != null) ...[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  if (onEdit != null)
-                    AppCircularActionButton(
-                      onPressed: onEdit,
-                      assetPath: 'assets/icons/settings-2.svg',
-                      iconColor: cs.onPrimaryContainer,
-                      backgroundColor: cs.primaryContainer,
-                      borderColor: cs.primary.withValues(alpha: 0.3),
-                    ),
-                  if (onEdit != null && onDelete != null)
-                    const SizedBox(width: 8),
-                  if (onDelete != null)
-                    AppCircularActionButton(
-                      onPressed: onDelete,
-                      assetPath: 'assets/icons/trash-2.svg',
-                      iconColor: cs.error,
-                      backgroundColor: cs.errorContainer,
-                      borderColor: cs.error.withValues(alpha: 0.3),
-                    ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     );
 
+    Widget cardContent = DecoratedBox(
+      decoration: appCardDecoration(context, radius: AppRadius.cardHero),
+      child: cardBody,
+    );
+
+    if (isRemoving) {
+      cardContent = Stack(
+        children: [
+          cardContent,
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: cs.surface.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(AppRadius.cardHero),
+              ),
+              child: const Center(
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    if (onRemove != null) {
+      cardContent = Dismissible(
+        key: ValueKey(dismissKey ?? medley.name),
+        direction: DismissDirection.endToStart,
+        confirmDismiss: (_) => onRemove!(),
+        background: Container(
+          decoration: BoxDecoration(
+            color: cs.error,
+            borderRadius: BorderRadius.circular(AppRadius.cardHero),
+          ),
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Icon(Icons.delete_outline, color: cs.onError, size: 28),
+        ),
+        child: cardContent,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: DecoratedBox(
-        decoration: appCardDecoration(context, radius: AppRadius.cardHero),
-        child: cardBody,
-      ),
+      child: cardContent,
     );
   }
 }

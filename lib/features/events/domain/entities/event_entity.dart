@@ -3,6 +3,7 @@ class EventEntity {
   final DateTime date;
   final String time;
   final String title;
+  final String? description;
   final String? location;
   final String projectTitle;
   final String? projectImageUrl;
@@ -16,6 +17,7 @@ class EventEntity {
     required this.date,
     required this.time,
     required this.title,
+    this.description,
     this.location,
     required this.projectTitle,
     this.projectImageUrl,
@@ -30,6 +32,7 @@ class EventEntity {
       date: _parseDate(json['date']),
       time: json['time'].toString(),
       title: (json['title'] ?? '').toString(),
+      description: _normalizeOptionalValue(json['description']),
       location: _normalizeOptionalValue(json['location']),
       projectTitle: (json['projectTitle'] ?? '').toString(),
       projectImageUrl: _normalizeOptionalValue(json['projectImageUrl']),

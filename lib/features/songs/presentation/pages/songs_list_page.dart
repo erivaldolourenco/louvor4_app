@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
@@ -65,6 +64,7 @@ class _SongsContentState extends State<_SongsContent>
   String _searchQuery = '';
   DateTime? _lastLoadedAt;
   String? _deletingSongId;
+  String? _deletingMedleyId;
 
   @override
   void initState() {
@@ -176,9 +176,9 @@ class _SongsContentState extends State<_SongsContent>
     );
   }
 
-  void _confirmDeleteSong(SongEntity song) {
-    if (song.id == null) return;
-    showDialog<void>(
+  Future<bool> _confirmDeleteSong(SongEntity song) async {
+    if (song.id == null) return false;
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Excluir "${song.title}"?'),
@@ -204,7 +204,7 @@ class _SongsContentState extends State<_SongsContent>
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
+            onPressed: () => Navigator.of(ctx).pop(false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
@@ -212,43 +212,34 @@ class _SongsContentState extends State<_SongsContent>
               backgroundColor: Theme.of(ctx).colorScheme.error,
               foregroundColor: Theme.of(ctx).colorScheme.onError,
             ),
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              _deleteSong(song);
-            },
+            onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('Excluir'),
           ),
         ],
       ),
     );
+    if (confirmed != true) return false;
+    return _deleteSong(song);
   }
 
-  Future<void> _deleteSong(SongEntity song) async {
+  Future<bool> _deleteSong(SongEntity song) async {
     final id = song.id!;
     setState(() => _deletingSongId = id);
     try {
       await _repo.deleteSong(id);
-      if (!mounted) return;
+      if (!mounted) return true;
       setState(() {
         _songs = _songs.where((s) => s.id != id).toList();
         _deletingSongId = null;
       });
       AppFeedback.showSuccess('Música excluída com sucesso.');
+      return true;
     } catch (e) {
-      if (!mounted) return;
+      if (!mounted) return false;
       setState(() => _deletingSongId = null);
       AppFeedback.showError(e.toString().replaceFirst('Exception: ', ''));
+      return false;
     }
-  }
-
-  Future<void> _openYouTube(String url) async {
-    final uri = Uri.tryParse(url);
-    if (uri == null) {
-      AppFeedback.showError('URL do YouTube inválida.');
-      return;
-    }
-    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!launched) AppFeedback.showError('Não foi possível abrir o YouTube.');
   }
 
   // ------ Medley actions ------
@@ -261,15 +252,15 @@ class _SongsContentState extends State<_SongsContent>
     openMedleyFormPage(context, songs: _songs, medley: medley);
   }
 
-  void _confirmDeleteMedley(MedleyEntity medley) {
-    showDialog<void>(
+  Future<bool> _confirmDeleteMedley(MedleyEntity medley) async {
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text('Remover "${medley.name}"?'),
         content: const Text('Esta ação não pode ser desfeita.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
+            onPressed: () => Navigator.of(ctx).pop(false),
             child: const Text('Cancelar'),
           ),
           FilledButton(
@@ -277,24 +268,26 @@ class _SongsContentState extends State<_SongsContent>
               backgroundColor: Theme.of(ctx).colorScheme.error,
               foregroundColor: Theme.of(ctx).colorScheme.onError,
             ),
-            onPressed: () async {
-              Navigator.of(ctx).pop();
-              final cubit = context.read<MedleyCubit>();
-              final ok = await cubit.deleteMedley(medley.id!);
-              if (!mounted) return;
-              if (ok) {
-                AppFeedback.showSuccess('Medley removido com sucesso.');
-              } else {
-                AppFeedback.showError(
-                  cubit.state.actionError ?? 'Erro ao remover medley.',
-                );
-              }
-            },
+            onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text('Remover'),
           ),
         ],
       ),
     );
+    if (confirmed != true || medley.id == null || !mounted) return false;
+    setState(() => _deletingMedleyId = medley.id);
+    final cubit = context.read<MedleyCubit>();
+    final ok = await cubit.deleteMedley(medley.id!);
+    if (!mounted) return ok;
+    setState(() => _deletingMedleyId = null);
+    if (ok) {
+      AppFeedback.showSuccess('Medley removido com sucesso.');
+    } else {
+      AppFeedback.showError(
+        cubit.state.actionError ?? 'Erro ao remover medley.',
+      );
+    }
+    return ok;
   }
 
   // ------ Build ------
@@ -481,19 +474,15 @@ class _SongsContentState extends State<_SongsContent>
                       onOpenChords: song.id == null
                           ? null
                           : () => _goToChords(song),
+                      onEdit: song.id == null
+                          ? null
+                          : () => _goToEdit(song.id!),
                     ),
-                    onOpenYoutube: () => _openYouTube(song.youTubeUrl),
-                    onEdit: song.id == null ? null : () => _goToEdit(song.id!),
-                    onDelete: song.id == null
+                    onRemove: (song.id == null || _deletingSongId != null)
                         ? null
                         : () => _confirmDeleteSong(song),
-                    onOpenLyrics: song.id == null
-                        ? null
-                        : () => _goToLyrics(song),
-                    onOpenChords: song.id == null
-                        ? null
-                        : () => _goToChords(song),
                     isRemoving: song.id != null && _deletingSongId == song.id,
+                    dismissKey: song.id,
                   );
                 },
                 itemCount: filteredSongs.length,
@@ -572,7 +561,14 @@ class _SongsContentState extends State<_SongsContent>
                       return MedleyCard(
                         medley: medley,
                         onEdit: () => _openEditMedley(medley),
-                        onDelete: () => _confirmDeleteMedley(medley),
+                        onRemove:
+                            (medley.id == null || _deletingMedleyId != null)
+                            ? null
+                            : () => _confirmDeleteMedley(medley),
+                        isRemoving:
+                            medley.id != null &&
+                            _deletingMedleyId == medley.id,
+                        dismissKey: medley.id,
                       );
                     },
                   ),

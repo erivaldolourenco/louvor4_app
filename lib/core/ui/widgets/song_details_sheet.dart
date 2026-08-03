@@ -24,6 +24,7 @@ Future<void> showSongDetailsModal(
   String? referenceAudioUrl,
   VoidCallback? onOpenLyrics,
   VoidCallback? onOpenChords,
+  VoidCallback? onEdit,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -46,6 +47,7 @@ Future<void> showSongDetailsModal(
         referenceAudioUrl: referenceAudioUrl,
         onOpenLyrics: onOpenLyrics,
         onOpenChords: onOpenChords,
+        onEdit: onEdit,
       );
     },
   );
@@ -61,6 +63,7 @@ class SongDetailsSheet extends StatelessWidget {
   final String? referenceAudioUrl;
   final VoidCallback? onOpenLyrics;
   final VoidCallback? onOpenChords;
+  final VoidCallback? onEdit;
 
   const SongDetailsSheet({
     super.key,
@@ -73,6 +76,7 @@ class SongDetailsSheet extends StatelessWidget {
     this.referenceAudioUrl,
     this.onOpenLyrics,
     this.onOpenChords,
+    this.onEdit,
   });
 
   Future<void> _openYouTube(BuildContext context) async {
@@ -142,13 +146,36 @@ class SongDetailsSheet extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            title,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              if (onEdit != null)
+                                IconButton(
+                                  tooltip: 'Editar música',
+                                  visualDensity: VisualDensity.compact,
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: Icon(
+                                    Icons.edit_outlined,
+                                    size: 20,
+                                    color: cs.primary,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    onEdit!();
+                                  },
+                                ),
+                            ],
                           ),
                           const SizedBox(height: 4),
                           Text(

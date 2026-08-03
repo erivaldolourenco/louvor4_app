@@ -792,12 +792,6 @@ class _SongsTab extends StatelessWidget {
     required this.onRefresh,
   });
 
-  Future<void> _launchYoutube(String url) async {
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-
   void _openLyrics(BuildContext context, dynamic song) {
     if (song.songId == null) return;
     Navigator.of(context).push(
@@ -953,11 +947,13 @@ class _SongsTab extends StatelessWidget {
             child: isMedleyItem
                 ? MedleyCard(
                     medley: song.medleyEntity!,
-                    onDelete:
+                    onRemove:
                         (state.canDeleteSong(song) &&
                             state.deletingSongId != song.id)
                         ? () => onRemoveSong(song.id)
                         : null,
+                    isRemoving: state.deletingSongId == song.id,
+                    dismissKey: song.id,
                   )
                 : SongListCard(
                     title: song.title,
@@ -982,22 +978,13 @@ class _SongsTab extends StatelessWidget {
                           ? null
                           : () => _openChords(context, song),
                     ),
-                    onOpenYoutube:
-                        (song.youTubeUrl != null && song.youTubeUrl!.isNotEmpty)
-                        ? () => _launchYoutube(song.youTubeUrl!)
-                        : null,
-                    onOpenLyrics: song.songId == null
-                        ? null
-                        : () => _openLyrics(context, song),
-                    onOpenChords: song.songId == null
-                        ? null
-                        : () => _openChords(context, song),
-                    onDelete:
+                    onRemove:
                         (state.canDeleteSong(song) &&
                             state.deletingSongId != song.id)
                         ? () => onRemoveSong(song.id)
                         : null,
                     isRemoving: state.deletingSongId == song.id,
+                    dismissKey: song.id,
                   ),
           ),
         );

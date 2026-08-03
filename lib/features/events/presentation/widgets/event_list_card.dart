@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 import 'package:louvor4_app/core/ui/widgets/spring_tap.dart';
@@ -162,7 +163,9 @@ class EventListCard extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
-                                    '$timeDisplay • ${event.location ?? 'Local não informado'}',
+                                    (event.description?.isNotEmpty ?? false)
+                                        ? '$timeDisplay • ${event.description}'
+                                        : timeDisplay,
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       fontSize: 13,
                                       color: cs.onSurfaceVariant,
@@ -172,45 +175,105 @@ class EventListCard extends StatelessWidget {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   if (event
-                                      .participantsProfileImages
-                                      .isNotEmpty) ...[
+                                          .participantsProfileImages
+                                          .isNotEmpty ||
+                                      event.participantsCount > 0 ||
+                                      event.repertoireCount > 0) ...[
                                     const SizedBox(height: 8),
                                     SizedBox(
                                       height: 22,
-                                      child: Stack(
-                                        children: List.generate(
-                                          event
-                                                      .participantsProfileImages
-                                                      .length >
-                                                  5
-                                              ? 5
-                                              : event
+                                      child: Row(
+                                        children: [
+                                          Expanded(
+                                            child:
+                                                event
                                                     .participantsProfileImages
-                                                    .length,
-                                          (index) => Positioned(
-                                            left: index * 14.0,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                shape: BoxShape.circle,
-                                                border: Border.all(
-                                                  color: cs.surface,
-                                                  width: 1.5,
-                                                ),
-                                              ),
-                                              child: CircleAvatar(
-                                                radius: 10,
-                                                backgroundColor: isDark
-                                                    ? cs.surfaceContainerLow
-                                                    : cs.outlineVariant,
-                                                backgroundImage:
-                                                    appCachedImageProvider(
+                                                    .isNotEmpty
+                                                ? Stack(
+                                                    children: List.generate(
                                                       event
-                                                          .participantsProfileImages[index],
+                                                                  .participantsProfileImages
+                                                                  .length >
+                                                              5
+                                                          ? 5
+                                                          : event
+                                                                .participantsProfileImages
+                                                                .length,
+                                                      (index) => Positioned(
+                                                        left: index * 14.0,
+                                                        child: Container(
+                                                          decoration: BoxDecoration(
+                                                            shape:
+                                                                BoxShape.circle,
+                                                            border: Border.all(
+                                                              color:
+                                                                  cs.surface,
+                                                              width: 1.5,
+                                                            ),
+                                                          ),
+                                                          child: CircleAvatar(
+                                                            radius: 10,
+                                                            backgroundColor: isDark
+                                                                ? cs
+                                                                      .surfaceContainerLow
+                                                                : cs
+                                                                      .outlineVariant,
+                                                            backgroundImage: appCachedImageProvider(
+                                                              event
+                                                                  .participantsProfileImages[index],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
                                                     ),
+                                                  )
+                                                : const SizedBox.shrink(),
+                                          ),
+                                          if (event.participantsCount > 0) ...[
+                                            const SizedBox(width: 6),
+                                            SvgPicture.asset(
+                                              'assets/icons/users-round.svg',
+                                              width: 15,
+                                              height: 15,
+                                              colorFilter: ColorFilter.mode(
+                                                cs.primary,
+                                                BlendMode.srcIn,
                                               ),
                                             ),
-                                          ),
-                                        ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              '${event.participantsCount}',
+                                              style: theme.textTheme.labelMedium
+                                                  ?.copyWith(
+                                                    color: cs.primary,
+                                                    fontWeight:
+                                                        FontWeight.w700,
+                                                  ),
+                                            ),
+                                          ],
+                                          if (event.repertoireCount > 0) ...[
+                                            const SizedBox(width: 10),
+                                            SvgPicture.asset(
+                                              'assets/icons/music.svg',
+                                              width: 15,
+                                              height: 15,
+                                              colorFilter: ColorFilter.mode(
+                                                cs.primary,
+                                                BlendMode.srcIn,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              '${event.repertoireCount}',
+                                              style: theme.textTheme.labelMedium
+                                                  ?.copyWith(
+                                                    color: cs.primary,
+                                                    fontWeight:
+                                                        FontWeight.w700,
+                                                  ),
+                                            ),
+                                          ],
+                                        ],
                                       ),
                                     ),
                                   ],

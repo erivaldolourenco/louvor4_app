@@ -260,10 +260,6 @@ class _ProjectEventCard extends StatelessWidget {
     final normalizedTime = event.time.trim().isEmpty
         ? '--:--'
         : formatTime(event.time.trim());
-    final location = event.location.isEmpty
-        ? 'Local não informado'
-        : event.location;
-
     return AppCardSurface(
       radius: AppRadius.card,
       child: SpringTap(
@@ -326,7 +322,9 @@ class _ProjectEventCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '$normalizedTime • $location',
+                      (event.description?.isNotEmpty ?? false)
+                          ? '$normalizedTime • ${event.description}'
+                          : normalizedTime,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontSize: 13,
                         color: cs.onSurfaceVariant,
@@ -336,49 +334,48 @@ class _ProjectEventCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        if (event.participantsProfileImages.isNotEmpty)
-                          SizedBox(
-                            height: 22,
-                            width:
-                                22 +
-                                (event.participantsProfileImages.length > 5
-                                        ? 5
-                                        : event
-                                              .participantsProfileImages
-                                              .length) *
-                                    14.0,
-                            child: Stack(
-                              children: List.generate(
-                                event.participantsProfileImages.length > 5
-                                    ? 5
-                                    : event.participantsProfileImages.length,
-                                (index) => Positioned(
-                                  left: index * 14.0,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: cs.surface,
-                                        width: 1.5,
+                    SizedBox(
+                      height: 22,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: event.participantsProfileImages.isNotEmpty
+                                ? Stack(
+                                    children: List.generate(
+                                      event.participantsProfileImages.length >
+                                              5
+                                          ? 5
+                                          : event
+                                                .participantsProfileImages
+                                                .length,
+                                      (index) => Positioned(
+                                        left: index * 14.0,
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: cs.surface,
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                          child: CircleAvatar(
+                                            radius: 10,
+                                            backgroundColor: isDark
+                                                ? cs.surfaceContainerLow
+                                                : cs.outlineVariant,
+                                            backgroundImage:
+                                                appCachedImageProvider(
+                                                  event
+                                                      .participantsProfileImages[index],
+                                                ),
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                    child: CircleAvatar(
-                                      radius: 10,
-                                      backgroundColor: isDark
-                                          ? cs.surfaceContainerLow
-                                          : cs.outlineVariant,
-                                      backgroundImage: appCachedImageProvider(
-                                        event.participantsProfileImages[index],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          )
-                        else ...[
+                                  )
+                                : const SizedBox.shrink(),
+                          ),
+                          const SizedBox(width: 6),
                           SvgPicture.asset(
                             'assets/icons/users-round.svg',
                             width: 15,
@@ -396,8 +393,26 @@ class _ProjectEventCard extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
+                          const SizedBox(width: 10),
+                          SvgPicture.asset(
+                            'assets/icons/music.svg',
+                            width: 15,
+                            height: 15,
+                            colorFilter: ColorFilter.mode(
+                              cs.primary,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${event.repertoireCount}',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: cs.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ],
-                      ],
+                      ),
                     ),
                   ],
                 ),

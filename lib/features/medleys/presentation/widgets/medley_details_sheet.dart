@@ -15,7 +15,11 @@ import '../../../../../core/utils/youtube_utils.dart';
 import '../../domain/entities/medley_entity.dart';
 import '../../domain/entities/medley_item_entity.dart';
 
-Future<void> showMedleyDetailsModal(BuildContext context, MedleyEntity medley) {
+Future<void> showMedleyDetailsModal(
+  BuildContext context,
+  MedleyEntity medley, {
+  VoidCallback? onEdit,
+}) {
   return showModalBottomSheet<void>(
     context: context,
     showDragHandle: true,
@@ -26,14 +30,16 @@ Future<void> showMedleyDetailsModal(BuildContext context, MedleyEntity medley) {
         top: Radius.circular(AppRadius.bottomSheet),
       ),
     ),
-    builder: (sheetContext) => _MedleyDetailsSheet(medley: medley),
+    builder: (sheetContext) =>
+        _MedleyDetailsSheet(medley: medley, onEdit: onEdit),
   );
 }
 
 class _MedleyDetailsSheet extends StatelessWidget {
   final MedleyEntity medley;
+  final VoidCallback? onEdit;
 
-  const _MedleyDetailsSheet({required this.medley});
+  const _MedleyDetailsSheet({required this.medley, this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -82,13 +88,36 @@ class _MedleyDetailsSheet extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
-                            medley.name,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  medley.name,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.titleLarge?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              if (onEdit != null)
+                                IconButton(
+                                  tooltip: 'Editar medley',
+                                  visualDensity: VisualDensity.compact,
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: Icon(
+                                    Icons.edit_outlined,
+                                    size: 20,
+                                    color: cs.primary,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    onEdit!();
+                                  },
+                                ),
+                            ],
                           ),
                           if (medley.description != null &&
                               medley.description!.isNotEmpty) ...[
