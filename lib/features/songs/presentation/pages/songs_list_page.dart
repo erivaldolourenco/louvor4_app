@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
-import '../../../../core/ui/widgets/song_details_sheet.dart';
 import '../../../../core/ui/widgets/song_list_card.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../medleys/data/impl/medley_repository_impl.dart';
@@ -15,11 +15,14 @@ import '../../../medleys/presentation/cubit/medley_state.dart';
 import '../../../medleys/presentation/widgets/medley_card.dart';
 import '../../../medleys/presentation/widgets/medley_form_sheet.dart';
 import '../../data/impl/songs_repository_impl.dart';
+import '../../domain/entities/external_music_entity.dart';
 import '../../domain/entities/song_entity.dart';
 import 'chord_sheet_page.dart';
 import 'create_song_page.dart';
 import 'edit_song_page.dart';
 import 'lyrics_page.dart';
+import 'search_external_music_page.dart';
+import 'song_detail_page.dart';
 
 // ---------------------------------------------------------------------------
 // Entry point — provides MedleyCubit
@@ -140,6 +143,15 @@ class _SongsContentState extends State<_SongsContent>
     final created = await Navigator.of(
       context,
     ).push<bool>(MaterialPageRoute(builder: (_) => const CreateSongPage()));
+    if (created == true) await _loadSongs(silent: true, force: true);
+  }
+
+  Future<void> _goToSearchExternal(ExternalMusicProvider provider) async {
+    final created = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => SearchExternalMusicPage(provider: provider),
+      ),
+    );
     if (created == true) await _loadSongs(silent: true, force: true);
   }
 
@@ -366,9 +378,59 @@ class _SongsContentState extends State<_SongsContent>
 
   Widget? _buildFab(bool onSongsTab) {
     if (onSongsTab) {
-      return _songs.isNotEmpty ? PrimaryAddFab(onPressed: _goToCreate) : null;
+      if (_songs.isEmpty) return null;
+      final cs = Theme.of(context).colorScheme;
+      final theme = Theme.of(context);
+      return SpeedDial(
+        heroTag: 'songs_fab',
+        icon: Icons.music_note_rounded,
+        activeIcon: Icons.close_rounded,
+        backgroundColor: cs.primaryContainer,
+        foregroundColor: cs.onPrimaryContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 2,
+        children: [
+          SpeedDialChild(
+            child: const Icon(Icons.edit_note_rounded),
+            label: 'Adicionar Manualmente',
+            backgroundColor: cs.secondaryContainer,
+            foregroundColor: cs.onSecondaryContainer,
+            labelStyle: theme.textTheme.labelLarge?.copyWith(
+              color: cs.onSurface,
+            ),
+            labelBackgroundColor: cs.surfaceContainerHigh,
+            onTap: _goToCreate,
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.podcasts_rounded),
+            label: 'Buscar no Spotify',
+            backgroundColor: cs.secondaryContainer,
+            foregroundColor: cs.onSecondaryContainer,
+            labelStyle: theme.textTheme.labelLarge?.copyWith(
+              color: cs.onSurface,
+            ),
+            labelBackgroundColor: cs.surfaceContainerHigh,
+            onTap: () => _goToSearchExternal(ExternalMusicProvider.spotify),
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.album_rounded),
+            label: 'Buscar no Deezer',
+            backgroundColor: cs.secondaryContainer,
+            foregroundColor: cs.onSecondaryContainer,
+            labelStyle: theme.textTheme.labelLarge?.copyWith(
+              color: cs.onSurface,
+            ),
+            labelBackgroundColor: cs.surfaceContainerHigh,
+            onTap: () => _goToSearchExternal(ExternalMusicProvider.deezer),
+          ),
+        ],
+      );
     }
-    return PrimaryAddFab(heroTag: 'medley_fab', onPressed: _openCreateMedley);
+    return PrimaryAddFab(
+      heroTag: 'medley_fab',
+      icon: Icons.queue_music_rounded,
+      onPressed: _openCreateMedley,
+    );
   }
 
   // ------ Songs tab body ------
@@ -445,48 +507,49 @@ class _SongsContentState extends State<_SongsContent>
                 ),
               ],
             )
-          : Material(
-              color: Theme.of(context).colorScheme.surface,
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 90),
-                itemBuilder: (_, index) {
-                  final song = filteredSongs[index];
-                  return SongListCard(
+          : ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 90),
+              itemBuilder: (_, index) {
+                final song = filteredSongs[index];
+                return SongListCard(
+                  title: song.title,
+                  artist: song.artist,
+                  musicKey: song.key,
+                  bpm: song.bpm,
+                  youTubeUrl: song.youTubeUrl,
+                  coverUrl: song.coverUrl,
+                  hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
+                  onTap: () => openSongDetailPage(
+                    context,
+                    songId: song.id,
                     title: song.title,
                     artist: song.artist,
                     musicKey: song.key,
                     bpm: song.bpm,
+                    album: song.album,
                     youTubeUrl: song.youTubeUrl,
-                    hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
-                    onTap: () => showSongDetailsModal(
-                      context,
-                      title: song.title,
-                      artist: song.artist,
-                      musicKey: song.key,
-                      bpm: song.bpm,
-                      youTubeUrl: song.youTubeUrl,
-                      notes: song.notes,
-                      referenceAudioUrl: song.referenceAudioUrl,
-                      onOpenLyrics: song.id == null
-                          ? null
-                          : () => _goToLyrics(song),
-                      onOpenChords: song.id == null
-                          ? null
-                          : () => _goToChords(song),
-                      onEdit: song.id == null
-                          ? null
-                          : () => _goToEdit(song.id!),
-                    ),
-                    onRemove: (song.id == null || _deletingSongId != null)
+                    spotifyUrl: song.spotifyUrl,
+                    deezerUrl: song.deezerUrl,
+                    coverUrl: song.coverUrl,
+                    notes: song.notes,
+                    referenceAudioUrl: song.referenceAudioUrl,
+                    onOpenLyrics: song.id == null
                         ? null
-                        : () => _confirmDeleteSong(song),
-                    isRemoving: song.id != null && _deletingSongId == song.id,
-                    dismissKey: song.id,
-                  );
-                },
-                itemCount: filteredSongs.length,
-              ),
+                        : () => _goToLyrics(song),
+                    onOpenChords: song.id == null
+                        ? null
+                        : () => _goToChords(song),
+                    onEdit: song.id == null ? null : () => _goToEdit(song.id!),
+                  ),
+                  onRemove: (song.id == null || _deletingSongId != null)
+                      ? null
+                      : () => _confirmDeleteSong(song),
+                  isRemoving: song.id != null && _deletingSongId == song.id,
+                  dismissKey: song.id,
+                );
+              },
+              itemCount: filteredSongs.length,
             ),
     );
   }
@@ -550,28 +613,23 @@ class _SongsContentState extends State<_SongsContent>
                     ),
                   ],
                 )
-              : Material(
-                  color: Theme.of(context).colorScheme.surface,
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
-                    itemCount: filteredMedleys.length,
-                    itemBuilder: (_, i) {
-                      final medley = filteredMedleys[i];
-                      return MedleyCard(
-                        medley: medley,
-                        onEdit: () => _openEditMedley(medley),
-                        onRemove:
-                            (medley.id == null || _deletingMedleyId != null)
-                            ? null
-                            : () => _confirmDeleteMedley(medley),
-                        isRemoving:
-                            medley.id != null &&
-                            _deletingMedleyId == medley.id,
-                        dismissKey: medley.id,
-                      );
-                    },
-                  ),
+              : ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 90),
+                  itemCount: filteredMedleys.length,
+                  itemBuilder: (_, i) {
+                    final medley = filteredMedleys[i];
+                    return MedleyCard(
+                      medley: medley,
+                      onEdit: () => _openEditMedley(medley),
+                      onRemove: (medley.id == null || _deletingMedleyId != null)
+                          ? null
+                          : () => _confirmDeleteMedley(medley),
+                      isRemoving:
+                          medley.id != null && _deletingMedleyId == medley.id,
+                      dismissKey: medley.id,
+                    );
+                  },
                 ),
         );
       },
@@ -590,15 +648,23 @@ class _SongsTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
-    return TabBar.secondary(
+    return TabBar(
       controller: controller,
+      indicator: BoxDecoration(
+        color: cs.primaryContainer,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      indicatorSize: TabBarIndicatorSize.tab,
+      indicatorPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+      dividerColor: Colors.transparent,
+      overlayColor: const WidgetStatePropertyAll(Colors.transparent),
       labelColor: cs.primary,
       unselectedLabelColor: cs.onSurfaceVariant,
-      labelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-      unselectedLabelStyle: textTheme.labelLarge?.copyWith(
+      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+      unselectedLabelStyle: const TextStyle(
         fontWeight: FontWeight.w500,
+        fontSize: 14.5,
       ),
       tabs: const [
         Tab(text: 'Músicas'),

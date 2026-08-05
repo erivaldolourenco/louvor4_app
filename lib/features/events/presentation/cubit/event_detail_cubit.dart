@@ -14,6 +14,8 @@ class EventDetailCubit extends Cubit<EventDetailState> {
   static const Duration _cacheDuration = Duration(minutes: 10);
   static final Map<String, _CachedEventDetailData> _cacheByEventId = {};
 
+  static void clearCache() => _cacheByEventId.clear();
+
   final EventsRepository _repository;
   final UserRepository _userRepository;
   UserDetailEntity? _currentUser;

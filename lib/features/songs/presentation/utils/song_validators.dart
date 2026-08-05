@@ -34,9 +34,11 @@ class SongValidators {
     return null;
   }
 
-  static String? validateYouTubeUrl(String? value) {
+  static String? validateYouTubeUrl(String? value) => validateUrl(value);
+
+  static String? validateUrl(String? value) {
     final text = value?.trim() ?? '';
-    if (text.isEmpty) return 'Informe a URL do YouTube.';
+    if (text.isEmpty) return null;
 
     final uri = Uri.tryParse(text);
     if (uri == null || !uri.hasScheme || !uri.hasAuthority) {

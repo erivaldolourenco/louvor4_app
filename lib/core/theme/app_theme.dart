@@ -9,8 +9,17 @@ abstract final class AppTheme {
       brightness: Brightness.light,
       primary: AppColors.primary,
       onPrimary: Colors.white,
+      tertiary: AppColors.tertiary,
+      onTertiary: AppColors.onTertiary,
+      tertiaryContainer: AppColors.tertiaryContainerLight,
+      onTertiaryContainer: AppColors.onTertiaryContainerLight,
       error: AppColors.danger,
       onError: Colors.white,
+      surfaceContainerLowest: AppColors.surfaceContainerLowestLight,
+      surfaceContainerLow: AppColors.surfaceContainerLowLight,
+      surfaceContainer: AppColors.surfaceContainerLight,
+      surfaceContainerHigh: AppColors.surfaceContainerHighLight,
+      surfaceContainerHighest: AppColors.surfaceContainerHighestLight,
     );
 
     return ThemeData(
@@ -18,24 +27,25 @@ abstract final class AppTheme {
       fontFamily: 'FamiljenGrotesk',
       brightness: Brightness.light,
       colorScheme: cs,
-      scaffoldBackgroundColor: cs.surface,
+      scaffoldBackgroundColor: cs.surfaceContainerLowest,
 
       textTheme: _textTheme,
 
       appBarTheme: AppBarTheme(
-        backgroundColor: cs.surface,
+        backgroundColor: cs.surfaceContainerLowest,
         surfaceTintColor: Colors.transparent,
         foregroundColor: cs.onSurface,
         elevation: 0,
+        centerTitle: false,
       ),
 
       cardTheme: CardThemeData(
-        color: cs.surface,
+        color: cs.surfaceContainerLow,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.cardLarge),
-          side: BorderSide(color: cs.outlineVariant),
+          side: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.6)),
         ),
       ),
 
@@ -53,6 +63,8 @@ abstract final class AppTheme {
         style: FilledButton.styleFrom(
           backgroundColor: cs.primary,
           foregroundColor: cs.onPrimary,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.input),
           ),
@@ -62,7 +74,8 @@ abstract final class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: cs.onSurface,
-          side: BorderSide(color: cs.outline),
+          side: BorderSide(color: cs.outlineVariant),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.input),
           ),
@@ -73,20 +86,20 @@ abstract final class AppTheme {
         filled: true,
         fillColor: cs.surfaceContainerLow,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
+          horizontal: 20,
+          vertical: 16,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(color: cs.outlineVariant),
+          borderSide: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.6)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(color: cs.outlineVariant),
+          borderSide: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.6)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(color: cs.primary, width: 1.5),
+          borderSide: BorderSide(color: cs.primary, width: 2.0),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
@@ -94,15 +107,18 @@ abstract final class AppTheme {
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(color: cs.error, width: 1.5),
+          borderSide: BorderSide(color: cs.error, width: 2.0),
         ),
         hintStyle: TextStyle(color: cs.onSurfaceVariant),
       ),
 
-      dividerTheme: DividerThemeData(color: cs.outlineVariant, thickness: 1),
+      dividerTheme: DividerThemeData(
+        color: cs.outlineVariant.withValues(alpha: 0.5),
+        thickness: 1,
+      ),
 
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: cs.surfaceContainer,
+        backgroundColor: cs.surfaceContainerLowest,
         indicatorColor: cs.primaryContainer,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
@@ -137,7 +153,7 @@ abstract final class AppTheme {
 
       chipTheme: ChipThemeData(
         backgroundColor: cs.surfaceContainerLow,
-        side: BorderSide(color: cs.outlineVariant),
+        side: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.6)),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.badge),
         ),
@@ -146,7 +162,7 @@ abstract final class AppTheme {
           fontWeight: FontWeight.w600,
           color: cs.onSurface,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
 
       dialogTheme: DialogThemeData(
@@ -163,8 +179,19 @@ abstract final class AppTheme {
     final cs = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
+      primary: AppColors.primary,
+      onPrimary: Colors.white,
+      tertiary: AppColors.tertiary,
+      onTertiary: AppColors.onTertiary,
+      tertiaryContainer: AppColors.tertiaryContainerDark,
+      onTertiaryContainer: AppColors.onTertiaryContainerDark,
       error: AppColors.danger,
       onError: Colors.white,
+      surfaceContainerLowest: AppColors.surfaceContainerLowestDark,
+      surfaceContainerLow: AppColors.surfaceContainerLowDark,
+      surfaceContainer: AppColors.surfaceContainerDark,
+      surfaceContainerHigh: AppColors.surfaceContainerHighDark,
+      surfaceContainerHighest: AppColors.surfaceContainerHighestDark,
     );
 
     return ThemeData(
@@ -172,24 +199,25 @@ abstract final class AppTheme {
       fontFamily: 'FamiljenGrotesk',
       brightness: Brightness.dark,
       colorScheme: cs,
-      scaffoldBackgroundColor: cs.surface,
+      scaffoldBackgroundColor: cs.surfaceContainerLowest,
 
       textTheme: _textTheme,
 
       appBarTheme: AppBarTheme(
-        backgroundColor: cs.surface,
+        backgroundColor: cs.surfaceContainerLowest,
         surfaceTintColor: Colors.transparent,
         foregroundColor: cs.onSurface,
         elevation: 0,
+        centerTitle: false,
       ),
 
       cardTheme: CardThemeData(
-        color: cs.surface,
+        color: cs.surfaceContainerLow,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.cardLarge),
-          side: BorderSide(color: cs.outlineVariant),
+          side: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.4)),
         ),
       ),
 
@@ -207,6 +235,8 @@ abstract final class AppTheme {
         style: FilledButton.styleFrom(
           backgroundColor: cs.primary,
           foregroundColor: cs.onPrimary,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.input),
           ),
@@ -216,7 +246,8 @@ abstract final class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: cs.onSurface,
-          side: BorderSide(color: cs.outline),
+          side: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.6)),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.input),
           ),
@@ -227,20 +258,20 @@ abstract final class AppTheme {
         filled: true,
         fillColor: cs.surfaceContainerLow,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
+          horizontal: 20,
+          vertical: 16,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(color: cs.outlineVariant),
+          borderSide: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.4)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(color: cs.outlineVariant),
+          borderSide: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.4)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(color: cs.primary, width: 1.5),
+          borderSide: BorderSide(color: cs.primary, width: 2.0),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
@@ -248,15 +279,18 @@ abstract final class AppTheme {
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(color: cs.error, width: 1.5),
+          borderSide: BorderSide(color: cs.error, width: 2.0),
         ),
         hintStyle: TextStyle(color: cs.onSurfaceVariant),
       ),
 
-      dividerTheme: DividerThemeData(color: cs.outlineVariant, thickness: 1),
+      dividerTheme: DividerThemeData(
+        color: cs.outlineVariant.withValues(alpha: 0.4),
+        thickness: 1,
+      ),
 
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: cs.surfaceContainer,
+        backgroundColor: cs.surfaceContainerLowest,
         indicatorColor: cs.primaryContainer,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
@@ -291,7 +325,7 @@ abstract final class AppTheme {
 
       chipTheme: ChipThemeData(
         backgroundColor: cs.surfaceContainerLow,
-        side: BorderSide(color: cs.outlineVariant),
+        side: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.4)),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.badge),
         ),
@@ -300,7 +334,7 @@ abstract final class AppTheme {
           fontWeight: FontWeight.w600,
           color: cs.onSurface,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       ),
 
       dialogTheme: DialogThemeData(

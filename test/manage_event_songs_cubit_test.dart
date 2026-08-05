@@ -128,6 +128,9 @@ class _FakeMedleyRepository implements MedleyRepository {
   Future<void> deleteMedley(String id) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> uploadReferenceAudio(String id, String filePath) async {}
 }
 
 void main() {

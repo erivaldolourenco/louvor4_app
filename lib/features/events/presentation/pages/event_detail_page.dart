@@ -6,11 +6,11 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
-import 'package:louvor4_app/core/ui/widgets/song_details_sheet.dart';
 import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 import 'package:louvor4_app/core/ui/widgets/header_project_event.dart';
 import 'package:louvor4_app/core/ui/widgets/fade_slide_in.dart';
 import 'package:louvor4_app/core/ui/widgets/spring_tap.dart';
+import 'package:louvor4_app/features/songs/presentation/pages/song_detail_page.dart';
 import '../../../../core/ui/widgets/song_list_card.dart';
 import '../../../medleys/presentation/widgets/medley_card.dart';
 import 'package:louvor4_app/features/user_profile/data/impl/user_repository_impl.dart';
@@ -322,11 +322,13 @@ class _EventDetailViewState extends State<_EventDetailView>
         if (index == 2 && state.isProjectAdmin) {
           return SpeedDial(
             heroTag: 'event_detail_fab',
-            icon: Icons.add_rounded,
+            icon: Icons.playlist_add_rounded,
             activeIcon: Icons.close_rounded,
             backgroundColor: cs.primaryContainer,
             foregroundColor: cs.onPrimaryContainer,
-            shape: const CircleBorder(),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             elevation: 4,
             children: [
               SpeedDialChild(
@@ -355,14 +357,14 @@ class _EventDetailViewState extends State<_EventDetailView>
           );
         }
 
-        // Outras abas: FAB simples (sem alteração)
+        // Outras abas: FAB simples com ícones dedicados por aba
         final action = switch (index) {
           0 when state.isProjectAdmin => (
-            icon: Icons.settings_rounded,
+            icon: Icons.group_add_rounded,
             onPressed: () => _onManageSchedule(state),
           ),
           1 when state.isProjectAdmin || state.canAddSongs => (
-            icon: Icons.add_rounded,
+            icon: Icons.music_note_rounded,
             onPressed: () => _onAddSongs(state),
           ),
           _ => null,
@@ -373,9 +375,11 @@ class _EventDetailViewState extends State<_EventDetailView>
         return FloatingActionButton(
           heroTag: 'event_detail_fab',
           onPressed: action.onPressed,
-          shape: const CircleBorder(),
-          backgroundColor: cs.primary,
-          foregroundColor: cs.onPrimary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          backgroundColor: cs.primaryContainer,
+          foregroundColor: cs.onPrimaryContainer,
           elevation: 4,
           child: AnimatedSwitcher(
             duration: const Duration(milliseconds: 220),
@@ -694,89 +698,78 @@ class _ParticipantsTab extends StatelessWidget {
   }
 
   Widget _buildList(BuildContext context, EventDetailCubit cubit) {
-    final cs = Theme.of(context).colorScheme;
-
     if (state.participantsLoadFailed && state.participants.isEmpty) {
-      return Material(
-        color: cs.surface,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
-          children: [
-            _RetryTabState(
-              icon: Icons.group_off_rounded,
-              title: 'Não foi possível carregar a equipe',
-              subtitle: 'Verifique sua conexão e tente novamente.',
-              onRetry: onRefresh,
-            ),
-          ],
-        ),
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
+        children: [
+          _RetryTabState(
+            icon: Icons.group_off_rounded,
+            title: 'Não foi possível carregar a equipe',
+            subtitle: 'Verifique sua conexão e tente novamente.',
+            onRetry: onRefresh,
+          ),
+        ],
       );
     }
 
     if (state.participants.isEmpty) {
-      return Material(
-        color: cs.surface,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
-          children: const [
-            _EmptyTabState(
-              icon: Icons.group_off_rounded,
-              title: 'Sem participantes',
-              subtitle: 'Nenhum integrante foi vinculado a este evento.',
-            ),
-          ],
-        ),
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
+        children: const [
+          _EmptyTabState(
+            icon: Icons.group_off_rounded,
+            title: 'Sem participantes',
+            subtitle: 'Nenhum integrante foi vinculado a este evento.',
+          ),
+        ],
       );
     }
 
-    return Material(
-      color: cs.surface,
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 36),
-        children: [
-          ...List.generate(state.participants.length, (index) {
-            final participant = state.participants[index];
-            final canRespondToInvite =
-                participant.status == EventParticipantStatus.pending &&
-                participant.id.trim().isNotEmpty &&
-                cubit.isCurrentUserParticipant(participant);
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 36),
+      children: [
+        ...List.generate(state.participants.length, (index) {
+          final participant = state.participants[index];
+          final canRespondToInvite =
+              participant.status == EventParticipantStatus.pending &&
+              participant.id.trim().isNotEmpty &&
+              cubit.isCurrentUserParticipant(participant);
 
-            return FadeSlideIn(
-              delay: staggerDelay(index),
-              child: EventParticipantCard(
+          return FadeSlideIn(
+            delay: staggerDelay(index),
+            child: EventParticipantCard(
+              name: participant.fullName,
+              skill: state.skillsMap[participant.skillId] ?? '',
+              status: participant.status,
+              profileImage: participant.profileImage,
+              onTap: () => showUserProfileDialog(
+                context,
                 name: participant.fullName,
-                skill: state.skillsMap[participant.skillId] ?? '',
-                status: participant.status,
-                profileImage: participant.profileImage,
-                onTap: () => showUserProfileDialog(
-                  context,
-                  name: participant.fullName,
-                  profileImageUrl: participant.profileImage,
-                  eventSkill: state.skillsMap[participant.skillId] ?? '',
-                  eventStatus: participant.status,
-                  onAcceptInvite: canRespondToInvite
-                      ? () => _handleParticipantInviteAction(
-                          context,
-                          accept: true,
-                          participantId: participant.id,
-                        )
-                      : null,
-                  onDeclineInvite: canRespondToInvite
-                      ? () => _handleParticipantInviteAction(
-                          context,
-                          accept: false,
-                          participantId: participant.id,
-                        )
-                      : null,
-                ),
+                profileImageUrl: participant.profileImage,
+                eventSkill: state.skillsMap[participant.skillId] ?? '',
+                eventStatus: participant.status,
+                onAcceptInvite: canRespondToInvite
+                    ? () => _handleParticipantInviteAction(
+                        context,
+                        accept: true,
+                        participantId: participant.id,
+                      )
+                    : null,
+                onDeclineInvite: canRespondToInvite
+                    ? () => _handleParticipantInviteAction(
+                        context,
+                        accept: false,
+                        participantId: participant.id,
+                      )
+                    : null,
               ),
-            );
-          }),
-        ],
-      ),
+            ),
+          );
+        }),
+      ],
     );
   }
 }
@@ -852,25 +845,20 @@ class _SongsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
     if (state.songsLoadFailed && state.songs.isEmpty) {
       return RefreshIndicator(
         onRefresh: () async => onRefresh(),
-        child: Material(
-          color: cs.surface,
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
-            children: [
-              _RetryTabState(
-                icon: Icons.music_off_rounded,
-                title: 'Não foi possível carregar o repertório',
-                subtitle: 'Verifique sua conexão e tente novamente.',
-                onRetry: onRefresh,
-              ),
-            ],
-          ),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
+          children: [
+            _RetryTabState(
+              icon: Icons.music_off_rounded,
+              title: 'Não foi possível carregar o repertório',
+              subtitle: 'Verifique sua conexão e tente novamente.',
+              onRetry: onRefresh,
+            ),
+          ],
         ),
       );
     }
@@ -878,20 +866,16 @@ class _SongsTab extends StatelessWidget {
     if (state.songs.isEmpty) {
       return RefreshIndicator(
         onRefresh: () async => onRefresh(),
-        child: Material(
-          color: cs.surface,
-          child: ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
-            children: const [
-              _EmptyTabState(
-                icon: Icons.music_off_rounded,
-                title: 'Sem músicas',
-                subtitle:
-                    'Ainda não há repertório cadastrado para este evento.',
-              ),
-            ],
-          ),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
+          children: const [
+            _EmptyTabState(
+              icon: Icons.music_off_rounded,
+              title: 'Sem músicas',
+              subtitle: 'Ainda não há repertório cadastrado para este evento.',
+            ),
+          ],
         ),
       );
     }
@@ -900,17 +884,14 @@ class _SongsTab extends StatelessWidget {
 
     return RefreshIndicator(
       onRefresh: () async => onRefresh(),
-      child: Material(
-        color: cs.surface,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
-          children: _buildGroupedSongSections(
-            context,
-            groupedSongs,
-            state,
-            onRemoveSong,
-          ),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
+        children: _buildGroupedSongSections(
+          context,
+          groupedSongs,
+          state,
+          onRemoveSong,
         ),
       ),
     );
@@ -962,13 +943,14 @@ class _SongsTab extends StatelessWidget {
                     bpm: song.bpm?.toString(),
                     youTubeUrl: song.youTubeUrl,
                     hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
-                    onTap: () => showSongDetailsModal(
+                    onTap: () => openSongDetailPage(
                       context,
+                      songId: song.songId,
                       title: song.title,
                       artist: song.artist ?? 'Desconhecido',
                       musicKey: song.key,
                       bpm: song.bpm?.toString(),
-                      youTubeUrl: song.youTubeUrl ?? '',
+                      youTubeUrl: song.youTubeUrl,
                       notes: song.notes,
                       referenceAudioUrl: song.referenceAudioUrl,
                       onOpenLyrics: song.songId == null

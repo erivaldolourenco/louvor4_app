@@ -141,6 +141,7 @@ class _ProjectSkillsView extends StatelessWidget {
                   right: 16,
                   bottom: 16,
                   child: PrimaryAddFab(
+                    icon: Icons.tune_rounded,
                     onPressed: () => _showAddSkillSheet(context),
                     heroTag: 'project-skills-add-fab',
                   ),

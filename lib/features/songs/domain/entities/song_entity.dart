@@ -6,7 +6,11 @@ class SongEntity extends Equatable {
   final String title;
   final String key;
   final String? bpm;
-  final String youTubeUrl;
+  final String? album;
+  final String? youTubeUrl;
+  final String? spotifyUrl;
+  final String? deezerUrl;
+  final String? coverUrl;
   final String? notes;
   final String? referenceAudioUrl;
 
@@ -16,7 +20,11 @@ class SongEntity extends Equatable {
     required this.title,
     required this.key,
     this.bpm,
-    required this.youTubeUrl,
+    this.album,
+    this.youTubeUrl,
+    this.spotifyUrl,
+    this.deezerUrl,
+    this.coverUrl,
     this.notes,
     this.referenceAudioUrl,
   });
@@ -28,7 +36,13 @@ class SongEntity extends Equatable {
       title: (json['title'] ?? '').toString(),
       key: (json['key'] ?? '').toString(),
       bpm: _normalizeOptionalValue(json['bpm']),
-      youTubeUrl: (json['youTubeUrl'] ?? json['youtubeUrl'] ?? '').toString(),
+      album: _normalizeOptionalValue(json['album']),
+      youTubeUrl: _normalizeOptionalValue(
+        json['youTubeUrl'] ?? json['youtubeUrl'],
+      ),
+      spotifyUrl: _normalizeOptionalValue(json['spotifyUrl']),
+      deezerUrl: _normalizeOptionalValue(json['deezerUrl']),
+      coverUrl: _normalizeOptionalValue(json['coverUrl']),
       notes: _normalizeOptionalValue(json['notes']),
       referenceAudioUrl: _normalizeOptionalValue(json['referenceAudioUrl']),
     );
@@ -41,7 +55,13 @@ class SongEntity extends Equatable {
       'title': title,
       'key': key,
       if (bpm != null && bpm!.isNotEmpty) 'bpm': bpm,
-      'youTubeUrl': youTubeUrl,
+      if (album != null && album!.isNotEmpty) 'album': album,
+      if (youTubeUrl != null && youTubeUrl!.isNotEmpty)
+        'youTubeUrl': youTubeUrl,
+      if (spotifyUrl != null && spotifyUrl!.isNotEmpty)
+        'spotifyUrl': spotifyUrl,
+      if (deezerUrl != null && deezerUrl!.isNotEmpty) 'deezerUrl': deezerUrl,
+      if (coverUrl != null && coverUrl!.isNotEmpty) 'coverUrl': coverUrl,
       if (notes != null && notes!.isNotEmpty) 'notes': notes,
       if (referenceAudioUrl != null && referenceAudioUrl!.isNotEmpty)
         'referenceAudioUrl': referenceAudioUrl,
@@ -55,5 +75,18 @@ class SongEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, artist, title, key, bpm, youTubeUrl, notes, referenceAudioUrl];
+  List<Object?> get props => [
+    id,
+    artist,
+    title,
+    key,
+    bpm,
+    album,
+    youTubeUrl,
+    spotifyUrl,
+    deezerUrl,
+    coverUrl,
+    notes,
+    referenceAudioUrl,
+  ];
 }

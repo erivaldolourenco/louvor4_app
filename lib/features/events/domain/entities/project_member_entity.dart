@@ -108,7 +108,10 @@ class ProjectMemberEntity extends Equatable {
     if (value is String) {
       final normalized = _normalizeString(value);
       if (normalized == null) return null;
-      return SkillEntity(id: normalized, name: normalized);
+      return projectSkillsCatalog.firstWhere(
+        (s) => s.name.toLowerCase() == normalized.toLowerCase() || s.id == normalized,
+        orElse: () => SkillEntity(id: normalized, name: normalized),
+      );
     }
 
     if (value is Map) {

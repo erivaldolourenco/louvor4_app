@@ -29,7 +29,7 @@ class AppPrimaryButton extends StatelessWidget {
     final enabled = onPressed != null;
 
     final bgColor = enabled
-        ? cs.primary.withValues(alpha: 0.85)
+        ? cs.primary
         : cs.onSurface.withValues(alpha: 0.12);
     final fgColor = enabled
         ? cs.onPrimary

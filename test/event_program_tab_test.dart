@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -98,6 +99,11 @@ class _FakeRepo implements EventProgramRepository {
   Future<void> reorder(String eventId, List<String> orderedIds) async {
     lastReorderIds = orderedIds;
     if (throwOnReorder) throw Exception('erro ao reordenar');
+  }
+
+  @override
+  Future<Uint8List> downloadRoteiroPdf(String eventId) async {
+    return Uint8List(0);
   }
 }
 

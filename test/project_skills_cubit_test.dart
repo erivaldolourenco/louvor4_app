@@ -20,13 +20,21 @@ class _FakeProjectSkillsRepository implements ProjectSkillsRepository {
   String? deletedSkillId;
 
   @override
-  Future<void> addProjectSkill(String projectId, String name) async {
+  Future<void> addProjectSkill(String projectId, String name, {String? iconKey}) async {
     lastCreatedName = name;
     skills = [
       ...skills,
-      ProjectSkillEntity(id: 'new-skill', name: name),
+      ProjectSkillEntity(id: 'new-skill', name: name, iconKey: iconKey),
     ];
   }
+
+  @override
+  Future<void> updateProjectSkill(
+    String projectId,
+    String skillId,
+    String name, {
+    String? iconKey,
+  }) async {}
 
   @override
   Future<void> deleteProjectSkill(String skillId) async {

@@ -33,6 +33,12 @@ Future<void> openMedleyFormPage(
   );
 }
 
+Future<void> showMedleyFormSheet(
+  BuildContext context, {
+  required List<SongEntity> songs,
+  MedleyEntity? medley,
+}) => openMedleyFormPage(context, songs: songs, medley: medley);
+
 // ---------------------------------------------------------------------------
 // Draft item model (local to this page)
 // ---------------------------------------------------------------------------

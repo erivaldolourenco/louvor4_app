@@ -182,11 +182,13 @@ class _ProjectEventsTabState extends State<ProjectEventsTab>
               bottom: 16,
               child: SpeedDial(
                 heroTag: 'project_events_fab',
-                icon: Icons.add_rounded,
+                icon: Icons.calendar_month_rounded,
                 activeIcon: Icons.close_rounded,
-                backgroundColor: cs.primary,
-                foregroundColor: cs.onPrimary,
-                shape: const CircleBorder(),
+                backgroundColor: cs.primaryContainer,
+                foregroundColor: cs.onPrimaryContainer,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 elevation: 4,
                 spacing: 10,
                 spaceBetweenChildren: 10,

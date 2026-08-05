@@ -154,6 +154,7 @@ class _ProjectMembersTabView extends StatelessWidget {
                   right: 16,
                   bottom: 16,
                   child: PrimaryAddFab(
+                    icon: Icons.person_add_rounded,
                     onPressed: () => _showAddMemberSheet(context),
                   ),
                 ),

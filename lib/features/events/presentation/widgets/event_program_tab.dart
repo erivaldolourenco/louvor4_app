@@ -42,65 +42,97 @@ class EventProgramTab extends StatelessWidget {
         if (state.items.isEmpty) {
           return RefreshIndicator(
             onRefresh: cubit.loadProgram,
-            child: Material(
-              color: cs.surface,
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 36),
-                children: [
-                  _EmptyProgramState(
-                    isAdmin: isAdmin,
-                    onAdd: () => _showTextItemDialog(context),
-                  ),
-                ],
-              ),
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 36),
+              children: [
+                _EmptyProgramState(
+                  isAdmin: isAdmin,
+                  onAdd: () => _showTextItemDialog(context),
+                ),
+              ],
             ),
           );
         }
 
         return RefreshIndicator(
           onRefresh: cubit.loadProgram,
-          child: Material(
-            color: cs.surface,
-            child: ReorderableListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 36),
-              buildDefaultDragHandles: false,
-              onReorder: (oldIndex, newIndex) {
-                if (!isAdmin) return;
-                if (newIndex > oldIndex) newIndex -= 1;
-                final ids = state.items.map((i) => i.id).toList();
-                final id = ids.removeAt(oldIndex);
-                ids.insert(newIndex, id);
-                cubit.reorder(ids);
-              },
-              children: [
-                for (int i = 0; i < state.items.length; i++)
-                  FadeSlideIn(
-                    key: ValueKey(state.items[i].id),
-                    delay: staggerDelay(i),
-                    child: _ProgramItemTile(
-                      item: state.items[i],
-                      position: i + 1,
-                      isAdmin: isAdmin,
-                      itemIndex: i,
-                      onEdit: isAdmin && state.items[i] is TextProgramItemEntity
-                          ? () => _showTextItemDialog(
-                              context,
-                              item: state.items[i] as TextProgramItemEntity,
-                            )
-                          : null,
-                      onDelete:
-                          isAdmin && state.items[i] is TextProgramItemEntity
-                          ? () => _confirmDelete(
-                              context,
-                              state.items[i] as TextProgramItemEntity,
-                            )
-                          : null,
-                    ),
+          child: Column(
+            children: [
+              if (isAdmin)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Programação', style: Theme.of(context).textTheme.titleMedium),
+                      TextButton.icon(
+                        onPressed: () => _showTextItemDialog(context),
+                        icon: const Icon(Icons.add_rounded, size: 18),
+                        label: const Text('Adicionar'),
+                      ),
+                    ],
                   ),
-              ],
-            ),
+                ),
+              Expanded(
+                child: ReorderableListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 36),
+                  buildDefaultDragHandles: false,
+                  onReorder: (oldIndex, newIndex) {
+                    if (!isAdmin) return;
+                    if (newIndex > oldIndex) newIndex -= 1;
+                    final ids = state.items.map((i) => i.id).toList();
+                    final id = ids.removeAt(oldIndex);
+                    ids.insert(newIndex, id);
+                    cubit.reorder(ids);
+                  },
+                  children: [
+                    for (int i = 0; i < state.items.length; i++)
+                      FadeSlideIn(
+                        key: ValueKey(state.items[i].id),
+                        delay: staggerDelay(i),
+                        child: _ProgramItemTile(
+                          item: state.items[i],
+                          position: i + 1,
+                          isAdmin: isAdmin,
+                          itemIndex: i,
+                          totalCount: state.items.length,
+                          onMoveUp: i > 0
+                              ? () {
+                                  final ids = state.items.map((e) => e.id).toList();
+                                  final item = ids.removeAt(i);
+                                  ids.insert(i - 1, item);
+                                  cubit.reorder(ids);
+                                }
+                              : null,
+                          onMoveDown: i < state.items.length - 1
+                              ? () {
+                                  final ids = state.items.map((e) => e.id).toList();
+                                  final item = ids.removeAt(i);
+                                  ids.insert(i + 1, item);
+                                  cubit.reorder(ids);
+                                }
+                              : null,
+                          onEdit: isAdmin && state.items[i] is TextProgramItemEntity
+                              ? () => _showTextItemDialog(
+                                  context,
+                                  item: state.items[i] as TextProgramItemEntity,
+                                )
+                              : null,
+                          onDelete:
+                              isAdmin && state.items[i] is TextProgramItemEntity
+                              ? () => _confirmDelete(
+                                  context,
+                                  state.items[i] as TextProgramItemEntity,
+                                )
+                              : null,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -199,6 +231,9 @@ class _ProgramItemTile extends StatelessWidget {
   final int position;
   final bool isAdmin;
   final int itemIndex;
+  final int totalCount;
+  final VoidCallback? onMoveUp;
+  final VoidCallback? onMoveDown;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
@@ -207,6 +242,9 @@ class _ProgramItemTile extends StatelessWidget {
     required this.position,
     required this.isAdmin,
     required this.itemIndex,
+    required this.totalCount,
+    this.onMoveUp,
+    this.onMoveDown,
     this.onEdit,
     this.onDelete,
   });
@@ -286,31 +324,43 @@ class _ProgramItemTile extends StatelessWidget {
       ),
     );
 
-    if (isAdmin && isEditable) {
+    if (isAdmin) {
       trailing = Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton.filledTonal(
+          IconButton(
             visualDensity: VisualDensity.compact,
-            style: IconButton.styleFrom(
-              foregroundColor: cs.onSecondaryContainer,
-              backgroundColor: cs.secondaryContainer,
-              shape: const CircleBorder(),
-            ),
-            icon: const Icon(Icons.edit_outlined, size: 18),
-            onPressed: onEdit,
+            icon: const Icon(Icons.keyboard_arrow_up_rounded, size: 20),
+            onPressed: onMoveUp,
           ),
-          const SizedBox(width: 4),
-          IconButton.filledTonal(
+          IconButton(
             visualDensity: VisualDensity.compact,
-            style: IconButton.styleFrom(
-              foregroundColor: cs.onErrorContainer,
-              backgroundColor: cs.errorContainer,
-              shape: const CircleBorder(),
-            ),
-            icon: const Icon(Icons.delete_outline_rounded, size: 18),
-            onPressed: onDelete,
+            icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
+            onPressed: onMoveDown,
           ),
+          if (isEditable) ...[
+            IconButton.filledTonal(
+              visualDensity: VisualDensity.compact,
+              style: IconButton.styleFrom(
+                foregroundColor: cs.onSecondaryContainer,
+                backgroundColor: cs.secondaryContainer,
+                shape: const CircleBorder(),
+              ),
+              icon: const Icon(Icons.edit_outlined, size: 18),
+              onPressed: onEdit,
+            ),
+            const SizedBox(width: 4),
+            IconButton.filledTonal(
+              visualDensity: VisualDensity.compact,
+              style: IconButton.styleFrom(
+                foregroundColor: cs.onErrorContainer,
+                backgroundColor: cs.errorContainer,
+                shape: const CircleBorder(),
+              ),
+              icon: const Icon(Icons.delete_outline_rounded, size: 18),
+              onPressed: onDelete,
+            ),
+          ],
           const SizedBox(width: 4),
           ReorderableDragStartListener(
             index: itemIndex,
@@ -328,7 +378,8 @@ class _ProgramItemTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (!isEditable) ...[avatar, const SizedBox(width: 12)],
+          avatar,
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

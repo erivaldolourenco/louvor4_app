@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/features/medleys/data/medley_repository.dart';
 import 'package:louvor4_app/features/medleys/domain/entities/create_medley_input_entity.dart';
 import 'package:louvor4_app/features/medleys/domain/entities/medley_entity.dart';
@@ -28,6 +29,9 @@ class _FakeMedleyRepository implements MedleyRepository {
 
   @override
   Future<void> deleteMedley(String id) async {}
+
+  @override
+  Future<void> uploadReferenceAudio(String id, String filePath) async {}
 }
 
 // ---------------------------------------------------------------------------
@@ -36,6 +40,7 @@ class _FakeMedleyRepository implements MedleyRepository {
 
 Widget _buildApp({MedleyEntity? medley}) {
   return MaterialApp(
+    navigatorKey: AppFeedback.navigatorKey,
     home: BlocProvider<MedleyCubit>(
       create: (_) => MedleyCubit(_FakeMedleyRepository()),
       child: Builder(
@@ -62,6 +67,10 @@ Future<void> _openSheet(WidgetTester tester, {MedleyEntity? medley}) async {
 // ---------------------------------------------------------------------------
 
 void main() {
+  setUp(() {
+    AppFeedback.navigatorKey = GlobalKey<NavigatorState>();
+  });
+
   group('MedleyFormSheet — modo criação', () {
     testWidgets('exibe título "Novo Medley"', (tester) async {
       await _openSheet(tester);

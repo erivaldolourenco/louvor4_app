@@ -23,11 +23,22 @@ class RootBottomNavigationBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        border: Border(top: BorderSide(color: cs.outlineVariant)),
+        color: cs.surfaceContainerLowest,
+        border: Border(
+          top: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.4)),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: cs.shadow.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: NavigationBar(
-        backgroundColor: cs.surface,
+        backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
+        indicatorColor: cs.primaryContainer,
         selectedIndex: currentIndex,
         onDestinationSelected: onTap,
         destinations: [

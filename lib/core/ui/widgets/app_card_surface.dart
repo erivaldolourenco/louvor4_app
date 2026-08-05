@@ -10,18 +10,18 @@ BoxDecoration appCardDecoration(
   List<BoxShadow>? boxShadow,
 }) {
   final cs = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
   return BoxDecoration(
-    color: color ?? (cs.surfaceContainerLow),
+    color: color ?? cs.surfaceContainerLow,
     borderRadius: BorderRadius.circular(radius),
     border: Border.all(
-      color: borderColor ?? (cs.outlineVariant),
+      color: borderColor ?? cs.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.55),
     ),
     boxShadow: boxShadow ?? [
       BoxShadow(
-        color: isDark ? cs.shadow.withValues(alpha: 0.28) : cs.shadow.withValues(alpha: 0.10),
-        blurRadius: isDark ? 22 : 18,
-        offset: const Offset(0, 5),
+        color: isDark ? Colors.black.withValues(alpha: 0.32) : cs.shadow.withValues(alpha: 0.06),
+        blurRadius: isDark ? 24 : 16,
+        offset: const Offset(0, 6),
       ),
     ],
   );

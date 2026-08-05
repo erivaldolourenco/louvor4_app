@@ -24,9 +24,12 @@ class _EditSongPageState extends State<EditSongPage> {
   final _formKey = GlobalKey<FormState>();
   final _artistController = TextEditingController();
   final _titleController = TextEditingController();
+  final _albumController = TextEditingController();
   final _keyController = TextEditingController();
   final _bpmController = TextEditingController();
   final _youTubeUrlController = TextEditingController();
+  final _spotifyUrlController = TextEditingController();
+  final _deezerUrlController = TextEditingController();
   final _notesController = TextEditingController();
   final _artistFocusNode = FocusNode();
   final _repo = SongsRepositoryImpl();
@@ -37,6 +40,7 @@ class _EditSongPageState extends State<EditSongPage> {
 
   String? _currentReferenceAudioUrl;
   PlatformFile? _selectedAudioFile;
+  String? _coverUrl;
 
   @override
   void initState() {
@@ -48,9 +52,12 @@ class _EditSongPageState extends State<EditSongPage> {
   void dispose() {
     _artistController.dispose();
     _titleController.dispose();
+    _albumController.dispose();
     _keyController.dispose();
     _bpmController.dispose();
     _youTubeUrlController.dispose();
+    _spotifyUrlController.dispose();
+    _deezerUrlController.dispose();
     _notesController.dispose();
     _artistFocusNode.dispose();
     super.dispose();
@@ -63,11 +70,15 @@ class _EditSongPageState extends State<EditSongPage> {
       final song = await _repo.getSongById(widget.songId);
       _artistController.text = song.artist;
       _titleController.text = song.title;
+      _albumController.text = song.album ?? '';
       _keyController.text = song.key;
       _bpmController.text = song.bpm ?? '';
-      _youTubeUrlController.text = song.youTubeUrl;
+      _youTubeUrlController.text = song.youTubeUrl ?? '';
+      _spotifyUrlController.text = song.spotifyUrl ?? '';
+      _deezerUrlController.text = song.deezerUrl ?? '';
       _notesController.text = song.notes ?? '';
       _currentReferenceAudioUrl = song.referenceAudioUrl;
+      _coverUrl = song.coverUrl;
 
       _onFormChanged();
 
@@ -89,7 +100,10 @@ class _EditSongPageState extends State<EditSongPage> {
         SongValidators.validateTitle(_titleController.text) == null &&
         SongValidators.validateKey(_keyController.text) == null &&
         SongValidators.validateBpm(_bpmController.text) == null &&
-        SongValidators.validateYouTubeUrl(_youTubeUrlController.text) == null;
+        SongValidators.validateYouTubeUrl(_youTubeUrlController.text) ==
+            null &&
+        SongValidators.validateUrl(_spotifyUrlController.text) == null &&
+        SongValidators.validateUrl(_deezerUrlController.text) == null;
 
     if (valid != _isFormValid) setState(() => _isFormValid = valid);
   }
@@ -120,7 +134,19 @@ class _EditSongPageState extends State<EditSongPage> {
       bpm: _bpmController.text.trim().isEmpty
           ? null
           : _bpmController.text.trim(),
-      youTubeUrl: _youTubeUrlController.text.trim(),
+      album: _albumController.text.trim().isEmpty
+          ? null
+          : _albumController.text.trim(),
+      youTubeUrl: _youTubeUrlController.text.trim().isEmpty
+          ? null
+          : _youTubeUrlController.text.trim(),
+      spotifyUrl: _spotifyUrlController.text.trim().isEmpty
+          ? null
+          : _spotifyUrlController.text.trim(),
+      deezerUrl: _deezerUrlController.text.trim().isEmpty
+          ? null
+          : _deezerUrlController.text.trim(),
+      coverUrl: _coverUrl,
       notes: _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim(),
@@ -137,9 +163,7 @@ class _EditSongPageState extends State<EditSongPage> {
           );
         } catch (e) {
           if (!mounted) return;
-          AppFeedback.showError(
-            e.toString().replaceFirst('Exception: ', ''),
-          );
+          AppFeedback.showError(e.toString().replaceFirst('Exception: ', ''));
           Navigator.of(context).pop(true);
           return;
         }
@@ -181,11 +205,15 @@ class _EditSongPageState extends State<EditSongPage> {
                       SongFormFields(
                         artistController: _artistController,
                         titleController: _titleController,
+                        albumController: _albumController,
                         keyController: _keyController,
                         bpmController: _bpmController,
                         youTubeUrlController: _youTubeUrlController,
+                        spotifyUrlController: _spotifyUrlController,
+                        deezerUrlController: _deezerUrlController,
                         notesController: _notesController,
                         artistFocusNode: _artistFocusNode,
+                        coverUrl: _coverUrl,
                         onChanged: _onFormChanged,
                       ),
 
@@ -209,7 +237,9 @@ class _EditSongPageState extends State<EditSongPage> {
                                 height: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: Theme.of(context).colorScheme.onPrimary,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
                                 ),
                               )
                             : const Text('Salvar alterações'),
@@ -253,10 +283,8 @@ class _AudioReferenceSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
-    final mutedColor =
-        cs.onSurfaceVariant;
-    final borderColor =
-        cs.outlineVariant;
+    final mutedColor = cs.onSurfaceVariant;
+    final borderColor = cs.outlineVariant;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -296,11 +324,7 @@ class _AudioReferenceSection extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.audio_file_rounded,
-                  size: 20,
-                  color: cs.primary,
-                ),
+                Icon(Icons.audio_file_rounded, size: 20, color: cs.primary),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -316,11 +340,7 @@ class _AudioReferenceSection extends StatelessWidget {
                 SizedBox(width: 8),
                 GestureDetector(
                   onTap: onClearFile,
-                  child: Icon(
-                    Icons.close_rounded,
-                    size: 18,
-                    color: cs.primary,
-                  ),
+                  child: Icon(Icons.close_rounded, size: 18, color: cs.primary),
                 ),
               ],
             ),
@@ -341,11 +361,7 @@ class _AudioReferenceSection extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.upload_file_rounded,
-                    size: 20,
-                    color: mutedColor,
-                  ),
+                  Icon(Icons.upload_file_rounded, size: 20, color: mutedColor),
                   const SizedBox(width: 8),
                   Text(
                     'Selecionar arquivo de áudio',
@@ -466,9 +482,10 @@ class _MiniAudioPlayerState extends State<_MiniAudioPlayer> {
                         final maxVal =
                             duration?.inMilliseconds.toDouble() ?? 0.0;
                         final curVal = maxVal > 0
-                            ? position.inMilliseconds
-                                .toDouble()
-                                .clamp(0.0, maxVal)
+                            ? position.inMilliseconds.toDouble().clamp(
+                                0.0,
+                                maxVal,
+                              )
                             : 0.0;
 
                         return Row(
@@ -511,8 +528,9 @@ class _MiniAudioPlayerState extends State<_MiniAudioPlayer> {
                                   activeTrackColor: cs.primary,
                                   inactiveTrackColor: borderColor,
                                   thumbColor: cs.primary,
-                                  overlayColor:
-                                      cs.primary.withValues(alpha: 0.15),
+                                  overlayColor: cs.primary.withValues(
+                                    alpha: 0.15,
+                                  ),
                                 ),
                                 child: Slider(
                                   value: curVal,
@@ -520,8 +538,8 @@ class _MiniAudioPlayerState extends State<_MiniAudioPlayer> {
                                   max: maxVal > 0 ? maxVal : 1,
                                   onChanged: maxVal > 0
                                       ? (v) => _player.seek(
-                                            Duration(milliseconds: v.toInt()),
-                                          )
+                                          Duration(milliseconds: v.toInt()),
+                                        )
                                       : null,
                                 ),
                               ),
@@ -529,10 +547,7 @@ class _MiniAudioPlayerState extends State<_MiniAudioPlayer> {
                             const SizedBox(width: 6),
                             Text(
                               '${_fmt(position)} / ${_fmt(duration)}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: mutedColor,
-                              ),
+                              style: TextStyle(fontSize: 11, color: mutedColor),
                             ),
                           ],
                         );

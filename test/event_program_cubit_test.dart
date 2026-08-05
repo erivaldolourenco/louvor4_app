@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:louvor4_app/features/events/data/event_program_repository.dart';
 import 'package:louvor4_app/features/events/domain/entities/program_item_entity.dart';
@@ -94,6 +95,9 @@ class _FakeRepo implements EventProgramRepository {
     lastReorderIds = orderedIds;
     if (throwOnReorder) throw Exception('erro ao reordenar');
   }
+
+  @override
+  Future<Uint8List> downloadRoteiroPdf(String eventId) async => Uint8List(0);
 }
 
 // Slow fake for guard tests
@@ -117,6 +121,9 @@ class _SlowRepo implements EventProgramRepository {
 
   @override
   Future<void> reorder(String e, List<String> ids) async => throw UnimplementedError();
+
+  @override
+  Future<Uint8List> downloadRoteiroPdf(String eventId) async => Uint8List(0);
 }
 
 // ---------------------------------------------------------------------------

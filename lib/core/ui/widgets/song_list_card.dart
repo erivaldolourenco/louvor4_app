@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_radius.dart';
+import '../../utils/url_utils.dart';
 import '../../utils/youtube_utils.dart';
 import 'app_card_surface.dart';
 import 'spring_tap.dart';
@@ -11,6 +12,7 @@ class SongListCard extends StatelessWidget {
   final String? musicKey;
   final String? bpm;
   final String? youTubeUrl;
+  final String? coverUrl;
   final bool isMedley;
   final bool hasAudio;
   final VoidCallback? onTap;
@@ -25,6 +27,7 @@ class SongListCard extends StatelessWidget {
     this.musicKey,
     this.bpm,
     this.youTubeUrl,
+    this.coverUrl,
     this.isMedley = false,
     this.hasAudio = false,
     this.onTap,
@@ -51,7 +54,11 @@ class SongListCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _Thumbnail(youTubeUrl: youTubeUrl, isMedley: isMedley),
+                _Thumbnail(
+                  youTubeUrl: youTubeUrl,
+                  coverUrl: coverUrl,
+                  isMedley: isMedley,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -151,9 +158,14 @@ class SongListCard extends StatelessWidget {
 
 class _Thumbnail extends StatelessWidget {
   final String? youTubeUrl;
+  final String? coverUrl;
   final bool isMedley;
 
-  const _Thumbnail({required this.youTubeUrl, required this.isMedley});
+  const _Thumbnail({
+    required this.youTubeUrl,
+    this.coverUrl,
+    required this.isMedley,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -176,10 +188,14 @@ class _Thumbnail extends StatelessWidget {
       );
     }
 
+    final imageUrl = UrlUtils.isValidNetworkUrl(coverUrl)
+        ? coverUrl!
+        : YoutubeUtils.getThumbnail(youTubeUrl, quality: 'default');
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.thumbnail),
       child: Image.network(
-        YoutubeUtils.getThumbnail(youTubeUrl, quality: 'default'),
+        imageUrl,
         width: 64,
         height: 64,
         fit: BoxFit.cover,
@@ -209,10 +225,10 @@ class _KeyBpm extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisSize: MainAxisSize.min,
       children: [
-        _InfoChip(label: 'Tom', value: keyLabel),
+        _InfoChip(label: 'Tom', value: keyLabel, useTertiaryTheme: true),
         if (hasBpm) ...[
           const SizedBox(height: 6),
-          _InfoChip(label: 'BPM', value: bpm!),
+          _InfoChip(label: 'BPM', value: bpm!, useTertiaryTheme: false),
         ],
       ],
     );
@@ -226,25 +242,21 @@ class _AudioTag extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: cs.secondaryContainer,
+        color: cs.primaryContainer.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(AppRadius.badge),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.headphones_rounded,
-            size: 11,
-            color: cs.onSecondaryContainer,
-          ),
-          const SizedBox(width: 3),
+          Icon(Icons.headphones_rounded, size: 12, color: cs.primary),
+          const SizedBox(width: 4),
           Text(
             'Áudio',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: cs.onSecondaryContainer,
-              fontWeight: FontWeight.w600,
+              color: cs.primary,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -256,34 +268,51 @@ class _AudioTag extends StatelessWidget {
 class _InfoChip extends StatelessWidget {
   final String label;
   final String value;
+  final bool useTertiaryTheme;
 
-  const _InfoChip({required this.label, required this.value});
+  const _InfoChip({
+    required this.label,
+    required this.value,
+    this.useTertiaryTheme = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final bgColor = useTertiaryTheme
+        ? cs.tertiaryContainer.withValues(alpha: 0.85)
+        : cs.surfaceContainerHigh;
+    final textColor = useTertiaryTheme ? cs.onTertiaryContainer : cs.onSurface;
+    final labelColor = useTertiaryTheme
+        ? cs.onTertiaryContainer.withValues(alpha: 0.8)
+        : cs.onSurfaceVariant;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
+        color: bgColor,
         borderRadius: BorderRadius.circular(AppRadius.badge),
-        border: Border.all(color: cs.outlineVariant),
+        border: Border.all(
+          color: useTertiaryTheme
+              ? cs.tertiary.withValues(alpha: 0.25)
+              : cs.outlineVariant.withValues(alpha: 0.5),
+        ),
       ),
       child: RichText(
         text: TextSpan(
           children: [
             TextSpan(
               text: '$label ',
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: labelColor,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             TextSpan(
               text: value,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: cs.onSurface,
+                fontWeight: FontWeight.w800,
+                color: textColor,
               ),
             ),
           ],

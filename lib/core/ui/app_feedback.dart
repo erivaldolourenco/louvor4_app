@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppFeedback {
   AppFeedback._();
 
-  static final navigatorKey = GlobalKey<NavigatorState>();
+  static var navigatorKey = GlobalKey<NavigatorState>();
 
   static void showError(String message) =>
       _show(message, icon: Icons.error_outline_rounded, type: _Type.error);

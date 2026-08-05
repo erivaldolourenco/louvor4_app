@@ -121,6 +121,16 @@ class _FakeMusicProjectsRepository implements MusicProjectsRepository {
   }) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> deleteProject(String projectId) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> leaveProject(String projectId) async {
+    throw UnimplementedError();
+  }
 }
 
 void main() {

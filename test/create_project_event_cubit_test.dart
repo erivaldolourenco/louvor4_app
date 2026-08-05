@@ -111,6 +111,24 @@ class _FakeMusicProjectsRepository implements MusicProjectsRepository {
   }) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> createProjectEventBatch(
+    String projectId,
+    dynamic input,
+  ) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> deleteProject(String projectId) async {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> leaveProject(String projectId) async {
+    throw UnimplementedError();
+  }
 }
 
 void main() {

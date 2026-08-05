@@ -183,12 +183,23 @@ class _HomeTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return TabBar.secondary(
+    return TabBar(
       controller: controller,
+      indicator: BoxDecoration(
+        color: cs.primaryContainer,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      indicatorSize: TabBarIndicatorSize.tab,
+      indicatorPadding: const EdgeInsets.symmetric(
+        vertical: 6,
+        horizontal: 12,
+      ),
+      dividerColor: Colors.transparent,
+      overlayColor: const WidgetStatePropertyAll(Colors.transparent),
       labelColor: cs.primary,
       unselectedLabelColor: cs.onSurfaceVariant,
-      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
-      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14.5),
       tabs: const [
         Tab(text: 'Próximos'),
         Tab(text: 'Passados'),
@@ -322,59 +333,101 @@ class _NoMoreEventsIndicator extends StatelessWidget {
   }
 }
 
+class _ShimmerPulse extends StatefulWidget {
+  final Widget child;
+
+  const _ShimmerPulse({required this.child});
+
+  @override
+  State<_ShimmerPulse> createState() => _ShimmerPulseState();
+}
+
+class _ShimmerPulseState extends State<_ShimmerPulse>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        final opacity = 0.4 + (_controller.value * 0.55);
+        return Opacity(opacity: opacity, child: widget.child);
+      },
+    );
+  }
+}
+
 class _EventsLoadingState extends StatelessWidget {
   const _EventsLoadingState();
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-  final cs = theme.colorScheme;
+    final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final lineColor = isDark
         ? cs.surfaceContainer
         : const Color(0xFFE5EDF6);
-    final cardFill = isDark ? cs.surface : cs.surfaceContainer;
+    final cardFill = isDark ? cs.surfaceContainerLow : cs.surfaceContainerLowest;
 
-    return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-      children: [
-        for (var sectionIndex = 0; sectionIndex < 3; sectionIndex++) ...[
-          Padding(
-            padding: EdgeInsets.only(bottom: sectionIndex == 2 ? 0 : 18),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 190,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: lineColor,
-                        borderRadius: BorderRadius.circular(AppRadius.pill),
+    return _ShimmerPulse(
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        children: [
+          for (var sectionIndex = 0; sectionIndex < 3; sectionIndex++) ...[
+            Padding(
+              padding: EdgeInsets.only(bottom: sectionIndex == 2 ? 0 : 18),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 190,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: lineColor,
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
+                        ),
                       ),
-                    ),
-                    const Spacer(),
-                    Container(
-                      width: 92,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: lineColor,
-                        borderRadius: BorderRadius.circular(AppRadius.pill),
+                      const Spacer(),
+                      Container(
+                        width: 92,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: lineColor,
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                _EventTimelineItemSkeleton(
-                  cardFill: cardFill,
-                  lineColor: lineColor,
-                ),
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  _EventTimelineItemSkeleton(
+                    cardFill: cardFill,
+                    lineColor: lineColor,
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
@@ -633,12 +686,14 @@ class EventDateHeader extends StatelessWidget {
 
   const EventDateHeader({super.key, required this.date});
 
-  String _getRelativeTime(DateTime targetDate) {
+  int _getDifference(DateTime targetDate) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final target = DateTime(targetDate.year, targetDate.month, targetDate.day);
-    final difference = target.difference(today).inDays;
+    return target.difference(today).inDays;
+  }
 
+  String _getRelativeTime(int difference) {
     if (difference == 0) return 'Hoje';
     if (difference == 1) return 'Amanhã';
     if (difference > 1) return 'daqui a $difference dias';
@@ -672,43 +727,98 @@ class EventDateHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-  final cs = theme.colorScheme;
+    final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
+    final diff = _getDifference(date);
+    final isToday = diff == 0;
+    final isTomorrow = diff == 1;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         SizedBox(
-          width: 28,
+          width: 32,
           child: Text(
             date.day.toString(),
             textAlign: TextAlign.center,
             style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-              fontSize: 22,
+              fontWeight: isToday ? FontWeight.w900 : FontWeight.w800,
+              fontSize: 24,
               height: 1,
-              color: isDark ? cs.outlineVariant : cs.onSurfaceVariant,
+              color: isToday
+                  ? cs.primary
+                  : (isDark ? cs.onSurface : cs.onSurface),
             ),
           ),
         ),
-        const SizedBox(width: 2),
+        const SizedBox(width: 4),
         Expanded(
           child: Text(
             '${_getMonthName(date.month)} • ${_getWeekDay(date)}',
             style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: isDark ? cs.outlineVariant : cs.onSurfaceVariant,
+              fontWeight: isToday ? FontWeight.w800 : FontWeight.w700,
+              fontSize: 14.5,
+              color: isToday
+                  ? cs.onSurface
+                  : (isDark ? cs.onSurfaceVariant : cs.onSurfaceVariant),
             ),
           ),
         ),
         const SizedBox(width: 10),
-        Text(
-          _getRelativeTime(date),
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: isDark ? cs.onSurfaceVariant : cs.onSurfaceVariant,
+        if (isToday)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            decoration: BoxDecoration(
+              color: cs.primaryContainer,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: cs.primary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  'HOJE',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: cs.primary,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (isTomorrow)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            decoration: BoxDecoration(
+              color: cs.secondaryContainer,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+            child: Text(
+              'AMANHÃ',
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: cs.onSecondaryContainer,
+                letterSpacing: 0.5,
+              ),
+            ),
+          )
+        else
+          Text(
+            _getRelativeTime(diff),
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: isDark ? cs.onSurfaceVariant : cs.onSurfaceVariant,
+            ),
           ),
-        ),
       ],
     );
   }

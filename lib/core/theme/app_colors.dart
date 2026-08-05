@@ -124,6 +124,43 @@ abstract final class AppColors {
   static const warningTextLight = Color(0xFF92400E);
   static const warningTextDark = Color(0xFFFCD34D);
 
+  // ── Tertiary (Destaques musicais: tom, bpm, badges vibrantes) ─────────────
+
+  /// Cor terciária (âmbar/dourado musical vibrante).
+  static const tertiary = Color(0xFFD97706);
+
+  /// Variante terciária escura/hover.
+  static const tertiaryDark = Color(0xFFB45309);
+
+  /// Texto / ícone sobre fundo tertiary.
+  static const onTertiary = Colors.white;
+
+  /// Fundo sutil de container terciário no tema claro.
+  static const tertiaryContainerLight = Color(0xFFFEF3C7);
+
+  /// Fundo sutil de container terciário no tema escuro.
+  static const tertiaryContainerDark = Color(0xFF451A03);
+
+  /// Texto sobre container terciário no tema claro.
+  static const onTertiaryContainerLight = Color(0xFF92400E);
+
+  /// Texto sobre container terciário no tema escuro.
+  static const onTertiaryContainerDark = Color(0xFFFDE68A);
+
+  // ── M3 Surface Containers ───────────────────────────────────────────────
+
+  static const surfaceContainerLowestLight = Color(0xFFFFFFFF);
+  static const surfaceContainerLowLight = Color(0xFFF8FAFC);
+  static const surfaceContainerLight = Color(0xFFF1F5F9);
+  static const surfaceContainerHighLight = Color(0xFFE2E8F0);
+  static const surfaceContainerHighestLight = Color(0xFFCBD5E1);
+
+  static const surfaceContainerLowestDark = Color(0xFF0B0F19);
+  static const surfaceContainerLowDark = Color(0xFF111827);
+  static const surfaceContainerDark = Color(0xFF1E293B);
+  static const surfaceContainerHighDark = Color(0xFF334155);
+  static const surfaceContainerHighestDark = Color(0xFF475569);
+
   // ── Primary tints (fundos sutis para ícones/badges azuis) ────────────────
 
   static const primarySubtleLight = Color(0xFFEFF6FF);

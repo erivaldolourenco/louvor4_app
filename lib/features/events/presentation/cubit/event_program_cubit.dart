@@ -29,8 +29,17 @@ class EventProgramCubit extends Cubit<EventProgramState> {
   Future<bool> createTextItem(CreateTextProgramItemInputEntity input) async {
     emit(EventProgramState(status: state.status, items: state.items, isActioning: true));
     try {
-      await _repo.createTextItem(eventId, input);
-      final items = await _repo.getProgram(eventId);
+      final newItem = await _repo.createTextItem(eventId, input);
+      List<ProgramItemEntity> items;
+      try {
+        items = await _repo.getProgram(eventId);
+        if (!items.any((i) => i.id == newItem.id)) {
+          items = [...items, newItem];
+        }
+      } catch (_) {
+        items = [...state.items, newItem];
+      }
+      items.sort((a, b) => a.position.compareTo(b.position));
       emit(EventProgramState(status: EventProgramStatus.success, items: items));
       return true;
     } catch (e) {
@@ -46,8 +55,14 @@ class EventProgramCubit extends Cubit<EventProgramState> {
   Future<bool> updateTextItem(String itemId, UpdateTextProgramItemInputEntity input) async {
     emit(EventProgramState(status: state.status, items: state.items, isActioning: true));
     try {
-      await _repo.updateTextItem(eventId, itemId, input);
-      final items = await _repo.getProgram(eventId);
+      final updated = await _repo.updateTextItem(eventId, itemId, input);
+      List<ProgramItemEntity> items;
+      try {
+        items = await _repo.getProgram(eventId);
+        items = items.map((i) => i.id == itemId ? updated : i).toList();
+      } catch (_) {
+        items = state.items.map((i) => i.id == itemId ? updated : i).toList();
+      }
       emit(EventProgramState(status: EventProgramStatus.success, items: items));
       return true;
     } catch (e) {

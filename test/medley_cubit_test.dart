@@ -71,6 +71,9 @@ class _FakeMedleyRepository implements MedleyRepository {
     deletedId = id;
     if (throwOnDelete) throw Exception('falha ao deletar medley');
   }
+
+  @override
+  Future<void> uploadReferenceAudio(String id, String filePath) async {}
 }
 
 // ---------------------------------------------------------------------------
@@ -295,4 +298,7 @@ class _SlowMedleyRepository implements MedleyRepository {
 
   @override
   Future<void> deleteMedley(String id) async => throw UnimplementedError();
+
+  @override
+  Future<void> uploadReferenceAudio(String id, String filePath) async => throw UnimplementedError();
 }

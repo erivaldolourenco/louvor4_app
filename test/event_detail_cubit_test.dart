@@ -162,6 +162,10 @@ class _FakeUserRepository implements UserRepository {
 }
 
 void main() {
+  setUp(() {
+    EventDetailCubit.clearCache();
+  });
+
   group('EventDetailCubit', () {
     test('recarrega participantes e atualiza skillsMap no refresh', () async {
       final repo = _FakeEventsRepository(

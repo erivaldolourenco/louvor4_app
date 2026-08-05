@@ -81,13 +81,14 @@ class EventListCard extends StatelessWidget {
             ],
             Expanded(
               child: AppCardSurface(
-                radius: AppRadius.card,
-                borderColor: isNext ? cs.primary : null,
+                radius: AppRadius.cardHero,
+                color: isDark ? cs.surfaceContainerLow : cs.surfaceContainerLowest,
+                borderColor: isNext ? cs.primary : cs.outlineVariant,
                 boxShadow: isNext
                     ? [
                         BoxShadow(
                           color: cs.primary.withValues(
-                            alpha: isDark ? 0.24 : 0.18,
+                            alpha: isDark ? 0.22 : 0.16,
                           ),
                           blurRadius: 20,
                           offset: const Offset(0, 6),
@@ -104,7 +105,7 @@ class EventListCard extends StatelessWidget {
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(14),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -112,7 +113,7 @@ class EventListCard extends StatelessWidget {
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(
-                                AppRadius.input,
+                                AppRadius.thumbnail,
                               ),
                               child:
                                   (event.projectImageUrl != null &&
@@ -129,7 +130,7 @@ class EventListCard extends StatelessWidget {
                                             ? cs.surfaceContainer
                                             : cs.primaryContainer,
                                         child: Icon(
-                                          Icons.music_note,
+                                          Icons.music_note_rounded,
                                           color: cs.primary,
                                           size: 30,
                                         ),
@@ -142,7 +143,7 @@ class EventListCard extends StatelessWidget {
                                           ? cs.surfaceContainer
                                           : cs.primaryContainer,
                                       child: Icon(
-                                        Icons.music_note,
+                                        Icons.music_note_rounded,
                                         color: cs.primary,
                                         size: 30,
                                       ),
@@ -157,11 +158,14 @@ class EventListCard extends StatelessWidget {
                                   Text(
                                     event.title,
                                     style: theme.textTheme.titleMedium
-                                        ?.copyWith(color: cs.onSurface),
+                                        ?.copyWith(
+                                          color: cs.onSurface,
+                                          fontWeight: FontWeight.w700,
+                                        ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 5),
                                   Text(
                                     (event.description?.isNotEmpty ?? false)
                                         ? '$timeDisplay • ${event.description}'
@@ -181,7 +185,7 @@ class EventListCard extends StatelessWidget {
                                       event.repertoireCount > 0) ...[
                                     const SizedBox(height: 8),
                                     SizedBox(
-                                      height: 22,
+                                      height: 24,
                                       child: Row(
                                         children: [
                                           Expanded(
@@ -212,7 +216,7 @@ class EventListCard extends StatelessWidget {
                                                             ),
                                                           ),
                                                           child: CircleAvatar(
-                                                            radius: 10,
+                                                            radius: 11,
                                                             backgroundColor: isDark
                                                                 ? cs
                                                                       .surfaceContainerLow
@@ -231,46 +235,86 @@ class EventListCard extends StatelessWidget {
                                           ),
                                           if (event.participantsCount > 0) ...[
                                             const SizedBox(width: 6),
-                                            SvgPicture.asset(
-                                              'assets/icons/users-round.svg',
-                                              width: 15,
-                                              height: 15,
-                                              colorFilter: ColorFilter.mode(
-                                                cs.primary,
-                                                BlendMode.srcIn,
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 7,
+                                                vertical: 3,
                                               ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              '${event.participantsCount}',
-                                              style: theme.textTheme.labelMedium
-                                                  ?.copyWith(
-                                                    color: cs.primary,
-                                                    fontWeight:
-                                                        FontWeight.w700,
+                                              decoration: BoxDecoration(
+                                                color: cs.surfaceContainerHigh,
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                      AppRadius.pill,
+                                                    ),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  SvgPicture.asset(
+                                                    'assets/icons/users-round.svg',
+                                                    width: 13,
+                                                    height: 13,
+                                                    colorFilter: ColorFilter.mode(
+                                                      cs.primary,
+                                                      BlendMode.srcIn,
+                                                    ),
                                                   ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    '${event.participantsCount}',
+                                                    style: theme
+                                                        .textTheme
+                                                        .labelMedium
+                                                        ?.copyWith(
+                                                          color: cs.primary,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ],
                                           if (event.repertoireCount > 0) ...[
-                                            const SizedBox(width: 10),
-                                            SvgPicture.asset(
-                                              'assets/icons/music.svg',
-                                              width: 15,
-                                              height: 15,
-                                              colorFilter: ColorFilter.mode(
-                                                cs.primary,
-                                                BlendMode.srcIn,
+                                            const SizedBox(width: 6),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                horizontal: 7,
+                                                vertical: 3,
                                               ),
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              '${event.repertoireCount}',
-                                              style: theme.textTheme.labelMedium
-                                                  ?.copyWith(
-                                                    color: cs.primary,
-                                                    fontWeight:
-                                                        FontWeight.w700,
+                                              decoration: BoxDecoration(
+                                                color: cs.surfaceContainerHigh,
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                      AppRadius.pill,
+                                                    ),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  SvgPicture.asset(
+                                                    'assets/icons/music.svg',
+                                                    width: 13,
+                                                    height: 13,
+                                                    colorFilter: ColorFilter.mode(
+                                                      cs.primary,
+                                                      BlendMode.srcIn,
+                                                    ),
                                                   ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    '${event.repertoireCount}',
+                                                    style: theme
+                                                        .textTheme
+                                                        .labelMedium
+                                                        ?.copyWith(
+                                                          color: cs.primary,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                        ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ],
                                         ],

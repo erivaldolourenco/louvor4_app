@@ -18,8 +18,9 @@ class StandardSectionAppBar extends StatelessWidget implements PreferredSizeWidg
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     return AppBar(
-      backgroundColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
-      surfaceTintColor: theme.appBarTheme.backgroundColor ?? theme.colorScheme.surface,
+      backgroundColor: theme.appBarTheme.backgroundColor ?? cs.surfaceContainerLowest,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
       elevation: 0,
       actions: actions,
       title: Column(
