@@ -172,10 +172,56 @@ class _EventDetailViewState extends State<_EventDetailView>
                   isCollapsed: _headerCollapsed,
                   actions: [
                     if (state.isProjectAdmin)
-                      IconButton(
-                        tooltip: 'Editar evento',
-                        icon: const Icon(Icons.edit_outlined),
-                        onPressed: _onEditEvent,
+                      PopupMenuButton<_EventMenuAction>(
+                        tooltip: 'Mais opções',
+                        icon: const Icon(Icons.more_vert_rounded),
+                        onSelected: (action) {
+                          switch (action) {
+                            case _EventMenuAction.edit:
+                              _onEditEvent();
+                            case _EventMenuAction.delete:
+                              _onDeleteEvent();
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          PopupMenuItem(
+                            value: _EventMenuAction.edit,
+                            child: ListTile(
+                              leading: SvgPicture.asset(
+                                'assets/icons/square-pen.svg',
+                                width: 20,
+                                height: 20,
+                                colorFilter: ColorFilter.mode(
+                                  Theme.of(context).colorScheme.onSurface,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                              title: const Text('Editar evento'),
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: _EventMenuAction.delete,
+                            child: ListTile(
+                              leading: SvgPicture.asset(
+                                'assets/icons/trash-2.svg',
+                                width: 20,
+                                height: 20,
+                                colorFilter: ColorFilter.mode(
+                                  Theme.of(context).colorScheme.error,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                              title: Text(
+                                'Excluir evento',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                              ),
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ],
                       ),
                   ],
                 ),
@@ -318,11 +364,13 @@ class _EventDetailViewState extends State<_EventDetailView>
         final cs = theme.colorScheme;
         final index = _tabController.index;
 
+        Widget fab;
+
         // Aba Roteiro: Speed Dial com opções expandíveis
         if (index == 2 && state.isProjectAdmin) {
-          return SpeedDial(
-            heroTag: 'event_detail_fab',
-            icon: Icons.playlist_add_rounded,
+          fab = SpeedDial(
+            key: const ValueKey('program_fab'),
+            heroTag: 'event_detail_fab_program',
             activeIcon: Icons.close_rounded,
             backgroundColor: cs.primaryContainer,
             foregroundColor: cs.onPrimaryContainer,
@@ -354,41 +402,78 @@ class _EventDetailViewState extends State<_EventDetailView>
                 onTap: _onAddProgramItem,
               ),
             ],
+            child: SvgPicture.asset(
+              'assets/icons/clock-plus.svg',
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(
+                cs.onPrimaryContainer,
+                BlendMode.srcIn,
+              ),
+            ),
           );
+        } else {
+          // Outras abas: FAB simples com ícones dedicados por aba
+          final action = switch (index) {
+            0 when state.isProjectAdmin => (
+              icon: SvgPicture.asset(
+                'assets/icons/user-round-plus.svg',
+                key: ValueKey(index),
+                width: 24,
+                height: 24,
+                colorFilter: ColorFilter.mode(
+                  cs.onPrimaryContainer,
+                  BlendMode.srcIn,
+                ),
+              ),
+              onPressed: () => _onManageSchedule(state),
+            ),
+            1 when state.isProjectAdmin || state.canAddSongs => (
+              icon: SvgPicture.asset(
+                'assets/icons/music.svg',
+                key: ValueKey(index),
+                width: 24,
+                height: 24,
+                colorFilter: ColorFilter.mode(
+                  cs.onPrimaryContainer,
+                  BlendMode.srcIn,
+                ),
+              ),
+              onPressed: () => _onAddSongs(state),
+            ),
+            _ => null,
+          };
+
+          fab = action == null
+              ? const SizedBox.shrink(key: ValueKey('no_fab'))
+              : FloatingActionButton(
+                  key: const ValueKey('simple_fab'),
+                  heroTag: 'event_detail_fab',
+                  onPressed: action.onPressed,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  backgroundColor: cs.primaryContainer,
+                  foregroundColor: cs.onPrimaryContainer,
+                  elevation: 4,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    transitionBuilder: (child, animation) => ScaleTransition(
+                      scale: animation,
+                      child: FadeTransition(opacity: animation, child: child),
+                    ),
+                    child: action.icon,
+                  ),
+                );
         }
 
-        // Outras abas: FAB simples com ícones dedicados por aba
-        final action = switch (index) {
-          0 when state.isProjectAdmin => (
-            icon: Icons.group_add_rounded,
-            onPressed: () => _onManageSchedule(state),
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          transitionBuilder: (child, animation) => ScaleTransition(
+            scale: animation,
+            child: FadeTransition(opacity: animation, child: child),
           ),
-          1 when state.isProjectAdmin || state.canAddSongs => (
-            icon: Icons.music_note_rounded,
-            onPressed: () => _onAddSongs(state),
-          ),
-          _ => null,
-        };
-
-        if (action == null) return const SizedBox.shrink();
-
-        return FloatingActionButton(
-          heroTag: 'event_detail_fab',
-          onPressed: action.onPressed,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          backgroundColor: cs.primaryContainer,
-          foregroundColor: cs.onPrimaryContainer,
-          elevation: 4,
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 220),
-            transitionBuilder: (child, animation) => ScaleTransition(
-              scale: animation,
-              child: FadeTransition(opacity: animation, child: child),
-            ),
-            child: Icon(action.icon, key: ValueKey(index), size: 28),
-          ),
+          child: fab,
         );
       },
     );
@@ -442,7 +527,51 @@ class _EventDetailViewState extends State<_EventDetailView>
 
     AppFeedback.showSuccess('Evento atualizado com sucesso.');
   }
+
+  Future<void> _onDeleteEvent() async {
+    final cs = Theme.of(context).colorScheme;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Excluir evento'),
+          content: const Text(
+            'Tem certeza que deseja excluir este evento? Essa ação não pode ser desfeita.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: FilledButton.styleFrom(backgroundColor: cs.error),
+              child: const Text('Excluir'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final deleted = await context.read<EventDetailCubit>().deleteEvent();
+    if (!mounted) return;
+
+    if (deleted) {
+      Navigator.of(context).pop();
+      AppFeedback.showSuccess('Evento excluído com sucesso.');
+      return;
+    }
+
+    final state = context.read<EventDetailCubit>().state;
+    AppFeedback.showError(
+      state.actionErrorMessage ?? 'Não foi possível excluir o evento.',
+    );
+  }
 }
+
+enum _EventMenuAction { edit, delete }
 
 class _EventDetailTabs extends StatelessWidget {
   final TabController controller;
@@ -719,7 +848,7 @@ class _ParticipantsTab extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
         children: const [
           _EmptyTabState(
-            icon: Icons.group_off_rounded,
+            iconAsset: 'assets/icons/users-round.svg',
             title: 'Sem participantes',
             subtitle: 'Nenhum integrante foi vinculado a este evento.',
           ),
@@ -871,7 +1000,7 @@ class _SongsTab extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
           children: const [
             _EmptyTabState(
-              icon: Icons.music_off_rounded,
+              iconAsset: 'assets/icons/music.svg',
               title: 'Sem músicas',
               subtitle: 'Ainda não há repertório cadastrado para este evento.',
             ),
@@ -928,7 +1057,7 @@ class _SongsTab extends StatelessWidget {
             child: isMedleyItem
                 ? MedleyCard(
                     medley: song.medleyEntity!,
-                    onRemove:
+                    onDelete:
                         (state.canDeleteSong(song) &&
                             state.deletingSongId != song.id)
                         ? () => onRemoveSong(song.id)
@@ -940,7 +1069,6 @@ class _SongsTab extends StatelessWidget {
                     title: song.title,
                     artist: song.artist ?? 'Desconhecido',
                     musicKey: song.key,
-                    bpm: song.bpm?.toString(),
                     youTubeUrl: song.youTubeUrl,
                     hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
                     onTap: () => openSongDetailPage(
@@ -960,7 +1088,7 @@ class _SongsTab extends StatelessWidget {
                           ? null
                           : () => _openChords(context, song),
                     ),
-                    onRemove:
+                    onDelete:
                         (state.canDeleteSong(song) &&
                             state.deletingSongId != song.id)
                         ? () => onRemoveSong(song.id)
@@ -1111,12 +1239,12 @@ class _RetryTabState extends StatelessWidget {
 }
 
 class _EmptyTabState extends StatelessWidget {
-  final IconData icon;
+  final String iconAsset;
   final String title;
   final String subtitle;
 
   const _EmptyTabState({
-    required this.icon,
+    required this.iconAsset,
     required this.title,
     required this.subtitle,
   });
@@ -1131,7 +1259,15 @@ class _EmptyTabState extends StatelessWidget {
       decoration: appCardDecoration(context, radius: AppRadius.cardHero),
       child: Column(
         children: [
-          Icon(icon, size: 30, color: cs.onSurfaceVariant),
+          SvgPicture.asset(
+            iconAsset,
+            width: 30,
+            height: 30,
+            colorFilter: ColorFilter.mode(
+              cs.onSurfaceVariant,
+              BlendMode.srcIn,
+            ),
+          ),
           const SizedBox(height: 10),
           Text(
             title,

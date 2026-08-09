@@ -234,6 +234,26 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     }
   }
 
+  Future<bool> deleteEvent() async {
+    final event = state.event;
+    if (event == null) return false;
+
+    emit(state.copyWith(clearActionErrorMessage: true));
+
+    try {
+      await _repository.deleteEvent(event.id);
+      _cacheByEventId.remove(event.id);
+      return true;
+    } catch (e) {
+      emit(
+        state.copyWith(
+          actionErrorMessage: e.toString().replaceFirst('Exception: ', ''),
+        ),
+      );
+      return false;
+    }
+  }
+
   Future<bool> acceptParticipantInvite(String participantId) async {
     if (participantId.trim().isEmpty) return false;
 

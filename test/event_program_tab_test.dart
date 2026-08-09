@@ -120,6 +120,26 @@ Widget _buildTab(EventProgramCubit cubit, {bool isAdmin = false}) {
   );
 }
 
+// A criação de itens é disparada pelo FAB da tela de evento (fora do
+// EventProgramTab). Nos testes, simulamos esse gatilho com um FAB próprio
+// que chama a mesma função pública `showProgramTextItemDialog`.
+Widget _buildTabWithAddFab(EventProgramCubit cubit) {
+  return MaterialApp(
+    home: BlocProvider<EventProgramCubit>.value(
+      value: cubit,
+      child: Builder(
+        builder: (context) => Scaffold(
+          body: const EventProgramTab(isAdmin: true),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => showProgramTextItemDialog(context),
+            child: const Icon(Icons.add),
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 Future<EventProgramCubit> _loadedCubit(
   _FakeRepo repo, {
   bool throwOnLoad = false,
@@ -310,65 +330,6 @@ void main() {
   });
 
   group('EventProgramTab — visibilidade para admin', () {
-    testWidgets('admin vê botão "Adicionar" no cabeçalho', (tester) async {
-      final repo = _FakeRepo(items: [_text('t1', 0, title: 'A')]);
-      final cubit = await _loadedCubit(repo);
-
-      await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
-      await tester.pump();
-
-      expect(find.text('Adicionar'), findsOneWidget);
-
-      await cubit.close();
-    });
-
-    testWidgets('não-admin não vê botão "Adicionar"', (tester) async {
-      final repo = _FakeRepo(items: [_text('t1', 0, title: 'A')]);
-      final cubit = await _loadedCubit(repo);
-
-      await tester.pumpWidget(_buildTab(cubit, isAdmin: false));
-      await tester.pump();
-
-      expect(find.text('Adicionar'), findsNothing);
-
-      await cubit.close();
-    });
-
-    testWidgets('admin vê botões de reordenação', (tester) async {
-      final repo = _FakeRepo(items: [
-        _text('t1', 0, title: 'A'),
-        _text('t2', 1, title: 'B'),
-      ]);
-      final cubit = await _loadedCubit(repo);
-
-      await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
-      await tester.pump();
-
-      expect(
-        find.byIcon(Icons.keyboard_arrow_up_rounded),
-        findsWidgets,
-      );
-      expect(
-        find.byIcon(Icons.keyboard_arrow_down_rounded),
-        findsWidgets,
-      );
-
-      await cubit.close();
-    });
-
-    testWidgets('não-admin não vê botões de reordenação', (tester) async {
-      final repo = _FakeRepo(items: [_text('t1', 0, title: 'A')]);
-      final cubit = await _loadedCubit(repo);
-
-      await tester.pumpWidget(_buildTab(cubit, isAdmin: false));
-      await tester.pump();
-
-      expect(find.byIcon(Icons.keyboard_arrow_up_rounded), findsNothing);
-      expect(find.byIcon(Icons.keyboard_arrow_down_rounded), findsNothing);
-
-      await cubit.close();
-    });
-
     testWidgets('admin vê editar e excluir em item TEXT', (tester) async {
       final repo = _FakeRepo(items: [_text('t1', 0, title: 'Texto')]);
       final cubit = await _loadedCubit(repo);
@@ -409,83 +370,6 @@ void main() {
     });
   });
 
-  group('EventProgramTab — reordenação', () {
-    testWidgets(
-      'seta para cima no segundo item troca com o primeiro',
-      (tester) async {
-        final repo = _FakeRepo(items: [
-          _text('a', 0, title: 'A'),
-          _text('b', 1, title: 'B'),
-        ]);
-        final cubit = await _loadedCubit(repo);
-
-        await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
-        await tester.pump();
-
-        // Second item's up arrow is at index 1 of all up arrows.
-        await tester.tap(
-          find.byIcon(Icons.keyboard_arrow_up_rounded).at(1),
-        );
-        await tester.pump();
-
-        expect(cubit.state.items.map((i) => i.id), ['b', 'a']);
-
-        await cubit.close();
-      },
-    );
-
-    testWidgets(
-      'seta para baixo no primeiro item troca com o segundo',
-      (tester) async {
-        final repo = _FakeRepo(items: [
-          _text('a', 0, title: 'A'),
-          _text('b', 1, title: 'B'),
-        ]);
-        final cubit = await _loadedCubit(repo);
-
-        await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
-        await tester.pump();
-
-        // First item's down arrow is at index 0 of all down arrows.
-        await tester.tap(
-          find.byIcon(Icons.keyboard_arrow_down_rounded).first,
-        );
-        await tester.pump();
-
-        expect(cubit.state.items.map((i) => i.id), ['b', 'a']);
-
-        await cubit.close();
-      },
-    );
-
-    testWidgets(
-      'seta para cima do primeiro item não altera a ordem',
-      (tester) async {
-        final repo = _FakeRepo(items: [
-          _text('a', 0, title: 'A'),
-          _text('b', 1, title: 'B'),
-        ]);
-        final cubit = await _loadedCubit(repo);
-
-        await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
-        await tester.pump();
-
-        final orderBefore = cubit.state.items.map((i) => i.id).toList();
-
-        await tester.tap(
-          find.byIcon(Icons.keyboard_arrow_up_rounded).first,
-          warnIfMissed: false, // button has null onTap
-        );
-        await tester.pump();
-
-        expect(cubit.state.items.map((i) => i.id), orderBefore);
-        expect(repo.lastReorderIds, isNull);
-
-        await cubit.close();
-      },
-    );
-  });
-
   group('EventProgramTab — diálogo de criação (TEXT)', () {
     testWidgets(
       '"Adicionar" abre diálogo com título "Adicionar item"',
@@ -493,10 +377,10 @@ void main() {
         final repo = _FakeRepo(items: [_text('t1', 0, title: 'Existente')]);
         final cubit = await _loadedCubit(repo);
 
-        await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
+        await tester.pumpWidget(_buildTabWithAddFab(cubit));
         await tester.pump();
 
-        await tester.tap(find.text('Adicionar'));
+        await tester.tap(find.byType(FloatingActionButton));
         await tester.pumpAndSettle();
 
         expect(find.text('Adicionar item'), findsOneWidget);
@@ -509,10 +393,10 @@ void main() {
       final repo = _FakeRepo(items: [_text('t1', 0, title: 'A')]);
       final cubit = await _loadedCubit(repo);
 
-      await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
+      await tester.pumpWidget(_buildTabWithAddFab(cubit));
       await tester.pump();
 
-      await tester.tap(find.text('Adicionar'));
+      await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
       // Tap save without entering title
@@ -530,10 +414,10 @@ void main() {
         final repo = _FakeRepo(items: [_text('t1', 0, title: 'A')]);
         final cubit = await _loadedCubit(repo);
 
-        await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
+        await tester.pumpWidget(_buildTabWithAddFab(cubit));
         await tester.pump();
 
-        await tester.tap(find.text('Adicionar'));
+        await tester.tap(find.byType(FloatingActionButton));
         await tester.pumpAndSettle();
 
         await tester.enterText(
@@ -555,10 +439,10 @@ void main() {
       final repo = _FakeRepo(items: [_text('t1', 0, title: 'A')]);
       final cubit = await _loadedCubit(repo);
 
-      await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
+      await tester.pumpWidget(_buildTabWithAddFab(cubit));
       await tester.pump();
 
-      await tester.tap(find.text('Adicionar'));
+      await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Cancelar'));

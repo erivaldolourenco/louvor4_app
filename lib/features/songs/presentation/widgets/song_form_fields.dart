@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/widgets/app_cached_network_image.dart';
@@ -41,6 +42,19 @@ class SongFormFields extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasCover = UrlUtils.isValidNetworkUrl(coverUrl);
+    final iconColor =
+        Theme.of(context).iconTheme.color ??
+        Theme.of(context).colorScheme.onSurfaceVariant;
+
+    Widget svgPrefixIcon(String asset) => Padding(
+      padding: const EdgeInsets.all(12),
+      child: SvgPicture.asset(
+        asset,
+        width: 20,
+        height: 20,
+        colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+      ),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,9 +76,9 @@ class SongFormFields extends StatelessWidget {
           controller: artistController,
           focusNode: artistFocusNode,
           textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Artista',
-            prefixIcon: Icon(Icons.mic_external_on_rounded),
+            prefixIcon: svgPrefixIcon('assets/icons/mic-vocal.svg'),
           ),
           validator: SongValidators.validateArtist,
           onChanged: (_) => onChanged(),
@@ -73,9 +87,9 @@ class SongFormFields extends StatelessWidget {
         TextFormField(
           controller: titleController,
           textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Título',
-            prefixIcon: Icon(Icons.music_note_rounded),
+            prefixIcon: svgPrefixIcon('assets/icons/disc.svg'),
           ),
           validator: SongValidators.validateTitle,
           onChanged: (_) => onChanged(),
@@ -84,9 +98,9 @@ class SongFormFields extends StatelessWidget {
         TextFormField(
           controller: albumController,
           textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Álbum (opcional)',
-            prefixIcon: Icon(Icons.album_outlined),
+            prefixIcon: svgPrefixIcon('assets/icons/disc-3.svg'),
           ),
           onChanged: (_) => onChanged(),
         ),
@@ -96,10 +110,10 @@ class SongFormFields extends StatelessWidget {
           focusNode: keyFocusNode,
           textCapitalization: TextCapitalization.characters,
           textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'Tom',
             hintText: 'Ex: C, D#, Em, Ab',
-            prefixIcon: Icon(Icons.piano_rounded),
+            prefixIcon: svgPrefixIcon('assets/icons/music-2.svg'),
           ),
           validator: SongValidators.validateKey,
           onChanged: (_) => onChanged(),
@@ -109,9 +123,9 @@ class SongFormFields extends StatelessWidget {
           controller: bpmController,
           keyboardType: TextInputType.number,
           textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'BPM (opcional)',
-            prefixIcon: Icon(Icons.speed_rounded),
+            prefixIcon: svgPrefixIcon('assets/icons/time.svg'),
           ),
           validator: SongValidators.validateBpm,
           onChanged: (_) => onChanged(),
@@ -121,9 +135,9 @@ class SongFormFields extends StatelessWidget {
           controller: youTubeUrlController,
           keyboardType: TextInputType.url,
           textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'URL YouTube (opcional)',
-            prefixIcon: Icon(Icons.ondemand_video_rounded),
+            prefixIcon: svgPrefixIcon('assets/icons/logo-youtube.svg'),
           ),
           validator: SongValidators.validateYouTubeUrl,
           onChanged: (_) => onChanged(),
@@ -133,9 +147,9 @@ class SongFormFields extends StatelessWidget {
           controller: spotifyUrlController,
           keyboardType: TextInputType.url,
           textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'URL Spotify (opcional)',
-            prefixIcon: Icon(Icons.graphic_eq_rounded),
+            prefixIcon: svgPrefixIcon('assets/icons/icon-spotify.svg'),
           ),
           validator: SongValidators.validateUrl,
           onChanged: (_) => onChanged(),
@@ -145,9 +159,9 @@ class SongFormFields extends StatelessWidget {
           controller: deezerUrlController,
           keyboardType: TextInputType.url,
           textInputAction: TextInputAction.next,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: 'URL Deezer (opcional)',
-            prefixIcon: Icon(Icons.album_rounded),
+            prefixIcon: svgPrefixIcon('assets/icons/icon-deezer.svg'),
           ),
           validator: SongValidators.validateUrl,
           onChanged: (_) => onChanged(),

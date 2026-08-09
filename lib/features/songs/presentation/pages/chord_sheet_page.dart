@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -578,7 +579,15 @@ class _EmptyChordSheet extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.piano_rounded, size: 30, color: cs.onSurfaceVariant),
+            SvgPicture.asset(
+              'assets/icons/file-music.svg',
+              width: 30,
+              height: 30,
+              colorFilter: ColorFilter.mode(
+                cs.onSurfaceVariant,
+                BlendMode.srcIn,
+              ),
+            ),
             const SizedBox(height: 10),
             Text(
               'Nenhuma cifra cadastrada',

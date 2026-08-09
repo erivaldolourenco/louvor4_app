@@ -94,6 +94,11 @@ class _FakeEventsRepository implements EventsRepository {
   }
 
   @override
+  Future<void> deleteEvent(String eventId) async {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<void> acceptEventParticipant(String participantId) async {
     throw UnimplementedError();
   }

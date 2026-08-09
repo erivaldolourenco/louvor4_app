@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../../core/ui/widgets/app_card_surface.dart';
+import '../../../../../core/ui/widgets/app_circular_action_button.dart';
 import '../../../../../core/ui/widgets/spring_tap.dart';
 import '../../domain/entities/medley_entity.dart';
-import '../../domain/entities/medley_item_entity.dart';
-import 'medley_details_sheet.dart';
+import '../pages/medley_detail_page.dart';
 
 class MedleyCard extends StatelessWidget {
   final MedleyEntity medley;
@@ -36,7 +37,7 @@ class MedleyCard extends StatelessWidget {
     Widget cardBody = SpringTap(
       onTap:
           onTap ??
-          () => showMedleyDetailsModal(context, medley, onEdit: onEdit),
+          () => openMedleyDetailPage(context, medley, onEdit: onEdit),
       pressedScale: 0.97,
       borderRadius: BorderRadius.circular(AppRadius.cardHero),
       child: Column(
@@ -56,10 +57,14 @@ class MedleyCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadius.thumbnail),
                   ),
                   child: Center(
-                    child: Icon(
-                      Icons.queue_music_rounded,
-                      color: cs.onSecondaryContainer,
-                      size: 32,
+                    child: SvgPicture.asset(
+                      'assets/icons/disc-album.svg',
+                      width: 32,
+                      height: 32,
+                      colorFilter: ColorFilter.mode(
+                        cs.onSecondaryContainer,
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
                 ),
@@ -93,29 +98,19 @@ class MedleyCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 _CountChip(count: count),
-                if (onEdit != null) ...[
-                  const SizedBox(width: 4),
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined),
-                    onPressed: onEdit,
-                  ),
-                ],
                 if (onDelete != null) ...[
                   const SizedBox(width: 4),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline_rounded),
+                  AppCircularActionButton(
                     onPressed: onDelete,
+                    assetPath: 'assets/icons/trash-2.svg',
+                    iconColor: cs.error,
+                    backgroundColor: cs.errorContainer,
+                    borderColor: cs.error.withValues(alpha: 0.3),
                   ),
                 ],
               ],
             ),
           ),
-          if (medley.items.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-              child: _MedleySequencePreview(items: medley.items),
-            ),
-          ],
         ],
       ),
     );
@@ -199,100 +194,6 @@ class _CountChip extends StatelessWidget {
           fontWeight: FontWeight.w700,
           color: cs.onSurface,
         ),
-      ),
-    );
-  }
-}
-
-class _MedleySequencePreview extends StatelessWidget {
-  final List<MedleyItemEntity> items;
-
-  const _MedleySequencePreview({required this.items});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-
-    final sortedItems = List<MedleyItemEntity>.from(items)
-      ..sort((a, b) => a.sequence.compareTo(b.sequence));
-
-    final displayItems = sortedItems.take(3).toList();
-    final remainingCount = sortedItems.length - displayItems.length;
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          for (var i = 0; i < displayItems.length; i++) ...[
-            if (i > 0)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 13,
-                  color: cs.primary,
-                ),
-              ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(AppRadius.badge),
-                border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    displayItems[i].songTitle ?? 'Música',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: cs.onSurface,
-                    ),
-                  ),
-                  if (displayItems[i].key?.isNotEmpty == true) ...[
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: cs.tertiaryContainer,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        displayItems[i].key!,
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w800,
-                          color: cs.onTertiaryContainer,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-          if (remainingCount > 0) ...[
-            const SizedBox(width: 5),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-              decoration: BoxDecoration(
-                color: cs.secondaryContainer,
-                borderRadius: BorderRadius.circular(AppRadius.badge),
-              ),
-              child: Text(
-                '+$remainingCount mais',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 10,
-                  color: cs.onSecondaryContainer,
-                ),
-              ),
-            ),
-          ],
-        ],
       ),
     );
   }

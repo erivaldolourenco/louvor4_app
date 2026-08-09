@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 
 class StandardSectionAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final List<Widget>? actions;
 
   const StandardSectionAppBar({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     this.actions,
   });
 
@@ -17,6 +17,7 @@ class StandardSectionAppBar extends StatelessWidget implements PreferredSizeWidg
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final hasSubtitle = subtitle != null && subtitle!.isNotEmpty;
     return AppBar(
       backgroundColor: theme.appBarTheme.backgroundColor ?? cs.surfaceContainerLowest,
       surfaceTintColor: Colors.transparent,
@@ -30,13 +31,15 @@ class StandardSectionAppBar extends StatelessWidget implements PreferredSizeWidg
             title,
             style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
           ),
-          SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: cs.onSurfaceVariant,
+          if (hasSubtitle) ...[
+            const SizedBox(height: 2),
+            Text(
+              subtitle!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

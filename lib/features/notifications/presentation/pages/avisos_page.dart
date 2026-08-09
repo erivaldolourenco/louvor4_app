@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
@@ -108,15 +109,24 @@ class _AvisosViewState extends State<_AvisosView> {
     }
 
     if (state.isEmpty) {
+      final iconColor = Theme.of(context).iconTheme.color;
       return RefreshIndicator(
         onRefresh: () => context.read<NotificationsCubit>().refresh(),
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 28),
-          children: const [
-            SizedBox(height: 180),
+          children: [
+            const SizedBox(height: 180),
             AppEmptyState(
               icon: Icons.notifications_none_rounded,
+              iconWidget: SvgPicture.asset(
+                'assets/icons/bell.svg',
+                width: 56,
+                height: 56,
+                colorFilter: iconColor == null
+                    ? null
+                    : ColorFilter.mode(iconColor, BlendMode.srcIn),
+              ),
               title: 'Nenhum aviso por enquanto',
               description:
                   'Quando houver novidades sobre eventos, projetos ou mensagens, elas aparecerão aqui.',

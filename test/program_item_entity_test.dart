@@ -49,6 +49,36 @@ void main() {
       expect(item.songTitle, '');
       expect(item.songArtist, '');
     });
+
+    test('mapeia key e addBy do objeto music', () {
+      final item = ProgramItemEntity.fromJson({
+        'id': 'item9',
+        'type': 'MUSIC',
+        'position': 0,
+        'music': {
+          'id': 's1',
+          'title': 'Oceans',
+          'artist': 'Hillsong',
+          'key': 'G',
+          'addBy': 'Ana',
+        },
+      }) as MusicProgramItemEntity;
+
+      expect(item.songKey, 'G');
+      expect(item.addedBy, 'Ana');
+    });
+
+    test('songKey e addedBy são null quando ausentes', () {
+      final item = ProgramItemEntity.fromJson({
+        'id': 'item10',
+        'type': 'MUSIC',
+        'position': 0,
+        'music': {'id': 's1', 'title': 'T', 'artist': 'A'},
+      }) as MusicProgramItemEntity;
+
+      expect(item.songKey, isNull);
+      expect(item.addedBy, isNull);
+    });
   });
 
   group('ProgramItemEntity.fromJson — tipo TEXT', () {

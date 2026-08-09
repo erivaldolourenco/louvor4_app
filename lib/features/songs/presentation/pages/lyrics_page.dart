@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/fade_slide_in.dart';
@@ -232,10 +233,10 @@ class _LyricsPageState extends State<LyricsPage> {
                 ),
               )
             : FadeSlideIn(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: _isEditing
-                      ? TextField(
+                child: _isEditing
+                    ? Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: TextField(
                           controller: _controller,
                           autofocus: true,
                           expands: true,
@@ -257,20 +258,21 @@ class _LyricsPageState extends State<LyricsPage> {
                             errorBorder: InputBorder.none,
                             focusedErrorBorder: InputBorder.none,
                           ),
-                        )
-                      : _savedLyrics.isEmpty
-                      ? _EmptyLyrics(canEdit: widget.canEdit)
-                      : SingleChildScrollView(
-                          child: Text(
-                            _savedLyrics,
-                            style: TextStyle(
-                              color: cs.onSurface,
-                              fontSize: _fontSize,
-                              height: 1.6,
-                            ),
-                          ),
                         ),
-                ),
+                      )
+                    : SingleChildScrollView(
+                        padding: const EdgeInsets.all(16),
+                        child: _savedLyrics.isEmpty
+                            ? _EmptyLyrics(canEdit: widget.canEdit)
+                            : Text(
+                                _savedLyrics,
+                                style: TextStyle(
+                                  color: cs.onSurface,
+                                  fontSize: _fontSize,
+                                  height: 1.6,
+                                ),
+                              ),
+                      ),
               ),
       ),
     );
@@ -291,7 +293,15 @@ class _EmptyLyrics extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.lyrics_outlined, size: 30, color: cs.onSurfaceVariant),
+          SvgPicture.asset(
+            'assets/icons/file-type-corner.svg',
+            width: 30,
+            height: 30,
+            colorFilter: ColorFilter.mode(
+              cs.onSurfaceVariant,
+              BlendMode.srcIn,
+            ),
+          ),
           const SizedBox(height: 10),
           Text(
             'Nenhuma letra cadastrada',

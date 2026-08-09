@@ -51,6 +51,8 @@ sealed class ProgramItemEntity extends Equatable {
         songTitle: music['title'] as String? ?? '',
         songArtist: music['artist'] as String? ?? '',
         songYouTubeUrl: music['youTubeUrl'] as String?,
+        songKey: music['key'] as String?,
+        addedBy: music['addBy'] as String?,
       );
     } else if (rawType == 'MEDLEY') {
       final medleyRaw = json['medley'];
@@ -84,6 +86,8 @@ class MusicProgramItemEntity extends ProgramItemEntity {
   final String songTitle;
   final String songArtist;
   final String? songYouTubeUrl;
+  final String? songKey;
+  final String? addedBy;
 
   const MusicProgramItemEntity({
     required super.id,
@@ -92,10 +96,22 @@ class MusicProgramItemEntity extends ProgramItemEntity {
     required this.songTitle,
     required this.songArtist,
     this.songYouTubeUrl,
+    this.songKey,
+    this.addedBy,
   }) : super(type: ProgramItemType.music);
 
   @override
-  List<Object?> get props => [id, type, position, songId, songTitle, songArtist, songYouTubeUrl];
+  List<Object?> get props => [
+    id,
+    type,
+    position,
+    songId,
+    songTitle,
+    songArtist,
+    songYouTubeUrl,
+    songKey,
+    addedBy,
+  ];
 }
 
 class MedleyProgramItemEntity extends ProgramItemEntity {

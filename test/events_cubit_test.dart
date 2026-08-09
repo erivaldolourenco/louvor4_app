@@ -119,6 +119,10 @@ class _FakeEventsRepository implements EventsRepository {
       throw UnimplementedError();
 
   @override
+  Future<void> deleteEvent(String eventId) async =>
+      throw UnimplementedError();
+
+  @override
   Future<void> acceptEventParticipant(String participantId) async =>
       throw UnimplementedError();
 
@@ -411,6 +415,10 @@ class _SlowEventsRepository implements EventsRepository {
 
   @override
   Future<void> updateEvent(String eventId, UpdateEventInputEntity input) async =>
+      throw UnimplementedError();
+
+  @override
+  Future<void> deleteEvent(String eventId) async =>
       throw UnimplementedError();
 
   @override

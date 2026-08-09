@@ -7,7 +7,6 @@ import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/circular_icon_action_button.dart';
-import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/utils/skill_icon.dart';
 import '../../data/repositories/project_skills_repository.dart';
 import '../../data/repositories/project_skills_repository_impl.dart';
@@ -32,10 +31,10 @@ class ProjectSkillsPage extends StatefulWidget {
   });
 
   @override
-  State<ProjectSkillsPage> createState() => _ProjectSkillsPageState();
+  State<ProjectSkillsPage> createState() => ProjectSkillsPageState();
 }
 
-class _ProjectSkillsPageState extends State<ProjectSkillsPage>
+class ProjectSkillsPageState extends State<ProjectSkillsPage>
     with AutomaticKeepAliveClientMixin {
   late final ProjectSkillsCubit _cubit;
 
@@ -54,6 +53,20 @@ class _ProjectSkillsPageState extends State<ProjectSkillsPage>
   void dispose() {
     _cubit.close();
     super.dispose();
+  }
+
+  Future<void> addSkill() async {
+    final success = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) =>
+          BlocProvider.value(value: _cubit, child: const AddProjectSkillSheet()),
+    );
+
+    if (success == true) {
+      AppFeedback.showSuccess('Função adicionada com sucesso.');
+    }
   }
 
   @override
@@ -93,57 +106,43 @@ class _ProjectSkillsView extends StatelessWidget {
 
         return RefreshIndicator(
           onRefresh: () => cubit.load(silent: true),
-          child: Stack(
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
             children: [
-              ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Funções',
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(fontWeight: FontWeight.w700),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              state.projectName?.trim().isNotEmpty == true
-                                  ? 'Funções disponíveis em ${state.projectName}'
-                                  : 'Instrumentos, vocais e funções do projeto',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: subtitleColor),
-                            ),
-                          ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Funções',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  if (state.isEmpty)
-                    _SkillsEmptyState(canManageSkills: state.canManageSkills),
-                  if (state.skills.isNotEmpty)
-                    ...state.skills.map(
-                      (skill) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _ProjectSkillCard(skill: skill),
-                      ),
+                        const SizedBox(height: 2),
+                        Text(
+                          state.projectName?.trim().isNotEmpty == true
+                              ? 'Funções disponíveis em ${state.projectName}'
+                              : 'Instrumentos, vocais e funções do projeto',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: subtitleColor),
+                        ),
+                      ],
                     ),
+                  ),
                 ],
               ),
-              if (state.canManageSkills)
-                Positioned(
-                  right: 16,
-                  bottom: 16,
-                  child: PrimaryAddFab(
-                    icon: Icons.tune_rounded,
-                    onPressed: () => _showAddSkillSheet(context),
-                    heroTag: 'project-skills-add-fab',
+              const SizedBox(height: 14),
+              if (state.isEmpty)
+                _SkillsEmptyState(canManageSkills: state.canManageSkills),
+              if (state.skills.isNotEmpty)
+                ...state.skills.map(
+                  (skill) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _ProjectSkillCard(skill: skill),
                   ),
                 ),
             ],
@@ -151,21 +150,6 @@ class _ProjectSkillsView extends StatelessWidget {
         );
       },
     );
-  }
-
-  Future<void> _showAddSkillSheet(BuildContext context) async {
-    final cubit = context.read<ProjectSkillsCubit>();
-    final success = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) =>
-          BlocProvider.value(value: cubit, child: const AddProjectSkillSheet()),
-    );
-
-    if (success == true) {
-      AppFeedback.showSuccess('Função adicionada com sucesso.');
-    }
   }
 }
 
@@ -263,7 +247,7 @@ class _ProjectSkillCard extends StatelessWidget {
                       tooltip: 'Editar função',
                       onPressed: () =>
                           _showEditSkillSheet(context, cubit, skill),
-                      assetPath: 'assets/icons/wrench.svg',
+                      assetPath: 'assets/icons/square-pen.svg',
                       iconColor: cs.onPrimaryContainer,
                       backgroundColor: cs.primaryContainer,
                       borderColor: cs.primary.withValues(alpha: 0.3),

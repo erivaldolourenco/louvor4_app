@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../domain/entities/chord_sheet_entity.dart';
 
@@ -50,14 +51,30 @@ class _ChordSheetInfoHeader extends StatelessWidget {
     return Row(
       children: [
         if (song.originalKey != null) ...[
-          Icon(Icons.piano_rounded, size: 16, color: cs.onSurfaceVariant),
+          SvgPicture.asset(
+            'assets/icons/music-2.svg',
+            width: 16,
+            height: 16,
+            colorFilter: ColorFilter.mode(
+              cs.onSurfaceVariant,
+              BlendMode.srcIn,
+            ),
+          ),
           const SizedBox(width: 4),
           Text('Tom ${song.originalKey}', style: style),
         ],
         if (song.originalKey != null && song.bpm != null)
           const SizedBox(width: 16),
         if (song.bpm != null) ...[
-          Icon(Icons.speed_rounded, size: 16, color: cs.onSurfaceVariant),
+          SvgPicture.asset(
+            'assets/icons/time.svg',
+            width: 16,
+            height: 16,
+            colorFilter: ColorFilter.mode(
+              cs.onSurfaceVariant,
+              BlendMode.srcIn,
+            ),
+          ),
           const SizedBox(width: 4),
           Text('${song.bpm} BPM', style: style),
         ],

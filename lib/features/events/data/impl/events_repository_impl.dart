@@ -218,6 +218,20 @@ class EventsRepositoryImpl implements EventsRepository {
   }
 
   @override
+  Future<void> deleteEvent(String eventId) async {
+    try {
+      await _dio.delete('/events/$eventId');
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível excluir o evento.',
+        ),
+      );
+    }
+  }
+
+  @override
   Future<void> acceptEventParticipant(String participantId) async {
     try {
       await _dio.patch('/events/participants/$participantId/accept');

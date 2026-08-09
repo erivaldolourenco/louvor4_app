@@ -53,7 +53,8 @@ class AppErrorState extends StatelessWidget {
 
 class AppEmptyState extends StatelessWidget {
   final IconData icon;
-  final String title;
+  final Widget? iconWidget;
+  final String? title;
   final String description;
   final Widget? action;
   final EdgeInsetsGeometry padding;
@@ -61,7 +62,8 @@ class AppEmptyState extends StatelessWidget {
   const AppEmptyState({
     super.key,
     required this.icon,
-    required this.title,
+    this.iconWidget,
+    this.title,
     required this.description,
     this.action,
     this.padding = const EdgeInsets.symmetric(horizontal: 28),
@@ -75,16 +77,18 @@ class AppEmptyState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 56, color: theme.iconTheme.color),
+          iconWidget ?? Icon(icon, size: 56, color: theme.iconTheme.color),
           const SizedBox(height: 12),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
+          if (title != null) ...[
+            Text(
+              title!,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
+            const SizedBox(height: 8),
+          ],
           Text(
             description,
             textAlign: TextAlign.center,

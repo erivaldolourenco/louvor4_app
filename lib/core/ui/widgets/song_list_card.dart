@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../theme/app_radius.dart';
 import '../../utils/url_utils.dart';
 import '../../utils/youtube_utils.dart';
 import 'app_card_surface.dart';
+import 'app_circular_action_button.dart';
 import 'spring_tap.dart';
 
 class SongListCard extends StatelessWidget {
   final String title;
   final String? artist;
   final String? musicKey;
-  final String? bpm;
   final String? youTubeUrl;
+  final String? spotifyUrl;
+  final String? deezerUrl;
   final String? coverUrl;
   final bool isMedley;
   final bool hasAudio;
   final VoidCallback? onTap;
   final Future<bool> Function()? onRemove;
+  final VoidCallback? onDelete;
   final bool isRemoving;
   final String? dismissKey;
 
@@ -25,13 +29,15 @@ class SongListCard extends StatelessWidget {
     required this.title,
     this.artist,
     this.musicKey,
-    this.bpm,
     this.youTubeUrl,
+    this.spotifyUrl,
+    this.deezerUrl,
     this.coverUrl,
     this.isMedley = false,
     this.hasAudio = false,
     this.onTap,
     this.onRemove,
+    this.onDelete,
     this.isRemoving = false,
     this.dismissKey,
   });
@@ -84,13 +90,85 @@ class SongListCard extends StatelessWidget {
                           ),
                         ),
                       ],
-                      if (hasAudio) ...[const SizedBox(height: 6), _AudioTag()],
+                      if (hasAudio ||
+                          youTubeUrl != null && youTubeUrl!.isNotEmpty ||
+                          spotifyUrl != null && spotifyUrl!.isNotEmpty ||
+                          deezerUrl != null && deezerUrl!.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Wrap(
+                          spacing: 3,
+                          runSpacing: 2,
+                          children: [
+                            if (hasAudio)
+                              _SongTag(
+                                label: 'Áudio',
+                                icon: Icons.headphones_rounded,
+                                backgroundColor: cs.primaryContainer
+                                    .withValues(alpha: 0.7),
+                                foregroundColor: cs.primary,
+                              ),
+                            if (youTubeUrl != null && youTubeUrl!.isNotEmpty)
+                              Builder(
+                                builder: (context) {
+                                  final youtubeColor =
+                                      theme.brightness == Brightness.dark
+                                      ? const Color(0xFFFF5252)
+                                      : const Color(0xFFD32F2F);
+                                  return _SongTag(
+                                    label: 'YouTube',
+                                    iconAsset: 'assets/icons/logo-youtube.svg',
+                                    backgroundColor: youtubeColor.withValues(
+                                      alpha: 0.12,
+                                    ),
+                                    foregroundColor: youtubeColor,
+                                  );
+                                },
+                              ),
+                            if (spotifyUrl != null && spotifyUrl!.isNotEmpty)
+                              Builder(
+                                builder: (context) {
+                                  final spotifyColor =
+                                      theme.brightness == Brightness.dark
+                                      ? const Color(0xFF1DB954)
+                                      : const Color(0xFF168A3F);
+                                  return _SongTag(
+                                    label: 'Spotify',
+                                    iconAsset: 'assets/icons/icon-spotify.svg',
+                                    backgroundColor: spotifyColor.withValues(
+                                      alpha: 0.12,
+                                    ),
+                                    foregroundColor: spotifyColor,
+                                  );
+                                },
+                              ),
+                            if (deezerUrl != null && deezerUrl!.isNotEmpty)
+                              _SongTag(
+                                label: 'Deezer',
+                                iconAsset: 'assets/icons/icon-deezer.svg',
+                                backgroundColor: const Color(
+                                  0xFFA238FF,
+                                ).withValues(alpha: 0.12),
+                                foregroundColor: const Color(0xFFA238FF),
+                              ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
                 if (!isMedley) ...[
                   const SizedBox(width: 12),
-                  _KeyBpm(musicKey: musicKey, bpm: bpm),
+                  _KeyChip(musicKey: musicKey),
+                ],
+                if (onDelete != null) ...[
+                  const SizedBox(width: 4),
+                  AppCircularActionButton(
+                    onPressed: onDelete,
+                    assetPath: 'assets/icons/trash-2.svg',
+                    iconColor: cs.error,
+                    backgroundColor: cs.errorContainer,
+                    borderColor: cs.error.withValues(alpha: 0.3),
+                  ),
                 ],
               ],
             ),
@@ -210,53 +288,62 @@ class _Thumbnail extends StatelessWidget {
   }
 }
 
-class _KeyBpm extends StatelessWidget {
+class _KeyChip extends StatelessWidget {
   final String? musicKey;
-  final String? bpm;
 
-  const _KeyBpm({required this.musicKey, required this.bpm});
+  const _KeyChip({required this.musicKey});
 
   @override
   Widget build(BuildContext context) {
-    final hasBpm = bpm != null && bpm!.isNotEmpty;
     final keyLabel = musicKey?.isNotEmpty == true ? musicKey! : '-';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _InfoChip(label: 'Tom', value: keyLabel, useTertiaryTheme: true),
-        if (hasBpm) ...[
-          const SizedBox(height: 6),
-          _InfoChip(label: 'BPM', value: bpm!, useTertiaryTheme: false),
-        ],
-      ],
-    );
+    return _InfoChip(label: 'Tom', value: keyLabel, useTertiaryTheme: true);
   }
 }
 
-class _AudioTag extends StatelessWidget {
-  const _AudioTag();
+class _SongTag extends StatelessWidget {
+  final String label;
+  final IconData? icon;
+  final String? iconAsset;
+  final Color backgroundColor;
+  final Color foregroundColor;
+
+  const _SongTag({
+    required this.label,
+    this.icon,
+    this.iconAsset,
+    required this.backgroundColor,
+    required this.foregroundColor,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
-        color: cs.primaryContainer.withValues(alpha: 0.7),
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.badge),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.headphones_rounded, size: 12, color: cs.primary),
-          const SizedBox(width: 4),
+          iconAsset != null
+              ? SvgPicture.asset(
+                  iconAsset!,
+                  width: 8,
+                  height: 8,
+                  colorFilter: ColorFilter.mode(
+                    foregroundColor,
+                    BlendMode.srcIn,
+                  ),
+                )
+              : Icon(icon, size: 8, color: foregroundColor),
+          const SizedBox(width: 2),
           Text(
-            'Áudio',
+            label,
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: cs.primary,
+              color: foregroundColor,
               fontWeight: FontWeight.w700,
+              fontSize: 8,
             ),
           ),
         ],

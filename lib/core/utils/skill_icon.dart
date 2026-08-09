@@ -10,13 +10,13 @@ const Map<String, String> skillIconLabels = {
 };
 
 const Map<String, String> skillIconAssets = {
-  'ACOUSTIC_GUITAR': 'assets/icons/acoustic-guitar.svg',
-  'ELECTRIC_GUITAR': 'assets/icons/electric-guitar.svg',
-  'PIANO': 'assets/icons/piano.svg',
-  'KEYBOARD': 'assets/icons/keyboard.svg',
-  'DRUMS': 'assets/icons/drum.svg',
-  'MIC_VOCAL': 'assets/icons/mic-vocal.svg',
-  'BASS_GUITAR': 'assets/icons/bass-guitar.svg',
+  'ACOUSTIC_GUITAR': 'assets/icons/skills-icons/acoustic-guitar.svg',
+  'ELECTRIC_GUITAR': 'assets/icons/skills-icons/electric-guitar.svg',
+  'PIANO': 'assets/icons/skills-icons/piano.svg',
+  'KEYBOARD': 'assets/icons/skills-icons/keyboard.svg',
+  'DRUMS': 'assets/icons/skills-icons/drum.svg',
+  'MIC_VOCAL': 'assets/icons/skills-icons/mic-vocal.svg',
+  'BASS_GUITAR': 'assets/icons/skills-icons/bass-guitar.svg',
   'MUSIC': 'assets/icons/music.svg',
 };
 

@@ -52,6 +52,8 @@ abstract class EventsRepository {
 
   Future<void> updateEvent(String eventId, UpdateEventInputEntity input);
 
+  Future<void> deleteEvent(String eventId);
+
   Future<void> acceptEventParticipant(String participantId);
 
   Future<void> declineEventParticipant(String participantId);

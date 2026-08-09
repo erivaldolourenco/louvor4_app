@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:louvor4_app/features/medleys/domain/entities/medley_entity.dart';
 import 'package:louvor4_app/features/medleys/domain/entities/medley_item_entity.dart';
+import 'package:louvor4_app/core/ui/widgets/app_circular_action_button.dart';
 import 'package:louvor4_app/features/medleys/presentation/widgets/medley_card.dart';
 
 Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
@@ -108,7 +109,7 @@ void main() {
         )),
       );
 
-      await tester.tap(find.byIcon(Icons.delete_outline_rounded));
+      await tester.tap(find.byType(AppCircularActionButton));
       expect(deleteCalled, isTrue);
     });
 

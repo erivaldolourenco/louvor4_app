@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class PrimaryAddFab extends StatelessWidget {
   final VoidCallback onPressed;
   final Object? heroTag;
   final IconData icon;
+  final String? iconAsset;
 
   const PrimaryAddFab({
     super.key,
     required this.onPressed,
     this.heroTag,
     this.icon = Icons.add_rounded,
+    this.iconAsset,
   });
 
   @override
@@ -25,7 +28,17 @@ class PrimaryAddFab extends StatelessWidget {
       backgroundColor: colorScheme.primaryContainer,
       foregroundColor: colorScheme.onPrimaryContainer,
       elevation: 2,
-      child: Icon(icon, size: 28),
+      child: iconAsset != null
+          ? SvgPicture.asset(
+              iconAsset!,
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(
+                colorScheme.onPrimaryContainer,
+                BlendMode.srcIn,
+              ),
+            )
+          : Icon(icon, size: 28),
     );
   }
 }

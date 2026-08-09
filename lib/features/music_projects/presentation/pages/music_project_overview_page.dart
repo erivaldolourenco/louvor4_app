@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/header_project_event.dart';
+import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../data/impl/music_projects_repository_impl.dart';
 import '../../domain/entities/music_project_entity.dart';
 import 'edit_music_project_page.dart';
@@ -48,6 +50,10 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
   String? _memberRole;
   bool _headerCollapsed = false;
 
+  var _eventsTabKey = GlobalKey<ProjectEventsTabState>();
+  var _membersTabKey = GlobalKey<ProjectMembersTabState>();
+  var _skillsTabKey = GlobalKey<ProjectSkillsPageState>();
+
   @override
   void initState() {
     super.initState();
@@ -68,6 +74,9 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.projectId != widget.projectId) {
       _tabController.index = 0;
+      _eventsTabKey = GlobalKey<ProjectEventsTabState>();
+      _membersTabKey = GlobalKey<ProjectMembersTabState>();
+      _skillsTabKey = GlobalKey<ProjectSkillsPageState>();
       _loadOverview();
     }
   }
@@ -159,7 +168,112 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: _buildBody());
+    return Scaffold(body: _buildBody(), floatingActionButton: _buildFab());
+  }
+
+  Widget _buildFab() {
+    return AnimatedBuilder(
+      animation: _tabController,
+      builder: (context, _) {
+        final theme = Theme.of(context);
+        final cs = theme.colorScheme;
+        final index = _tabController.index;
+
+        Widget fab;
+
+        if (_isLoading || _hasError || _project == null || !_isAdmin) {
+          fab = const SizedBox.shrink(key: ValueKey('no_fab'));
+        } else if (index == 0) {
+          fab = SpeedDial(
+            key: const ValueKey('events_fab'),
+            heroTag: 'project_events_fab',
+            activeIcon: Icons.close_rounded,
+            backgroundColor: cs.primaryContainer,
+            foregroundColor: cs.onPrimaryContainer,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            elevation: 4,
+            spacing: 10,
+            spaceBetweenChildren: 10,
+            children: [
+              SpeedDialChild(
+                child: SvgPicture.asset(
+                  'assets/icons/calendar-plus-2.svg',
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(
+                    cs.onSecondaryContainer,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                label: 'Adicionar evento',
+                backgroundColor: cs.secondaryContainer,
+                foregroundColor: cs.onSecondaryContainer,
+                labelStyle: theme.textTheme.labelLarge?.copyWith(
+                  color: cs.onSurface,
+                ),
+                labelBackgroundColor: cs.surfaceContainerHigh,
+                onTap: () => _eventsTabKey.currentState?.createEvent(),
+              ),
+              SpeedDialChild(
+                child: SvgPicture.asset(
+                  'assets/icons/calendars.svg',
+                  width: 20,
+                  height: 20,
+                  colorFilter: ColorFilter.mode(
+                    cs.onSecondaryContainer,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                label: 'Adicionar evento em lote',
+                backgroundColor: cs.secondaryContainer,
+                foregroundColor: cs.onSecondaryContainer,
+                labelStyle: theme.textTheme.labelLarge?.copyWith(
+                  color: cs.onSurface,
+                ),
+                labelBackgroundColor: cs.surfaceContainerHigh,
+                onTap: () => _eventsTabKey.currentState?.createEventBatch(),
+              ),
+            ],
+            child: SvgPicture.asset(
+              'assets/icons/calendar-plus.svg',
+              width: 24,
+              height: 24,
+              colorFilter: ColorFilter.mode(
+                cs.onPrimaryContainer,
+                BlendMode.srcIn,
+              ),
+            ),
+          );
+        } else if (index == 1) {
+          fab = PrimaryAddFab(
+            key: const ValueKey('members_fab'),
+            heroTag: 'project_members_fab',
+            iconAsset: 'assets/icons/user-round-plus.svg',
+            onPressed: () => _membersTabKey.currentState?.addMember(),
+          );
+        } else if (index == 2) {
+          fab = PrimaryAddFab(
+            key: const ValueKey('skills_fab'),
+            heroTag: 'project_skills_fab',
+            iconAsset: 'assets/icons/sliders-horizontal.svg',
+            onPressed: () => _skillsTabKey.currentState?.addSkill(),
+          );
+        } else {
+          fab = const SizedBox.shrink(key: ValueKey('no_fab'));
+        }
+
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          transitionBuilder: (child, animation) => ScaleTransition(
+            scale: animation,
+            child: FadeTransition(opacity: animation, child: child),
+          ),
+          child: fab,
+        );
+      },
+    );
   }
 
   Widget _buildBody() {
@@ -230,7 +344,15 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
                       value: 'dashboard',
                       padding: EdgeInsets.zero,
                       child: ListTile(
-                        leading: const Icon(Icons.bar_chart_rounded),
+                        leading: SvgPicture.asset(
+                          'assets/icons/layout-dashboard.svg',
+                          width: 20,
+                          height: 20,
+                          colorFilter: ColorFilter.mode(
+                            cs.onSurface,
+                            BlendMode.srcIn,
+                          ),
+                        ),
                         title: const Text('Dashboard'),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -242,7 +364,15 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
                       value: 'edit',
                       padding: EdgeInsets.zero,
                       child: ListTile(
-                        leading: const Icon(Icons.edit_rounded),
+                        leading: SvgPicture.asset(
+                          'assets/icons/square-pen.svg',
+                          width: 20,
+                          height: 20,
+                          colorFilter: ColorFilter.mode(
+                            cs.onSurface,
+                            BlendMode.srcIn,
+                          ),
+                        ),
                         title: const Text('Editar Projeto'),
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -255,9 +385,14 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
                         value: 'delete',
                         padding: EdgeInsets.zero,
                         child: ListTile(
-                          leading: Icon(
-                            Icons.delete_outline_rounded,
-                            color: cs.error,
+                          leading: SvgPicture.asset(
+                            'assets/icons/trash-2.svg',
+                            width: 20,
+                            height: 20,
+                            colorFilter: ColorFilter.mode(
+                              cs.error,
+                              BlendMode.srcIn,
+                            ),
                           ),
                           title: Text(
                             'Excluir Projeto',
@@ -284,14 +419,14 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
               controller: _tabController,
               children: [
                 ProjectEventsTab(
-                  key: ValueKey('events-${project.id}'),
+                  key: _eventsTabKey,
                   projectId: project.id,
                   isAdmin: _isAdmin,
                   fallbackImageUrl: project.profileImage,
                   repository: _repository,
                 ),
                 ProjectMembersTab(
-                  key: ValueKey('members-${project.id}'),
+                  key: _membersTabKey,
                   projectId: project.id,
                   canManageMembers: _isAdmin,
                   repository: _repository,
@@ -299,7 +434,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
                   onLeaveProject: widget.onLeaveProject,
                 ),
                 ProjectSkillsPage(
-                  key: ValueKey('skills-${project.id}'),
+                  key: _skillsTabKey,
                   projectId: project.id,
                   initialRole: projectRoleFromString(_memberRole),
                   initialProjectName: project.name,

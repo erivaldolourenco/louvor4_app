@@ -11,7 +11,6 @@ import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/app_inline_error_message.dart';
 import '../../../../core/ui/widgets/circular_icon_action_button.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
-import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../data/music_projects_repository.dart';
@@ -37,10 +36,10 @@ class ProjectMembersTab extends StatefulWidget {
   });
 
   @override
-  State<ProjectMembersTab> createState() => _ProjectMembersTabState();
+  State<ProjectMembersTab> createState() => ProjectMembersTabState();
 }
 
-class _ProjectMembersTabState extends State<ProjectMembersTab>
+class ProjectMembersTabState extends State<ProjectMembersTab>
     with AutomaticKeepAliveClientMixin {
   late final ProjectMembersCubit _cubit;
 
@@ -59,6 +58,22 @@ class _ProjectMembersTabState extends State<ProjectMembersTab>
   void dispose() {
     _cubit.close();
     super.dispose();
+  }
+
+  Future<void> addMember() async {
+    final success = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider.value(
+        value: _cubit,
+        child: const _AddProjectMemberSheet(),
+      ),
+    );
+
+    if (success == true) {
+      AppFeedback.showSuccess('Membro adicionado com sucesso.');
+    }
   }
 
   @override
@@ -103,59 +118,44 @@ class _ProjectMembersTabView extends StatelessWidget {
 
         return RefreshIndicator(
           onRefresh: () => cubit.load(silent: true),
-          child: Stack(
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
             children: [
-              ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Membros',
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(fontWeight: FontWeight.w700),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Equipe do projeto, permissões e funções musicais',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: subtitleColor),
-                            ),
-                          ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Membros',
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 2),
+                        Text(
+                          'Equipe do projeto, permissões e funções musicais',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: subtitleColor),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 14),
-                  if (state.members.isEmpty)
-                    _MembersEmptyState(
-                      canManageMembers: cubit.canManageMembers,
-                    ),
-                  if (state.members.isNotEmpty)
-                    ...state.members.map(
-                      (member) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _ProjectMemberCard(
-                          member: member,
-                          onLeaveProject: onLeaveProject,
-                        ),
-                      ),
-                    ),
                 ],
               ),
-              if (cubit.canManageMembers)
-                Positioned(
-                  right: 16,
-                  bottom: 16,
-                  child: PrimaryAddFab(
-                    icon: Icons.person_add_rounded,
-                    onPressed: () => _showAddMemberSheet(context),
+              const SizedBox(height: 14),
+              if (state.members.isEmpty)
+                _MembersEmptyState(canManageMembers: cubit.canManageMembers),
+              if (state.members.isNotEmpty)
+                ...state.members.map(
+                  (member) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _ProjectMemberCard(
+                      member: member,
+                      onLeaveProject: onLeaveProject,
+                    ),
                   ),
                 ),
             ],
@@ -163,23 +163,6 @@ class _ProjectMembersTabView extends StatelessWidget {
         );
       },
     );
-  }
-
-  Future<void> _showAddMemberSheet(BuildContext context) async {
-    final cubit = context.read<ProjectMembersCubit>();
-    final success = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => BlocProvider.value(
-        value: cubit,
-        child: const _AddProjectMemberSheet(),
-      ),
-    );
-
-    if (success == true) {
-      AppFeedback.showSuccess('Membro adicionado com sucesso.');
-    }
   }
 }
 
@@ -363,7 +346,7 @@ class _ProjectMemberCard extends StatelessWidget {
                                       );
                                     }
                                   },
-                                  assetPath: 'assets/icons/settings-2.svg',
+                                  assetPath: 'assets/icons/square-pen.svg',
                                   iconColor: cs.onPrimaryContainer,
                                   backgroundColor: cs.primaryContainer,
                                   borderColor: cs.primary.withValues(

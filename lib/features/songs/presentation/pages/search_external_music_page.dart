@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../../../../core/theme/app_radius.dart';
@@ -45,6 +46,11 @@ class _SearchExternalMusicPageState extends State<SearchExternalMusicPage> {
 
   String get _providerLabel =>
       widget.provider == ExternalMusicProvider.spotify ? 'Spotify' : 'Deezer';
+
+  String get _providerLogoAsset =>
+      widget.provider == ExternalMusicProvider.spotify
+      ? 'assets/icons/logo-spotify.svg'
+      : 'assets/icons/logo-deezer.svg';
 
   @override
   void initState() {
@@ -217,7 +223,10 @@ class _SearchExternalMusicPageState extends State<SearchExternalMusicPage> {
     if (!_hasSearched) {
       return AppEmptyState(
         icon: Icons.travel_explore_rounded,
-        title: 'Buscar no $_providerLabel',
+        iconWidget: Padding(
+          padding: const EdgeInsets.only(top: 24),
+          child: SvgPicture.asset(_providerLogoAsset, height: 39),
+        ),
         description:
             'Digite o título ou artista da música para começar a busca.',
       );

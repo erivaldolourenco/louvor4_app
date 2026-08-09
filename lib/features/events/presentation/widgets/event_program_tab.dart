@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../../core/utils/youtube_utils.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
-import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../domain/entities/program_item_entity.dart';
@@ -37,7 +37,6 @@ class EventProgramTab extends StatelessWidget {
         }
 
         final cubit = context.read<EventProgramCubit>();
-        final cs = Theme.of(context).colorScheme;
 
         if (state.items.isEmpty) {
           return RefreshIndicator(
@@ -45,12 +44,7 @@ class EventProgramTab extends StatelessWidget {
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 36),
-              children: [
-                _EmptyProgramState(
-                  isAdmin: isAdmin,
-                  onAdd: () => _showTextItemDialog(context),
-                ),
-              ],
+              children: const [_EmptyProgramState()],
             ),
           );
         }
@@ -59,21 +53,6 @@ class EventProgramTab extends StatelessWidget {
           onRefresh: cubit.loadProgram,
           child: Column(
             children: [
-              if (isAdmin)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Programação', style: Theme.of(context).textTheme.titleMedium),
-                      TextButton.icon(
-                        onPressed: () => _showTextItemDialog(context),
-                        icon: const Icon(Icons.add_rounded, size: 18),
-                        label: const Text('Adicionar'),
-                      ),
-                    ],
-                  ),
-                ),
               Expanded(
                 child: ReorderableListView(
                   physics: const AlwaysScrollableScrollPhysics(),
@@ -98,22 +77,6 @@ class EventProgramTab extends StatelessWidget {
                           isAdmin: isAdmin,
                           itemIndex: i,
                           totalCount: state.items.length,
-                          onMoveUp: i > 0
-                              ? () {
-                                  final ids = state.items.map((e) => e.id).toList();
-                                  final item = ids.removeAt(i);
-                                  ids.insert(i - 1, item);
-                                  cubit.reorder(ids);
-                                }
-                              : null,
-                          onMoveDown: i < state.items.length - 1
-                              ? () {
-                                  final ids = state.items.map((e) => e.id).toList();
-                                  final item = ids.removeAt(i);
-                                  ids.insert(i + 1, item);
-                                  cubit.reorder(ids);
-                                }
-                              : null,
                           onEdit: isAdmin && state.items[i] is TextProgramItemEntity
                               ? () => _showTextItemDialog(
                                   context,
@@ -232,8 +195,6 @@ class _ProgramItemTile extends StatelessWidget {
   final bool isAdmin;
   final int itemIndex;
   final int totalCount;
-  final VoidCallback? onMoveUp;
-  final VoidCallback? onMoveDown;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
@@ -243,8 +204,6 @@ class _ProgramItemTile extends StatelessWidget {
     required this.isAdmin,
     required this.itemIndex,
     required this.totalCount,
-    this.onMoveUp,
-    this.onMoveDown,
     this.onEdit,
     this.onDelete,
   });
@@ -294,6 +253,17 @@ class _ProgramItemTile extends StatelessWidget {
       subtitleText = text!.description;
     }
 
+    String? musicMetaText;
+    if (isMusic) {
+      final metaParts = <String>[
+        if (music!.songKey != null && music.songKey!.isNotEmpty)
+          'Tom: ${music.songKey}',
+        if (music.addedBy != null && music.addedBy!.isNotEmpty)
+          'Adicionado por ${music.addedBy}',
+      ];
+      if (metaParts.isNotEmpty) musicMetaText = metaParts.join(' • ');
+    }
+
     final thumbnailUrl = music?.songYouTubeUrl?.isNotEmpty == true
         ? YoutubeUtils.getThumbnail(music!.songYouTubeUrl, quality: 'default')
         : null;
@@ -328,16 +298,6 @@ class _ProgramItemTile extends StatelessWidget {
       trailing = Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.keyboard_arrow_up_rounded, size: 20),
-            onPressed: onMoveUp,
-          ),
-          IconButton(
-            visualDensity: VisualDensity.compact,
-            icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-            onPressed: onMoveDown,
-          ),
           if (isEditable) ...[
             IconButton.filledTonal(
               visualDensity: VisualDensity.compact,
@@ -404,6 +364,17 @@ class _ProgramItemTile extends StatelessWidget {
                     ),
                   ),
                 ],
+                if (musicMetaText != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    musicMetaText,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -445,10 +416,7 @@ class _ProgramItemTile extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _EmptyProgramState extends StatelessWidget {
-  final bool isAdmin;
-  final VoidCallback onAdd;
-
-  const _EmptyProgramState({required this.isAdmin, required this.onAdd});
+  const _EmptyProgramState();
 
   @override
   Widget build(BuildContext context) {
@@ -456,15 +424,19 @@ class _EmptyProgramState extends StatelessWidget {
     final cs = theme.colorScheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 18),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: cs.outlineVariant),
-      ),
+      padding: const EdgeInsets.all(18),
+      decoration: appCardDecoration(context, radius: AppRadius.cardHero),
       child: Column(
         children: [
-          Icon(Icons.list_alt_rounded, size: 30, color: cs.onSurfaceVariant),
+          SvgPicture.asset(
+            'assets/icons/clipboard-clock.svg',
+            width: 30,
+            height: 30,
+            colorFilter: ColorFilter.mode(
+              cs.onSurfaceVariant,
+              BlendMode.srcIn,
+            ),
+          ),
           const SizedBox(height: 10),
           Text(
             'Sem programação',
@@ -480,15 +452,6 @@ class _EmptyProgramState extends StatelessWidget {
               color: cs.onSurfaceVariant,
             ),
           ),
-          if (isAdmin) ...[
-            const SizedBox(height: 16),
-            AppPrimaryButton(
-              onPressed: onAdd,
-              icon: Icons.add_rounded,
-              height: 44,
-              child: const Text('Adicionar item de texto'),
-            ),
-          ],
         ],
       ),
     );

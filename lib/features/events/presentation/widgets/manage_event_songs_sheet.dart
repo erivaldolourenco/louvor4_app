@@ -57,6 +57,8 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
   }
 
   void _handleTabChange() {
+    if (_tabController.indexIsChanging) return;
+    setState(() {}); // refresh search hint for the active tab
     if (_tabController.index == 1 && !_medleysLoaded && mounted) {
       _medleysLoaded = true;
       context.read<ManageEventSongsCubit>().loadMedleys();
@@ -80,14 +82,14 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
 
     return Padding(
       padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
         top: 24,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: Material(
         color: cs.surface,
-        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppRadius.cardLarge),
+        ),
         child: SafeArea(
           top: false,
           child: ConstrainedBox(
@@ -132,6 +134,19 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: subtitleColor),
                       ),
                       const SizedBox(height: 16),
+                      // Search — same style as the Músicas screen, shared by both tabs
+                      _RepertoireSearchField(
+                        controller: _searchController,
+                        isMedleysTab: _tabController.index == 1,
+                        searchQuery: _searchQuery,
+                        onSearchChanged: (v) =>
+                            setState(() => _searchQuery = v),
+                        onClearSearch: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      ),
+                      const SizedBox(height: 12),
                       // Tab bar
                       _SheetTabBar(controller: _tabController),
                       const SizedBox(height: 14),
@@ -146,17 +161,8 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                         child: TabBarView(
                           controller: _tabController,
                           children: [
-                            _SongsTab(
-                              searchController: _searchController,
-                              searchQuery: _searchQuery,
-                              onSearchChanged: (v) =>
-                                  setState(() => _searchQuery = v),
-                              onClearSearch: () {
-                                _searchController.clear();
-                                setState(() => _searchQuery = '');
-                              },
-                            ),
-                            const _MedleysTab(),
+                            _SongsTab(searchQuery: _searchQuery),
+                            _MedleysTab(searchQuery: _searchQuery),
                           ],
                         ),
                       ),
@@ -207,6 +213,64 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
               },
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Search field (same style as the Músicas screen), shared across tabs
+// ---------------------------------------------------------------------------
+
+class _RepertoireSearchField extends StatelessWidget {
+  final TextEditingController controller;
+  final bool isMedleysTab;
+  final String searchQuery;
+  final ValueChanged<String> onSearchChanged;
+  final VoidCallback onClearSearch;
+
+  const _RepertoireSearchField({
+    required this.controller,
+    required this.isMedleysTab,
+    required this.searchQuery,
+    required this.onSearchChanged,
+    required this.onClearSearch,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return TextField(
+      controller: controller,
+      onChanged: onSearchChanged,
+      decoration: InputDecoration(
+        hintText: isMedleysTab
+            ? 'Buscar medley...'
+            : 'Buscar por título ou artista...',
+        prefixIcon: const Icon(Icons.search_rounded),
+        suffixIcon: searchQuery.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear_rounded),
+                onPressed: onClearSearch,
+              )
+            : null,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.input),
+          borderSide: BorderSide(
+            color: cs.outlineVariant.withValues(alpha: 0.25),
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.input),
+          borderSide: BorderSide(
+            color: cs.outlineVariant.withValues(alpha: 0.25),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.input),
+          borderSide: BorderSide(color: cs.primary, width: 1.5),
         ),
       ),
     );
@@ -295,17 +359,9 @@ class _TabLabel extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _SongsTab extends StatelessWidget {
-  final TextEditingController searchController;
   final String searchQuery;
-  final ValueChanged<String> onSearchChanged;
-  final VoidCallback onClearSearch;
 
-  const _SongsTab({
-    required this.searchController,
-    required this.searchQuery,
-    required this.onSearchChanged,
-    required this.onClearSearch,
-  });
+  const _SongsTab({required this.searchQuery});
 
   @override
   Widget build(BuildContext context) {
@@ -322,84 +378,31 @@ class _SongsTab extends StatelessWidget {
               song.artist.toLowerCase().contains(query);
         }).toList();
 
-        return Column(
-          children: [
-            Builder(
-              builder: (context) {
-                final cs = Theme.of(context).colorScheme;
-                return TextField(
-                  controller: searchController,
-                  onChanged: onSearchChanged,
-                  decoration: InputDecoration(
-                    hintText: 'Buscar por título ou artista...',
-                    hintStyle: TextStyle(color: cs.onSurfaceVariant),
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    suffixIcon: searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear_rounded),
-                            onPressed: onClearSearch,
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: cs.surfaceContainerLow,
-                    contentPadding: const EdgeInsets.symmetric(
-                      vertical: 12,
-                      horizontal: 16,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.input),
-                      borderSide: BorderSide(color: cs.outlineVariant),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.input),
-                      borderSide: BorderSide(color: cs.outlineVariant),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.input),
-                      borderSide: BorderSide(color: cs.primary, width: 1.5),
-                    ),
-                    errorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.input),
-                      borderSide: BorderSide(color: cs.error),
-                    ),
-                    focusedErrorBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.input),
-                      borderSide: BorderSide(color: cs.error, width: 1.5),
-                    ),
-                  ),
-                );
-              },
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: state.isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : state.songs.isEmpty
-                  ? const _EmptySongsState()
-                  : filteredSongs.isEmpty
-                  ? Center(
-                      child: Text(
-                        'Nenhuma música encontrada.',
-                        style: TextStyle(color: subtitleColor),
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: filteredSongs.length,
-                      itemBuilder: (context, index) {
-                        final song = filteredSongs[index];
-                        return _SelectableSongCard(
-                          song: song,
-                          isSelected: state.selectedSongIds.contains(song.id),
-                          enabled: !state.isSubmitting,
-                          onTap: song.id == null
-                              ? null
-                              : () => cubit.toggleSong(song.id!),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        );
+        return state.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : state.songs.isEmpty
+            ? const _EmptySongsState()
+            : filteredSongs.isEmpty
+            ? Center(
+                child: Text(
+                  'Nenhuma música encontrada.',
+                  style: TextStyle(color: subtitleColor),
+                ),
+              )
+            : ListView.builder(
+                itemCount: filteredSongs.length,
+                itemBuilder: (context, index) {
+                  final song = filteredSongs[index];
+                  return _SelectableSongCard(
+                    song: song,
+                    isSelected: state.selectedSongIds.contains(song.id),
+                    enabled: !state.isSubmitting,
+                    onTap: song.id == null
+                        ? null
+                        : () => cubit.toggleSong(song.id!),
+                  );
+                },
+              );
       },
     );
   }
@@ -410,10 +413,15 @@ class _SongsTab extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _MedleysTab extends StatelessWidget {
-  const _MedleysTab();
+  final String searchQuery;
+
+  const _MedleysTab({required this.searchQuery});
 
   @override
   Widget build(BuildContext context) {
+    final subtitleColor =
+        Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.78);
+
     return BlocBuilder<ManageEventSongsCubit, ManageEventSongsState>(
       builder: (context, state) {
         final cubit = context.read<ManageEventSongsCubit>();
@@ -426,10 +434,24 @@ class _MedleysTab extends StatelessWidget {
           return const _EmptyMedleysState();
         }
 
+        final query = searchQuery.toLowerCase();
+        final filteredMedleys = state.medleys
+            .where((medley) => medley.name.toLowerCase().contains(query))
+            .toList();
+
+        if (filteredMedleys.isEmpty) {
+          return Center(
+            child: Text(
+              'Nenhum medley encontrado.',
+              style: TextStyle(color: subtitleColor),
+            ),
+          );
+        }
+
         return ListView.builder(
-          itemCount: state.medleys.length,
+          itemCount: filteredMedleys.length,
           itemBuilder: (context, index) {
-            final medley = state.medleys[index];
+            final medley = filteredMedleys[index];
             final id = medley.id;
             return _SelectableMedleyCard(
               medley: medley,

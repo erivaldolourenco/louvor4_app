@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
@@ -383,7 +384,6 @@ class _SongsContentState extends State<_SongsContent>
       final theme = Theme.of(context);
       return SpeedDial(
         heroTag: 'songs_fab',
-        icon: Icons.music_note_rounded,
         activeIcon: Icons.close_rounded,
         backgroundColor: cs.primaryContainer,
         foregroundColor: cs.onPrimaryContainer,
@@ -391,7 +391,15 @@ class _SongsContentState extends State<_SongsContent>
         elevation: 2,
         children: [
           SpeedDialChild(
-            child: const Icon(Icons.edit_note_rounded),
+            child: SvgPicture.asset(
+              'assets/icons/file-pen-line.svg',
+              width: 22,
+              height: 22,
+              colorFilter: ColorFilter.mode(
+                cs.onSecondaryContainer,
+                BlendMode.srcIn,
+              ),
+            ),
             label: 'Adicionar Manualmente',
             backgroundColor: cs.secondaryContainer,
             foregroundColor: cs.onSecondaryContainer,
@@ -402,7 +410,15 @@ class _SongsContentState extends State<_SongsContent>
             onTap: _goToCreate,
           ),
           SpeedDialChild(
-            child: const Icon(Icons.podcasts_rounded),
+            child: SvgPicture.asset(
+              'assets/icons/icon-spotify.svg',
+              width: 22,
+              height: 22,
+              colorFilter: ColorFilter.mode(
+                cs.onSecondaryContainer,
+                BlendMode.srcIn,
+              ),
+            ),
             label: 'Buscar no Spotify',
             backgroundColor: cs.secondaryContainer,
             foregroundColor: cs.onSecondaryContainer,
@@ -413,7 +429,15 @@ class _SongsContentState extends State<_SongsContent>
             onTap: () => _goToSearchExternal(ExternalMusicProvider.spotify),
           ),
           SpeedDialChild(
-            child: const Icon(Icons.album_rounded),
+            child: SvgPicture.asset(
+              'assets/icons/icon-deezer.svg',
+              width: 22,
+              height: 22,
+              colorFilter: ColorFilter.mode(
+                cs.onSecondaryContainer,
+                BlendMode.srcIn,
+              ),
+            ),
             label: 'Buscar no Deezer',
             backgroundColor: cs.secondaryContainer,
             foregroundColor: cs.onSecondaryContainer,
@@ -424,6 +448,15 @@ class _SongsContentState extends State<_SongsContent>
             onTap: () => _goToSearchExternal(ExternalMusicProvider.deezer),
           ),
         ],
+        child: SvgPicture.asset(
+          'assets/icons/music.svg',
+          width: 24,
+          height: 24,
+          colorFilter: ColorFilter.mode(
+            cs.onPrimaryContainer,
+            BlendMode.srcIn,
+          ),
+        ),
       );
     }
     return PrimaryAddFab(
@@ -516,8 +549,9 @@ class _SongsContentState extends State<_SongsContent>
                   title: song.title,
                   artist: song.artist,
                   musicKey: song.key,
-                  bpm: song.bpm,
                   youTubeUrl: song.youTubeUrl,
+                  spotifyUrl: song.spotifyUrl,
+                  deezerUrl: song.deezerUrl,
                   coverUrl: song.coverUrl,
                   hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
                   onTap: () => openSongDetailPage(
@@ -542,7 +576,7 @@ class _SongsContentState extends State<_SongsContent>
                         : () => _goToChords(song),
                     onEdit: song.id == null ? null : () => _goToEdit(song.id!),
                   ),
-                  onRemove: (song.id == null || _deletingSongId != null)
+                  onDelete: (song.id == null || _deletingSongId != null)
                       ? null
                       : () => _confirmDeleteSong(song),
                   isRemoving: song.id != null && _deletingSongId == song.id,
@@ -622,7 +656,7 @@ class _SongsContentState extends State<_SongsContent>
                     return MedleyCard(
                       medley: medley,
                       onEdit: () => _openEditMedley(medley),
-                      onRemove: (medley.id == null || _deletingMedleyId != null)
+                      onDelete: (medley.id == null || _deletingMedleyId != null)
                           ? null
                           : () => _confirmDeleteMedley(medley),
                       isRemoving:

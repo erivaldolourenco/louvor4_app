@@ -28,6 +28,7 @@ class _FakeEventsRepository implements EventsRepository {
     this.throwOnProjectRole = false,
     this.throwOnProjectMembers = false,
     this.throwOnProjectSkills = false,
+    this.throwOnDeleteEvent = false,
   });
 
   final EventDetailEntity event;
@@ -41,11 +42,13 @@ class _FakeEventsRepository implements EventsRepository {
   final bool throwOnProjectRole;
   final bool throwOnProjectMembers;
   final bool throwOnProjectSkills;
+  final bool throwOnDeleteEvent;
   int participantsCalls = 0;
   int skillsCalls = 0;
   String? removedSongId;
   String? acceptedParticipantId;
   String? declinedParticipantId;
+  String? deletedEventId;
 
   @override
   Future<EventDetailEntity> getEventDetail(String eventId) async => event;
@@ -122,6 +125,14 @@ class _FakeEventsRepository implements EventsRepository {
   @override
   Future<void> updateEvent(String eventId, UpdateEventInputEntity input) async {
     throw UnimplementedError();
+  }
+
+  @override
+  Future<void> deleteEvent(String eventId) async {
+    if (throwOnDeleteEvent) {
+      throw Exception('erro ao excluir evento');
+    }
+    deletedEventId = eventId;
   }
 
   @override
@@ -261,6 +272,66 @@ void main() {
       expect(repo.removedSongId, 'es1');
       expect(cubit.state.songs, hasLength(1));
       expect(cubit.state.songs.single.id, 'es2');
+
+      await cubit.close();
+    });
+
+    test('deleteEvent exclui o evento com sucesso', () async {
+      final repo = _FakeEventsRepository(
+        event: EventDetailEntity(
+          id: 'e1',
+          projectId: 'p1',
+          title: 'Culto',
+          date: DateTime(2026, 3, 11),
+          time: '19:00',
+          projectTitle: 'Louvor',
+          participantsCount: 0,
+          repertoireCount: 0,
+        ),
+        initialParticipants: const [],
+        refreshedParticipants: const [],
+        initialSkills: const [],
+        refreshedSkills: const [],
+      );
+
+      final cubit = EventDetailCubit(repo, _FakeUserRepository());
+
+      await cubit.load('e1');
+      final deleted = await cubit.deleteEvent();
+
+      expect(deleted, isTrue);
+      expect(repo.deletedEventId, 'e1');
+      expect(cubit.state.actionErrorMessage, isNull);
+
+      await cubit.close();
+    });
+
+    test('deleteEvent propaga erro quando a API falha', () async {
+      final repo = _FakeEventsRepository(
+        event: EventDetailEntity(
+          id: 'e1',
+          projectId: 'p1',
+          title: 'Culto',
+          date: DateTime(2026, 3, 11),
+          time: '19:00',
+          projectTitle: 'Louvor',
+          participantsCount: 0,
+          repertoireCount: 0,
+        ),
+        initialParticipants: const [],
+        refreshedParticipants: const [],
+        initialSkills: const [],
+        refreshedSkills: const [],
+        throwOnDeleteEvent: true,
+      );
+
+      final cubit = EventDetailCubit(repo, _FakeUserRepository());
+
+      await cubit.load('e1');
+      final deleted = await cubit.deleteEvent();
+
+      expect(deleted, isFalse);
+      expect(cubit.state.actionErrorMessage, contains('erro ao excluir evento'));
 
       await cubit.close();
     });

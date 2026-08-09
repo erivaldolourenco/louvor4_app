@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/features/events/presentation/pages/event_detail_page.dart';
 
@@ -30,10 +29,10 @@ class ProjectEventsTab extends StatefulWidget {
   });
 
   @override
-  State<ProjectEventsTab> createState() => _ProjectEventsTabState();
+  State<ProjectEventsTab> createState() => ProjectEventsTabState();
 }
 
-class _ProjectEventsTabState extends State<ProjectEventsTab>
+class ProjectEventsTabState extends State<ProjectEventsTab>
     with AutomaticKeepAliveClientMixin {
   bool _isLoading = true;
   bool _hasError = false;
@@ -81,7 +80,7 @@ class _ProjectEventsTabState extends State<ProjectEventsTab>
     }
   }
 
-  Future<void> _onCreateEvent() async {
+  Future<void> createEvent() async {
     if (!widget.isAdmin) {
       AppFeedback.showError('Apenas administradores podem criar eventos.');
       return;
@@ -97,7 +96,7 @@ class _ProjectEventsTabState extends State<ProjectEventsTab>
     }
   }
 
-  Future<void> _onCreateEventBatch() async {
+  Future<void> createEventBatch() async {
     if (!widget.isAdmin) {
       AppFeedback.showError('Apenas administradores podem criar eventos.');
       return;
@@ -117,7 +116,6 @@ class _ProjectEventsTabState extends State<ProjectEventsTab>
   Widget build(BuildContext context) {
     super.build(context);
     final theme = Theme.of(context);
-  final cs = theme.colorScheme;
     final subtitleColor = theme.textTheme.bodySmall?.color?.withValues(
       alpha: 0.78,
     );
@@ -135,87 +133,42 @@ class _ProjectEventsTabState extends State<ProjectEventsTab>
 
     return RefreshIndicator(
       onRefresh: _loadEvents,
-      child: Stack(
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
         children: [
-          ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Eventos',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Próximos eventos do projeto',
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodySmall?.copyWith(color: subtitleColor),
-                        ),
-                      ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Eventos',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              if (_events.isEmpty) _buildEmptyState(context),
-              if (_events.isNotEmpty)
-                ..._events.map(
-                  (event) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _ProjectEventCard(event: event),
-                  ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Próximos eventos do projeto',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: subtitleColor),
+                    ),
+                  ],
                 ),
+              ),
             ],
           ),
-          if (widget.isAdmin)
-            Positioned(
-              right: 16,
-              bottom: 16,
-              child: SpeedDial(
-                heroTag: 'project_events_fab',
-                icon: Icons.calendar_month_rounded,
-                activeIcon: Icons.close_rounded,
-                backgroundColor: cs.primaryContainer,
-                foregroundColor: cs.onPrimaryContainer,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 4,
-                spacing: 10,
-                spaceBetweenChildren: 10,
-                children: [
-                  SpeedDialChild(
-                    child: const Icon(Icons.event_rounded),
-                    label: 'Adicionar evento',
-                    backgroundColor: cs.secondaryContainer,
-                    foregroundColor: cs.onSecondaryContainer,
-                    labelStyle: theme.textTheme.labelLarge?.copyWith(
-                      color: cs.onSurface,
-                    ),
-                    labelBackgroundColor: cs.surfaceContainerHigh,
-                    onTap: _onCreateEvent,
-                  ),
-                  SpeedDialChild(
-                    child: const Icon(Icons.event_repeat_rounded),
-                    label: 'Adicionar evento em lote',
-                    backgroundColor: cs.secondaryContainer,
-                    foregroundColor: cs.onSecondaryContainer,
-                    labelStyle: theme.textTheme.labelLarge?.copyWith(
-                      color: cs.onSurface,
-                    ),
-                    labelBackgroundColor: cs.surfaceContainerHigh,
-                    onTap: _onCreateEventBatch,
-                  ),
-                ],
+          const SizedBox(height: 14),
+          if (_events.isEmpty) _buildEmptyState(context),
+          if (_events.isNotEmpty)
+            ..._events.map(
+              (event) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: _ProjectEventCard(event: event),
               ),
             ),
         ],
@@ -234,7 +187,7 @@ class _ProjectEventsTabState extends State<ProjectEventsTab>
             'Este projeto ainda está vazio. Comece criando o primeiro evento para organizar sua escala.',
         action: widget.isAdmin
             ? FilledButton.icon(
-                onPressed: _onCreateEvent,
+                onPressed: createEvent,
                 icon: const Icon(Icons.add_rounded),
                 label: const Text('Criar Primeiro Evento'),
               )
