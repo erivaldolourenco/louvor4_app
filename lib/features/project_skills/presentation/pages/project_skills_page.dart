@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/theme/app_extra_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
@@ -185,6 +186,7 @@ class _ProjectSkillCard extends StatelessWidget {
     final state = context.watch<ProjectSkillsCubit>().state;
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final extraColors = theme.extension<AppExtraColors>()!;
     final titleColor = theme.textTheme.titleMedium?.color;
     final isDeleting = state.isDeletingSkill(skill.id);
 
@@ -209,7 +211,7 @@ class _ProjectSkillCard extends StatelessWidget {
                   width: 46,
                   height: 46,
                   decoration: BoxDecoration(
-                    color: cs.primaryContainer,
+                    color: extraColors.iconBadgeSurface,
                     borderRadius: BorderRadius.circular(AppRadius.card),
                   ),
                   child: Center(
@@ -217,10 +219,6 @@ class _ProjectSkillCard extends StatelessWidget {
                       skillIconAsset(skill.iconKey),
                       width: 26,
                       height: 26,
-                      colorFilter: ColorFilter.mode(
-                        cs.primary,
-                        BlendMode.srcIn,
-                      ),
                     ),
                   ),
                 ),

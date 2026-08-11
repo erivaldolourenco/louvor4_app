@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
 import 'package:louvor4_app/core/ui/widgets/spring_tap.dart';
+import 'package:louvor4_app/core/utils/skill_icon.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_entity.dart';
+import '../../../../../core/theme/app_extra_colors.dart';
 import '../../../../../core/theme/app_radius.dart';
 
 class EventParticipantCard extends StatelessWidget {
   final String name;
   final String skill;
+  final String? skillIconKey;
   final EventParticipantStatus status;
   final String? profileImage;
   final VoidCallback? onTap;
@@ -16,6 +20,7 @@ class EventParticipantCard extends StatelessWidget {
     super.key,
     required this.name,
     required this.skill,
+    this.skillIconKey,
     required this.status,
     this.profileImage,
     this.onTap,
@@ -25,7 +30,12 @@ class EventParticipantCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final extraColors = theme.extension<AppExtraColors>()!;
     final badge = _statusBadge(cs);
+    final cardBorderColor = cs.outlineVariant.withValues(
+      alpha: isDark ? 0.35 : 0.55,
+    );
 
     final cardBody = SpringTap(
       onTap: onTap,
@@ -44,6 +54,23 @@ class EventParticipantCard extends StatelessWidget {
                   ? Icon(Icons.person, color: cs.primary)
                   : null,
             ),
+            if (skillIconKey != null) ...[
+              const SizedBox(width: 8),
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: cardBorderColor),
+                ),
+                child: CircleAvatar(
+                  backgroundColor: extraColors.iconBadgeSurface,
+                  child: SvgPicture.asset(
+                    skillIconAsset(skillIconKey),
+                    width: 22,
+                    height: 22,
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(width: 14),
             Expanded(
               child: Column(

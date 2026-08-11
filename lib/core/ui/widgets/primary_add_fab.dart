@@ -25,8 +25,8 @@ class PrimaryAddFab extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
-      backgroundColor: colorScheme.primaryContainer,
-      foregroundColor: colorScheme.onPrimaryContainer,
+      backgroundColor: colorScheme.primary,
+      foregroundColor: colorScheme.onPrimary,
       elevation: 2,
       child: iconAsset != null
           ? SvgPicture.asset(
@@ -34,7 +34,7 @@ class PrimaryAddFab extends StatelessWidget {
               width: 24,
               height: 24,
               colorFilter: ColorFilter.mode(
-                colorScheme.onPrimaryContainer,
+                colorScheme.onPrimary,
                 BlendMode.srcIn,
               ),
             )

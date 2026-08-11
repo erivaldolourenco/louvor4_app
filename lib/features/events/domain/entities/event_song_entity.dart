@@ -10,6 +10,7 @@ class EventSong {
   final String? key;
   final int? bpm;
   final String? youTubeUrl;
+  final String? coverUrl;
   final String? notes;
   final String? referenceAudioUrl;
   final String addedBy;
@@ -29,6 +30,7 @@ class EventSong {
     this.key,
     this.bpm,
     this.youTubeUrl,
+    this.coverUrl,
     this.notes,
     this.referenceAudioUrl,
     required this.addedBy,
@@ -75,6 +77,7 @@ class EventSong {
       key: song['key']?.toString(),
       bpm: _toInt(song['bpm']),
       youTubeUrl: song['youTubeUrl']?.toString(),
+      coverUrl: song['coverUrl']?.toString(),
       notes: json['notes']?.toString(),
       referenceAudioUrl: song['referenceAudioUrl']?.toString(),
       addedBy: json['addedBy']?.toString() ?? '',

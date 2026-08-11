@@ -188,8 +188,8 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
             key: const ValueKey('events_fab'),
             heroTag: 'project_events_fab',
             activeIcon: Icons.close_rounded,
-            backgroundColor: cs.primaryContainer,
-            foregroundColor: cs.onPrimaryContainer,
+            backgroundColor: cs.primary,
+            foregroundColor: cs.onPrimary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -241,7 +241,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
               width: 24,
               height: 24,
               colorFilter: ColorFilter.mode(
-                cs.onPrimaryContainer,
+                cs.onPrimary,
                 BlendMode.srcIn,
               ),
             ),
@@ -575,6 +575,8 @@ class _ProjectTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = isDark ? cs.onPrimaryContainer : cs.primary;
     const tabs = [
       (assetPath: 'assets/icons/calendar-fold.svg', label: 'Eventos'),
       (assetPath: 'assets/icons/users-round.svg', label: 'Membros'),
@@ -600,7 +602,7 @@ class _ProjectTabs extends StatelessWidget {
           ),
           dividerColor: Colors.transparent,
           overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-          labelColor: cs.primary,
+          labelColor: activeColor,
           unselectedLabelColor: cs.onSurfaceVariant,
           labelStyle: const TextStyle(fontWeight: FontWeight.w700),
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
@@ -615,7 +617,7 @@ class _ProjectTabs extends StatelessWidget {
                       width: 18,
                       height: 18,
                       colorFilter: ColorFilter.mode(
-                        i == activeIndex ? cs.primary : cs.onSurfaceVariant,
+                        i == activeIndex ? activeColor : cs.onSurfaceVariant,
                         BlendMode.srcIn,
                       ),
                     ),

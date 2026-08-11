@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
+import 'app_extra_colors.dart';
 import 'app_radius.dart';
 
 abstract final class AppTheme {
@@ -7,14 +8,29 @@ abstract final class AppTheme {
     final cs = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.light,
-      primary: AppColors.primary,
-      onPrimary: Colors.white,
+      // Brand Principal
+      primary: const Color(0xFF4F64E8),
+      onPrimary: const Color(0xFFFFFFFF),
+      primaryContainer: const Color(0xFFEFF6FF),
+      onPrimaryContainer: const Color(0xFF4F64E8),
+      // Secundária — tom derivado da rampa azul, desaturado para não
+      // competir com o primary vibrante.
+      secondary: const Color(0xFF6974B9),
+      onSecondary: const Color(0xFFFFFFFF),
+      secondaryContainer: const Color(0xFFD8E3F8),
+      onSecondaryContainer: const Color(0xFF1E3A8A),
       tertiary: AppColors.tertiary,
       onTertiary: AppColors.onTertiary,
       tertiaryContainer: AppColors.tertiaryContainerLight,
       onTertiaryContainer: AppColors.onTertiaryContainerLight,
-      error: AppColors.danger,
-      onError: Colors.white,
+      // Superfícies
+      surface: const Color(0xFFF9F9FE),
+      onSurface: const Color(0xFF1A1B21),
+      onSurfaceVariant: const Color(0xFF45464F),
+      outline: const Color(0xFFC6C5D0),
+      // Erro
+      error: const Color(0xFFBA1A1A),
+      onError: const Color(0xFFFFFFFF),
       surfaceContainerLowest: AppColors.surfaceContainerLowestLight,
       surfaceContainerLow: AppColors.surfaceContainerLowLight,
       surfaceContainer: AppColors.surfaceContainerLight,
@@ -122,14 +138,14 @@ abstract final class AppTheme {
         indicatorColor: cs.primaryContainer,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return IconThemeData(color: cs.primary);
+            return IconThemeData(color: cs.onPrimaryContainer);
           }
           return IconThemeData(color: cs.onSurfaceVariant);
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return TextStyle(
-              color: cs.primary,
+              color: cs.onPrimaryContainer,
               fontWeight: FontWeight.w700,
               fontSize: 12,
               fontFamily: 'FamiljenGrotesk',
@@ -172,6 +188,8 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.cardLarge),
         ),
       ),
+
+      extensions: [AppExtraColors(iconBadgeSurface: cs.primaryContainer)],
     );
   }
 
@@ -179,14 +197,28 @@ abstract final class AppTheme {
     final cs = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
-      primary: AppColors.primary,
-      onPrimary: Colors.white,
+      // Brand Principal
+      primary: AppColors.brandPrimary,
+      onPrimary: const Color(0xFFFFFFFF),
+      primaryContainer: const Color(0xFF1B2472),
+      onPrimaryContainer: const Color(0xFFDEE0FF),
+      // Secundárias (Azul-acinzentado frio)
+      secondary: const Color(0xFFC3C6DD),
+      onSecondary: const Color(0xFF2B2E43),
+      secondaryContainer: const Color(0xFF424659),
+      onSecondaryContainer: const Color(0xFFE2E4F6),
       tertiary: AppColors.tertiary,
       onTertiary: AppColors.onTertiary,
       tertiaryContainer: AppColors.tertiaryContainerDark,
       onTertiaryContainer: AppColors.onTertiaryContainerDark,
-      error: AppColors.danger,
-      onError: Colors.white,
+      // Superfícies
+      surface: AppColors.surfaceDark,
+      onSurface: const Color(0xFFE3E3E8),
+      onSurfaceVariant: const Color(0xFFC6C5D0),
+      outline: const Color(0xFF8F909A),
+      // Erro
+      error: const Color(0xFFFFB4AB),
+      onError: const Color(0xFF690005),
       surfaceContainerLowest: AppColors.surfaceContainerLowestDark,
       surfaceContainerLow: AppColors.surfaceContainerLowDark,
       surfaceContainer: AppColors.surfaceContainerDark,
@@ -294,14 +326,14 @@ abstract final class AppTheme {
         indicatorColor: cs.primaryContainer,
         iconTheme: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
-            return IconThemeData(color: cs.primary);
+            return IconThemeData(color: cs.onPrimaryContainer);
           }
           return IconThemeData(color: cs.onSurfaceVariant);
         }),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return TextStyle(
-              color: cs.primary,
+              color: cs.onPrimaryContainer,
               fontWeight: FontWeight.w700,
               fontSize: 12,
               fontFamily: 'FamiljenGrotesk',
@@ -344,6 +376,10 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.cardLarge),
         ),
       ),
+
+      extensions: [
+        AppExtraColors(iconBadgeSurface: cs.surfaceContainerHighest),
+      ],
     );
   }
 }

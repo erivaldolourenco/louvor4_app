@@ -220,10 +220,6 @@ class _IconPickerGrid extends StatelessWidget {
                   skillIconAsset(key),
                   width: 32,
                   height: 32,
-                  colorFilter: ColorFilter.mode(
-                    isSelected ? cs.primary : cs.onSurfaceVariant,
-                    BlendMode.srcIn,
-                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(

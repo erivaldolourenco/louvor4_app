@@ -230,35 +230,58 @@ class _ProjectEventCard extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              // Bloco de data, no lugar da capa do projeto
+              // Bloco de data, estilo folhinha de calendário
               Container(
                 width: 70,
                 height: 70,
-                alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: isDark ? cs.surfaceContainer : cs.primaryContainer,
-                  borderRadius: BorderRadius.circular(AppRadius.input),
+                  borderRadius: BorderRadius.circular(AppRadius.thumbnail),
+                  border: Border.all(
+                    color: cs.outlineVariant.withValues(
+                      alpha: isDark ? 0.4 : 0.6,
+                    ),
+                  ),
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      month,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: cs.primary,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadius.thumbnail),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          width: double.infinity,
+                          color: cs.primary,
+                          alignment: Alignment.center,
+                          child: Text(
+                            month,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: cs.onPrimary,
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                    Text(
-                      day,
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 28,
-                        height: 1,
-                        color: isDark ? cs.onSurface : cs.onPrimaryContainer,
+                      Expanded(
+                        flex: 2,
+                        child: Container(
+                          width: double.infinity,
+                          color: cs.surfaceContainerLow,
+                          alignment: Alignment.center,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 6),
+                            child: Text(
+                              day,
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 28,
+                                height: 1,
+                                color: isDark ? cs.onPrimary : cs.primary,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 12),

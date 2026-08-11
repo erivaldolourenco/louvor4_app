@@ -296,7 +296,11 @@ class _KeyChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final keyLabel = musicKey?.isNotEmpty == true ? musicKey! : '-';
-    return _InfoChip(label: 'Tom', value: keyLabel, useTertiaryTheme: true);
+    return _InfoChip(
+      iconAsset: 'assets/icons/music-2.svg',
+      value: keyLabel,
+      useTertiaryTheme: true,
+    );
   }
 }
 
@@ -353,12 +357,12 @@ class _SongTag extends StatelessWidget {
 }
 
 class _InfoChip extends StatelessWidget {
-  final String label;
+  final String iconAsset;
   final String value;
   final bool useTertiaryTheme;
 
   const _InfoChip({
-    required this.label,
+    required this.iconAsset,
     required this.value,
     this.useTertiaryTheme = false,
   });
@@ -370,7 +374,7 @@ class _InfoChip extends StatelessWidget {
         ? cs.tertiaryContainer.withValues(alpha: 0.85)
         : cs.surfaceContainerHigh;
     final textColor = useTertiaryTheme ? cs.onTertiaryContainer : cs.onSurface;
-    final labelColor = useTertiaryTheme
+    final iconColor = useTertiaryTheme
         ? cs.onTertiaryContainer.withValues(alpha: 0.8)
         : cs.onSurfaceVariant;
 
@@ -385,25 +389,24 @@ class _InfoChip extends StatelessWidget {
               : cs.outlineVariant.withValues(alpha: 0.5),
         ),
       ),
-      child: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: '$label ',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: labelColor,
-                fontWeight: FontWeight.w500,
-              ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset(
+            iconAsset,
+            width: 12,
+            height: 12,
+            colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: textColor,
             ),
-            TextSpan(
-              text: value,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: textColor,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

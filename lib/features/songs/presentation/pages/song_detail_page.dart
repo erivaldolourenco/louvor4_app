@@ -3,12 +3,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../../../core/ui/widgets/reference_audio_player.dart';
-import '../../../../core/ui/widgets/spring_tap.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../../../core/utils/youtube_utils.dart';
@@ -129,6 +129,7 @@ class SongDetailPage extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final mutedColor = cs.onSurfaceVariant;
+    final isDark = theme.brightness == Brightness.dark;
 
     final normalizedKey = musicKey?.trim();
     final normalizedBpm = bpm?.trim();
@@ -210,15 +211,15 @@ class SongDetailPage extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 36),
           children: [
-            // ── 1. Capa, título, artista e álbum (sem card) ────────
+            // ── 1. Capa, título, artista, metadados e álbum ────────
             FadeSlideIn(
               delay: staggerDelay(staggerStep++),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Capa
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(AppRadius.thumbnail),
+                    borderRadius: BorderRadius.circular(AppRadius.cardLarge),
                     child: Image.network(
                       hasCover
                           ? coverUrl!
@@ -246,36 +247,49 @@ class SongDetailPage extends StatelessWidget {
                           title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 21,
-                            height: 1.2,
+                          style: theme.textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.person_outline_rounded,
-                              size: 15,
-                              color: mutedColor,
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                artist,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: mutedColor,
-                                ),
-                              ),
-                            ),
-                          ],
+                        const SizedBox(height: 4),
+                        Text(
+                          artist,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
                         ),
+                        if (hasKey || hasBpm) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              if (hasKey)
+                                _MetaChip(
+                                  icon: Icons.key_rounded,
+                                  iconAsset: 'assets/icons/music-2.svg',
+                                  label: normalizedKey,
+                                  backgroundColor: cs.tertiaryContainer,
+                                  foregroundColor: cs.onTertiaryContainer,
+                                ),
+                              if (hasKey && hasBpm) const SizedBox(width: 8),
+                              if (hasBpm)
+                                _MetaChip(
+                                  icon: Icons.speed_rounded,
+                                  iconAsset: 'assets/icons/time.svg',
+                                  label: normalizedBpm,
+                                  backgroundColor: isDark
+                                      ? AppColors.successSubtleDark
+                                      : AppColors.successSubtleLight,
+                                  foregroundColor: isDark
+                                      ? AppColors.successBright
+                                      : AppColors.success,
+                                ),
+                            ],
+                          ),
+                        ],
                         if (hasAlbum) ...[
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           Row(
                             children: [
                               Icon(
@@ -300,64 +314,67 @@ class SongDetailPage extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Tom e BPM alinhados à direita do cabeçalho
-                  if (hasKey || hasBpm) ...[
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (hasKey)
-                          _MetaChip(
-                            icon: Icons.key_rounded,
-                            iconAsset: 'assets/icons/music-2.svg',
-                            label: 'Tom: $normalizedKey',
-                            backgroundColor: cs.primaryContainer,
-                            foregroundColor: cs.onPrimaryContainer,
-                          ),
-                        if (hasKey && hasBpm) const SizedBox(height: 8),
-                        if (hasBpm)
-                          _MetaChip(
-                            icon: Icons.speed_rounded,
-                            iconAsset: 'assets/icons/time.svg',
-                            label: '$normalizedBpm BPM',
-                            backgroundColor: cs.secondaryContainer,
-                            foregroundColor: cs.onSecondaryContainer,
-                          ),
-                      ],
-                    ),
-                  ],
                 ],
               ),
             ),
 
-            // ── 2. Ações principais (Letra e Cifra em tamanho padrão) ────────
+            // ── 2. Ações principais (Letra secundária, Cifra primária) ────
             if (onOpenLyrics != null || onOpenChords != null) ...[
-              const SizedBox(height: 18),
+              const SizedBox(height: 24),
               FadeSlideIn(
                 delay: staggerDelay(staggerStep++),
-                child: Column(
+                child: Row(
                   children: [
                     if (onOpenLyrics != null) ...[
-                      _ActionButton(
-                        label: 'Ver letra',
-                        icon: Icons.menu_book_rounded,
-                        iconAsset: 'assets/icons/file-type-corner.svg',
-                        backgroundColor: cs.secondaryContainer,
-                        foregroundColor: cs.onSecondaryContainer,
-                        onTap: onOpenLyrics!,
+                      Expanded(
+                        child: FilledButton.tonalIcon(
+                          onPressed: onOpenLyrics,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: cs.secondaryContainer,
+                            foregroundColor: cs.onSecondaryContainer,
+                            minimumSize: const Size.fromHeight(50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          icon: SvgPicture.asset(
+                            'assets/icons/file-type-corner.svg',
+                            width: 20,
+                            height: 20,
+                            colorFilter: ColorFilter.mode(
+                              cs.onSecondaryContainer,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                          label: const Text('Ver letra'),
+                        ),
                       ),
                     ],
                     if (onOpenLyrics != null && onOpenChords != null)
-                      const SizedBox(height: 10),
+                      const SizedBox(width: 10),
                     if (onOpenChords != null) ...[
-                      _ActionButton(
-                        label: 'Ver cifra',
-                        icon: Icons.queue_music_rounded,
-                        iconAsset: 'assets/icons/file-music.svg',
-                        backgroundColor: cs.primaryContainer,
-                        foregroundColor: cs.onPrimaryContainer,
-                        onTap: onOpenChords!,
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: onOpenChords,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: cs.primary,
+                            foregroundColor: cs.onPrimary,
+                            minimumSize: const Size.fromHeight(50),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          icon: SvgPicture.asset(
+                            'assets/icons/file-music.svg',
+                            width: 20,
+                            height: 20,
+                            colorFilter: ColorFilter.mode(
+                              cs.onPrimary,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                          label: const Text('Ver cifra'),
+                        ),
                       ),
                     ],
                   ],
@@ -367,7 +384,7 @@ class SongDetailPage extends StatelessWidget {
 
             // ── 3. Observações ────────────────────────────────────
             if (hasNotes) ...[
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               FadeSlideIn(
                 delay: staggerDelay(staggerStep++),
                 child: AppCardSurface(
@@ -376,30 +393,11 @@ class SongDetailPage extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: cs.primaryContainer,
-                              borderRadius: BorderRadius.circular(
-                                AppRadius.badge,
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.sticky_note_2_rounded,
-                              size: 16,
-                              color: cs.primary,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            'Observações',
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        'Observações',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Text(
@@ -414,16 +412,16 @@ class SongDetailPage extends StatelessWidget {
 
             // ── 4. Player de áudio de referência ──────────────────
             if (hasAudio) ...[
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               FadeSlideIn(
                 delay: staggerDelay(staggerStep++),
                 child: ReferenceAudioPlayer(url: referenceAudioUrl!),
               ),
             ],
 
-            // ── 5. Ouvir nas Plataformas (Stack em tamanho total) ──────────
+            // ── 5. Ouvir nas Plataformas (card único com ListTiles) ────
             if (hasYouTube || hasSpotify || hasDeezer) ...[
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               FadeSlideIn(
                 delay: staggerDelay(staggerStep++),
                 child: Column(
@@ -437,63 +435,85 @@ class SongDetailPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    if (hasYouTube) ...[
-                      Builder(
-                        builder: (context) {
-                          final youtubeColor = theme.brightness == Brightness.dark
-                              ? const Color(0xFFFF5252)
-                              : const Color(0xFFD32F2F);
-
-                          return _ActionButton(
-                            label: 'Abrir no YouTube',
-                            icon: Icons.play_circle_fill_rounded,
-                            iconAsset: 'assets/icons/logo-youtube.svg',
-                            backgroundColor: youtubeColor.withValues(alpha: 0.12),
-                            foregroundColor: youtubeColor,
-                            showExternalIcon: true,
-                            onTap: () =>
-                                _openExternalLink(context, youTubeUrl!, 'YouTube'),
-                          );
-                        },
-                      ),
-                    ],
-                    if (hasSpotify) ...[
-                      if (hasYouTube) const SizedBox(height: 10),
-                      Builder(
-                        builder: (context) {
-                          final spotifyColor = theme.brightness == Brightness.dark
-                              ? const Color(0xFF1DB954)
-                              : const Color(0xFF168A3F);
-
-                          return _ActionButton(
-                            label: 'Abrir no Spotify',
-                            icon: Icons.podcasts_rounded,
-                            iconAsset: 'assets/icons/icon-spotify.svg',
-                            backgroundColor: spotifyColor.withValues(alpha: 0.12),
-                            foregroundColor: spotifyColor,
-                            showExternalIcon: true,
-                            onTap: () => _openExternalLink(
-                              context,
-                              spotifyUrl!,
-                              'Spotify',
+                    Card(
+                      clipBehavior: Clip.antiAlias,
+                      margin: EdgeInsets.zero,
+                      child: Column(
+                        children: [
+                          if (hasYouTube)
+                            Builder(
+                              builder: (context) {
+                                const youtubeRed = Color(0xFFFF0000);
+                                return _PlatformTile(
+                                  label: 'Abrir no YouTube',
+                                  leading: Container(
+                                    width: 28,
+                                    height: 28,
+                                    decoration: BoxDecoration(
+                                      color: youtubeRed,
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Icon(
+                                      Icons.play_arrow_rounded,
+                                      size: 18,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  onTap: () => _openExternalLink(
+                                    context,
+                                    youTubeUrl!,
+                                    'YouTube',
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
+                          if (hasYouTube && (hasSpotify || hasDeezer))
+                            const Divider(height: 1),
+                          if (hasSpotify)
+                            Builder(
+                              builder: (context) {
+                                final spotifyColor =
+                                    theme.brightness == Brightness.dark
+                                    ? const Color(0xFF1DB954)
+                                    : const Color(0xFF168A3F);
+                                return _PlatformTile(
+                                  label: 'Abrir no Spotify',
+                                  leading: SvgPicture.asset(
+                                    'assets/icons/icon-spotify.svg',
+                                    width: 28,
+                                    height: 28,
+                                    colorFilter: ColorFilter.mode(
+                                      spotifyColor,
+                                      BlendMode.srcIn,
+                                    ),
+                                  ),
+                                  onTap: () => _openExternalLink(
+                                    context,
+                                    spotifyUrl!,
+                                    'Spotify',
+                                  ),
+                                );
+                              },
+                            ),
+                          if (hasSpotify && hasDeezer) const Divider(height: 1),
+                          if (hasDeezer)
+                            _PlatformTile(
+                              label: 'Abrir no Deezer',
+                              leading: SvgPicture.asset(
+                                'assets/icons/icon-deezer.svg',
+                                width: 28,
+                                height: 28,
+                                colorFilter: const ColorFilter.mode(
+                                  Color(0xFFA238FF),
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                              onTap: () =>
+                                  _openExternalLink(context, deezerUrl!, 'Deezer'),
+                            ),
+                        ],
                       ),
-                    ],
-                    if (hasDeezer) ...[
-                      if (hasYouTube || hasSpotify) const SizedBox(height: 10),
-                      _ActionButton(
-                        label: 'Abrir no Deezer',
-                        icon: Icons.equalizer_rounded,
-                        iconAsset: 'assets/icons/icon-deezer.svg',
-                        backgroundColor: cs.primaryContainer,
-                        foregroundColor: cs.onPrimaryContainer,
-                        showExternalIcon: true,
-                        onTap: () =>
-                            _openExternalLink(context, deezerUrl!, 'Deezer'),
-                      ),
-                    ],
+                    ),
                   ],
                 ),
               ),
@@ -506,83 +526,36 @@ class SongDetailPage extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Action Button (Ver letra, Ver cifra, YouTube, Spotify, Deezer)
+// Platform tile (YouTube, Spotify, Deezer)
 // ---------------------------------------------------------------------------
 
-class _ActionButton extends StatelessWidget {
+class _PlatformTile extends StatelessWidget {
+  final Widget leading;
   final String label;
-  final IconData icon;
-  final String? iconAsset;
-  final Color backgroundColor;
-  final Color foregroundColor;
   final VoidCallback onTap;
-  final bool showExternalIcon;
 
-  const _ActionButton({
+  const _PlatformTile({
+    required this.leading,
     required this.label,
-    required this.icon,
-    this.iconAsset,
-    required this.backgroundColor,
-    required this.foregroundColor,
     required this.onTap,
-    this.showExternalIcon = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
-    return SpringTap(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.input),
-      child: Container(
-        height: 50,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(AppRadius.input),
-          boxShadow: [
-            BoxShadow(
-              color: cs.shadow.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            iconAsset != null
-                ? SvgPicture.asset(
-                    iconAsset!,
-                    width: 22,
-                    height: 22,
-                    colorFilter: ColorFilter.mode(
-                      foregroundColor,
-                      BlendMode.srcIn,
-                    ),
-                  )
-                : Icon(icon, size: 22, color: foregroundColor),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: theme.textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  fontSize: 15,
-                  color: foregroundColor,
-                ),
-              ),
-            ),
-            if (showExternalIcon)
-              Icon(
-                Icons.open_in_new_rounded,
-                size: 16,
-                color: foregroundColor,
-              ),
-          ],
-        ),
+    return ListTile(
+      leading: leading,
+      title: Text(
+        label,
+        style: const TextStyle(fontWeight: FontWeight.w700),
       ),
+      trailing: Icon(
+        Icons.open_in_new_rounded,
+        size: 18,
+        color: cs.onSurfaceVariant,
+      ),
+      onTap: onTap,
     );
   }
 }

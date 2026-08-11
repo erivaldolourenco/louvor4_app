@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
@@ -8,6 +9,7 @@ import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_circular_action_button.dart';
 import '../../../../core/ui/widgets/app_text_area_theme.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
+import '../../../../core/utils/url_utils.dart';
 import '../../../../core/utils/youtube_utils.dart';
 import '../../../../features/songs/domain/entities/song_entity.dart';
 import '../../domain/entities/create_medley_input_entity.dart';
@@ -253,10 +255,21 @@ class _MedleyFormPageState extends State<_MedleyFormPage> {
                 TextFormField(
                   controller: _nameCtrl,
                   enabled: !isActioning,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Nome do medley',
                     hintText: 'Ex: Abertura do culto',
-                    prefixIcon: Icon(Icons.title_rounded),
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: SvgPicture.asset(
+                        'assets/icons/disc.svg',
+                        width: 20,
+                        height: 20,
+                        colorFilter: ColorFilter.mode(
+                          theme.iconTheme.color ?? theme.colorScheme.onSurfaceVariant,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
                   ),
                   validator: (v) {
                     if ((v ?? '').trim().length < 3) return 'Mínimo de 3 caracteres.';
@@ -372,34 +385,75 @@ class _DraftItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final imageUrl = UrlUtils.isValidNetworkUrl(item.song.coverUrl)
+        ? item.song.coverUrl!
+        : YoutubeUtils.getThumbnail(item.song.youTubeUrl, quality: 'default');
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.input),
+        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(
-          color: cs.outlineVariant,
+          color: cs.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.55),
         ),
       ),
       child: Row(
         children: [
-          Container(
-            width: 28,
-            height: 28,
-            decoration: BoxDecoration(
-              color: cs.primaryContainer,
-              borderRadius: BorderRadius.circular(AppRadius.badge),
-            ),
-            child: Center(
-              child: Text(
-                '$index',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
-                  color: cs.primary,
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadius.badge),
+                  child: Image.network(
+                    imageUrl,
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => Container(
+                      width: 48,
+                      height: 48,
+                      color: cs.surfaceContainerHigh,
+                      child: Icon(
+                        Icons.music_note_rounded,
+                        size: 20,
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                Positioned(
+                  left: -6,
+                  top: -6,
+                  child: Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: cs.primaryContainer,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: cs.surfaceContainerLow,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$index',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: cs.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 10),
@@ -626,17 +680,28 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
                               horizontal: 4,
                               vertical: 4,
                             ),
-                            leading: Container(
-                              width: 42,
-                              height: 42,
-                              decoration: BoxDecoration(
-                                color: cs.surfaceContainerLow,
-                                borderRadius: BorderRadius.circular(AppRadius.card),
-                              ),
-                              child: Icon(
-                                Icons.music_note_rounded,
-                                color: cs.onSurfaceVariant,
-                                size: 20,
+                            leading: ClipRRect(
+                              borderRadius: BorderRadius.circular(AppRadius.card),
+                              child: Image.network(
+                                UrlUtils.isValidNetworkUrl(song.coverUrl)
+                                    ? song.coverUrl!
+                                    : YoutubeUtils.getThumbnail(
+                                        song.youTubeUrl,
+                                        quality: 'default',
+                                      ),
+                                width: 42,
+                                height: 42,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => Container(
+                                  width: 42,
+                                  height: 42,
+                                  color: cs.surfaceContainerLow,
+                                  child: Icon(
+                                    Icons.music_note_rounded,
+                                    color: cs.onSurfaceVariant,
+                                    size: 20,
+                                  ),
+                                ),
                               ),
                             ),
                             title: Text(

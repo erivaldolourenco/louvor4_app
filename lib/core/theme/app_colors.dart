@@ -12,6 +12,26 @@ import 'package:flutter/material.dart';
 ///   warning — alertas e avisos
 ///   tint    — fundos sutis de ícones e badges
 abstract final class AppColors {
+  // ── Brand palette ────────────────────────────────────────────────────────
+  // Rampa azul da identidade visual, do mais vibrante (brandPrimary) ao mais
+  // suave (brandSurface). Usada como fonte única de verdade pelo ColorScheme
+  // em app_theme.dart — evite referenciar os hex diretamente em widgets.
+
+  /// Azul principal da marca — maior destaque (botões, FABs, links).
+  static const brandPrimary = Color(0xFF5465FF);
+
+  /// Azul de apoio — suporta o primary sem competir com ele.
+  static const brandSecondary = Color(0xFF788BFF);
+
+  /// Azul claro — containers e estados selecionados.
+  static const brandLight = Color(0xFF9BB1FF);
+
+  /// Azul muito claro — containers e backgrounds suaves.
+  static const brandLighter = Color(0xFFBFD7FF);
+
+  /// Ciano muito claro — superfícies e destaques extremamente suaves.
+  static const brandSurface = Color(0xFFE2FDFF);
+
   // ── Brand ────────────────────────────────────────────────────────────────
 
   /// Cor principal: botões primários, FABs, destaques.

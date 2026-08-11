@@ -372,8 +372,8 @@ class _EventDetailViewState extends State<_EventDetailView>
             key: const ValueKey('program_fab'),
             heroTag: 'event_detail_fab_program',
             activeIcon: Icons.close_rounded,
-            backgroundColor: cs.primaryContainer,
-            foregroundColor: cs.onPrimaryContainer,
+            backgroundColor: cs.primary,
+            foregroundColor: cs.onPrimary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -407,7 +407,7 @@ class _EventDetailViewState extends State<_EventDetailView>
               width: 24,
               height: 24,
               colorFilter: ColorFilter.mode(
-                cs.onPrimaryContainer,
+                cs.onPrimary,
                 BlendMode.srcIn,
               ),
             ),
@@ -422,7 +422,7 @@ class _EventDetailViewState extends State<_EventDetailView>
                 width: 24,
                 height: 24,
                 colorFilter: ColorFilter.mode(
-                  cs.onPrimaryContainer,
+                  cs.onPrimary,
                   BlendMode.srcIn,
                 ),
               ),
@@ -435,7 +435,7 @@ class _EventDetailViewState extends State<_EventDetailView>
                 width: 24,
                 height: 24,
                 colorFilter: ColorFilter.mode(
-                  cs.onPrimaryContainer,
+                  cs.onPrimary,
                   BlendMode.srcIn,
                 ),
               ),
@@ -453,8 +453,8 @@ class _EventDetailViewState extends State<_EventDetailView>
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  backgroundColor: cs.primaryContainer,
-                  foregroundColor: cs.onPrimaryContainer,
+                  backgroundColor: cs.primary,
+                  foregroundColor: cs.onPrimary,
                   elevation: 4,
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 220),
@@ -581,6 +581,8 @@ class _EventDetailTabs extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = isDark ? cs.onPrimaryContainer : cs.primary;
     const tabs = [
       (assetPath: 'assets/icons/users-round.svg', label: 'Equipe'),
       (assetPath: 'assets/icons/music.svg', label: 'Músicas'),
@@ -606,7 +608,7 @@ class _EventDetailTabs extends StatelessWidget {
           ),
           dividerColor: Colors.transparent,
           overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-          labelColor: cs.primary,
+          labelColor: activeColor,
           unselectedLabelColor: cs.onSurfaceVariant,
           labelStyle: const TextStyle(fontWeight: FontWeight.w700),
           unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
@@ -621,7 +623,7 @@ class _EventDetailTabs extends StatelessWidget {
                       width: 18,
                       height: 18,
                       colorFilter: ColorFilter.mode(
-                        i == activeIndex ? cs.primary : cs.onSurfaceVariant,
+                        i == activeIndex ? activeColor : cs.onSurfaceVariant,
                         BlendMode.srcIn,
                       ),
                     ),
@@ -872,6 +874,7 @@ class _ParticipantsTab extends StatelessWidget {
             child: EventParticipantCard(
               name: participant.fullName,
               skill: state.skillsMap[participant.skillId] ?? '',
+              skillIconKey: participant.skillIconKey,
               status: participant.status,
               profileImage: participant.profileImage,
               onTap: () => showUserProfileDialog(
@@ -1070,6 +1073,7 @@ class _SongsTab extends StatelessWidget {
                     artist: song.artist ?? 'Desconhecido',
                     musicKey: song.key,
                     youTubeUrl: song.youTubeUrl,
+                    coverUrl: song.coverUrl,
                     hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
                     onTap: () => openSongDetailPage(
                       context,
@@ -1079,6 +1083,7 @@ class _SongsTab extends StatelessWidget {
                       musicKey: song.key,
                       bpm: song.bpm?.toString(),
                       youTubeUrl: song.youTubeUrl,
+                      coverUrl: song.coverUrl,
                       notes: song.notes,
                       referenceAudioUrl: song.referenceAudioUrl,
                       onOpenLyrics: song.songId == null

@@ -49,7 +49,7 @@ class RootBottomNavigationBar extends StatelessWidget {
               cs.onSurfaceVariant,
             ),
             selectedIcon: _ActiveIcon(
-              child: _SvgIcon('assets/icons/layout-dashboard.svg', cs.primary),
+              child: _SvgIcon('assets/icons/layout-dashboard.svg', cs.onPrimaryContainer),
             ),
           ),
           NavigationDestination(
@@ -59,14 +59,14 @@ class RootBottomNavigationBar extends StatelessWidget {
               cs.onSurfaceVariant,
             ),
             selectedIcon: _ActiveIcon(
-              child: _SvgIcon('assets/icons/square-library.svg', cs.primary),
+              child: _SvgIcon('assets/icons/square-library.svg', cs.onPrimaryContainer),
             ),
           ),
           NavigationDestination(
             label: 'Músicas',
             icon: _SvgIcon('assets/icons/list-music.svg', cs.onSurfaceVariant),
             selectedIcon: _ActiveIcon(
-              child: _SvgIcon('assets/icons/list-music.svg', cs.primary),
+              child: _SvgIcon('assets/icons/list-music.svg', cs.onPrimaryContainer),
             ),
           ),
           NavigationDestination(
@@ -80,7 +80,7 @@ class RootBottomNavigationBar extends StatelessWidget {
               child: Badge(
                 isLabelVisible: showBadge,
                 label: Text(badgeLabel),
-                child: _SvgIcon('assets/icons/bell.svg', cs.primary),
+                child: _SvgIcon('assets/icons/bell.svg', cs.onPrimaryContainer),
               ),
             ),
           ),

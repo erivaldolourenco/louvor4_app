@@ -347,8 +347,8 @@ class _ChordSheetPageState extends State<ChordSheetPage> {
       heroTag: 'chord_sheet_fab',
       icon: Icons.add_rounded,
       activeIcon: Icons.close_rounded,
-      backgroundColor: cs.primaryContainer,
-      foregroundColor: cs.onPrimaryContainer,
+      backgroundColor: cs.primary,
+      foregroundColor: cs.onPrimary,
       shape: const CircleBorder(),
       elevation: 4,
       children: [

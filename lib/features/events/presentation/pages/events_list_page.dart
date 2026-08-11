@@ -183,6 +183,7 @@ class _HomeTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return TabBar(
       controller: controller,
       indicator: BoxDecoration(
@@ -196,7 +197,7 @@ class _HomeTabBar extends StatelessWidget {
       ),
       dividerColor: Colors.transparent,
       overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-      labelColor: cs.primary,
+      labelColor: isDark ? cs.onPrimaryContainer : cs.primary,
       unselectedLabelColor: cs.onSurfaceVariant,
       labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
       unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14.5),

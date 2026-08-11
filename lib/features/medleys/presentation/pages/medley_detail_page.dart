@@ -217,6 +217,7 @@ class _SongItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final hasNotes = item.notes != null && item.notes!.isNotEmpty;
     final hasYouTube = item.youTubeUrl != null && item.youTubeUrl!.isNotEmpty;
     final mutedColor = cs.onSurfaceVariant;
@@ -224,10 +225,19 @@ class _SongItemCard extends StatelessWidget {
     final thumbnailUrl = YoutubeUtils.getThumbnail(item.youTubeUrl);
 
     return Container(
-      decoration: BoxDecoration(
+      decoration: appCardDecoration(
+        context,
+        radius: AppRadius.card,
         color: cs.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: cs.outlineVariant),
+        boxShadow: [
+          BoxShadow(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.4)
+                : cs.shadow.withValues(alpha: 0.12),
+            blurRadius: isDark ? 28 : 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -404,37 +414,36 @@ class _KeyChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final mutedColor = cs.onSurfaceVariant;
-    final strongColor = cs.onSurfaceVariant;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
+        color: cs.tertiaryContainer.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(AppRadius.badge),
-        border: Border.all(color: cs.outlineVariant),
+        border: Border.all(color: cs.tertiary.withValues(alpha: 0.25)),
       ),
-      child: RichText(
-        text: TextSpan(
-          children: [
-            TextSpan(
-              text: 'Tom ',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: mutedColor,
-              ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SvgPicture.asset(
+            'assets/icons/music-2.svg',
+            width: 12,
+            height: 12,
+            colorFilter: ColorFilter.mode(
+              cs.onTertiaryContainer,
+              BlendMode.srcIn,
             ),
-            TextSpan(
-              text: label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: strongColor,
-              ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: cs.onTertiaryContainer,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

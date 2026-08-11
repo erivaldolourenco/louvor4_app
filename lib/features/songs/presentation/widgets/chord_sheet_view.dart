@@ -61,7 +61,7 @@ class _ChordSheetInfoHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 4),
-          Text('Tom ${song.originalKey}', style: style),
+          Text('${song.originalKey}', style: style),
         ],
         if (song.originalKey != null && song.bpm != null)
           const SizedBox(width: 16),
@@ -76,7 +76,7 @@ class _ChordSheetInfoHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 4),
-          Text('${song.bpm} BPM', style: style),
+          Text('${song.bpm}', style: style),
         ],
       ],
     );

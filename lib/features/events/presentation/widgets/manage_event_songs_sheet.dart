@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/features/medleys/data/impl/medley_repository_impl.dart';
 import 'package:louvor4_app/features/medleys/domain/entities/medley_entity.dart';
 import 'package:louvor4_app/features/songs/domain/entities/song_entity.dart';
 
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
@@ -289,67 +291,64 @@ class _SheetTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = isDark ? cs.onPrimaryContainer : cs.primary;
+    const tabs = [
+      (assetPath: 'assets/icons/music.svg', label: 'Músicas'),
+      (assetPath: 'assets/icons/disc-album.svg', label: 'Medleys'),
+    ];
+
     return AnimatedBuilder(
       animation: controller.animation ?? controller,
       builder: (context, _) {
-        final idx = controller.animation?.value.round() ?? controller.index;
-        return Container(
-          padding: const EdgeInsets.all(2.5),
-          decoration: BoxDecoration(
-            color: cs.surfaceContainer,
-            borderRadius: BorderRadius.circular(AppRadius.input),
+        final activeIndex =
+            controller.animation?.value.round() ?? controller.index;
+
+        return TabBar(
+          controller: controller,
+          indicator: BoxDecoration(
+            color: cs.primaryContainer,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
-          child: TabBar(
-            controller: controller,
-            dividerColor: Colors.transparent,
-            indicatorSize: TabBarIndicatorSize.tab,
-            indicator: BoxDecoration(
-              color: cs.surface,
-              borderRadius: BorderRadius.circular(AppRadius.input),
-              boxShadow: [
-                BoxShadow(
-                  color: cs.shadow.withValues(alpha: 0.08),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+          indicatorSize: TabBarIndicatorSize.tab,
+          indicatorPadding: const EdgeInsets.symmetric(
+            vertical: 8,
+            horizontal: 6,
+          ),
+          dividerColor: Colors.transparent,
+          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+          labelColor: activeColor,
+          unselectedLabelColor: cs.onSurfaceVariant,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+          tabs: [
+            for (var i = 0; i < tabs.length; i++)
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SvgPicture.asset(
+                      tabs[i].assetPath,
+                      width: 18,
+                      height: 18,
+                      colorFilter: ColorFilter.mode(
+                        i == activeIndex ? activeColor : cs.onSurfaceVariant,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        tabs[i].label,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            splashFactory: NoSplash.splashFactory,
-            overlayColor: WidgetStateProperty.all(Colors.transparent),
-            tabs: [
-              _TabLabel(label: 'Músicas', selected: idx == 0),
-              _TabLabel(label: 'Medleys', selected: idx == 1),
-            ],
-          ),
+              ),
+          ],
         );
       },
-    );
-  }
-}
-
-class _TabLabel extends StatelessWidget {
-  final String label;
-  final bool selected;
-
-  const _TabLabel({
-    required this.label,
-    required this.selected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-    return Tab(
-      height: 38,
-      child: Text(
-        label,
-        style: theme.textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w700,
-          fontSize: 15,
-          color: selected ? cs.primary : cs.onSurfaceVariant,
-        ),
-      ),
     );
   }
 }
@@ -508,19 +507,28 @@ class _SelectableMedleyCard extends StatelessWidget {
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
                     Container(
-                      width: 44,
-                      height: 44,
+                      width: 64,
+                      height: 64,
                       decoration: BoxDecoration(
-                        color: cs.surfaceContainerLow,
-                        borderRadius: BorderRadius.circular(AppRadius.input),
+                        color: cs.secondaryContainer,
+                        borderRadius: BorderRadius.circular(
+                          AppRadius.thumbnail,
+                        ),
                       ),
-                      child: Icon(
-                        Icons.queue_music_rounded,
-                        color: isSelected ? cs.primary : subtitleColor,
+                      child: Center(
+                        child: SvgPicture.asset(
+                          'assets/icons/disc-album.svg',
+                          width: 32,
+                          height: 32,
+                          colorFilter: ColorFilter.mode(
+                            cs.onSecondaryContainer,
+                            BlendMode.srcIn,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -611,6 +619,7 @@ class _SelectableSongCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final titleColor = theme.textTheme.titleMedium?.color;
     final subtitleColor =
         theme.textTheme.bodySmall?.color?.withValues(alpha: 0.78);
@@ -684,12 +693,31 @@ class _SelectableSongCard extends StatelessWidget {
                           const SizedBox(height: 8),
                           Row(
                             children: [
-                              _MetaBadge(label: 'Tom: ${song.key}'),
+                              _MetaBadge(
+                                iconAsset: 'assets/icons/music-2.svg',
+                                label: song.key,
+                                backgroundColor: cs.tertiaryContainer
+                                    .withValues(alpha: 0.85),
+                                foregroundColor: cs.onTertiaryContainer,
+                                borderColor: cs.tertiary.withValues(
+                                  alpha: 0.25,
+                                ),
+                              ),
                               if (song.bpm != null && song.bpm!.isNotEmpty) ...[
                                 const SizedBox(width: 8),
                                 _MetaBadge(
-                                  icon: Icons.speed_rounded,
-                                  label: '${song.bpm} BPM',
+                                  iconAsset: 'assets/icons/time.svg',
+                                  label: song.bpm!,
+                                  backgroundColor: isDark
+                                      ? AppColors.successSubtleDark
+                                      : AppColors.successSubtleLight,
+                                  foregroundColor: isDark
+                                      ? AppColors.successBright
+                                      : AppColors.success,
+                                  borderColor: (isDark
+                                          ? AppColors.successBright
+                                          : AppColors.success)
+                                      .withValues(alpha: 0.25),
                                 ),
                               ],
                             ],
@@ -719,35 +747,50 @@ class _SelectableSongCard extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _MetaBadge extends StatelessWidget {
-  final IconData? icon;
+  final String iconAsset;
   final String label;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
+  final Color? borderColor;
 
-  const _MetaBadge({this.icon, required this.label});
+  const _MetaBadge({
+    required this.iconAsset,
+    required this.label,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.borderColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final textColor = Theme.of(context).textTheme.bodySmall?.color;
+    final fg =
+        foregroundColor ?? Theme.of(context).textTheme.bodySmall?.color;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
+        color: backgroundColor ?? cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.pill),
-        border: Border.all(
-          color: cs.outlineVariant,
-        ),
+        border: Border.all(color: borderColor ?? cs.outlineVariant),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[
-            Icon(icon, size: 14, color: textColor?.withValues(alpha: 0.78)),
-            const SizedBox(width: 4),
-          ],
+          SvgPicture.asset(
+            iconAsset,
+            width: 14,
+            height: 14,
+            colorFilter: ColorFilter.mode(
+              fg ?? cs.onSurfaceVariant,
+              BlendMode.srcIn,
+            ),
+          ),
+          const SizedBox(width: 4),
           Text(
             label,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: textColor,
+              color: fg,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -805,7 +848,15 @@ class _EmptyMedleysState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.queue_music_rounded, size: 44, color: subtitleColor),
+            SvgPicture.asset(
+              'assets/icons/disc-album.svg',
+              width: 44,
+              height: 44,
+              colorFilter: ColorFilter.mode(
+                subtitleColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
+                BlendMode.srcIn,
+              ),
+            ),
             const SizedBox(height: 10),
             Text(
               'Nenhum medley cadastrado',

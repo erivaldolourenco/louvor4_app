@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -59,6 +60,14 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer> {
     _player.setPitch(pow(2.0, next / 12.0).toDouble());
   }
 
+  void _skip(Duration offset) {
+    final duration = _player.duration;
+    var target = _player.position + offset;
+    if (target < Duration.zero) target = Duration.zero;
+    if (duration != null && target > duration) target = duration;
+    _player.seek(target);
+  }
+
   Future<void> _download() async {
     setState(() => _downloading = true);
     try {
@@ -97,23 +106,19 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer> {
     final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
     final mutedColor = cs.onSurfaceVariant;
-    const playShape = BorderRadius.all(Radius.circular(18));
+    const playShape = BorderRadius.all(Radius.circular(20));
 
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerLow,
+    return Card(
+      elevation: 0,
+      color: cs.surfaceContainerLow,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.cardLarge),
-        border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.06),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        side: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.5)),
       ),
-      child: Column(
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -124,17 +129,21 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer> {
                   color: cs.primaryContainer,
                   borderRadius: BorderRadius.circular(AppRadius.badge),
                 ),
-                child: Icon(
-                  Icons.graphic_eq_rounded,
-                  size: 18,
-                  color: cs.onPrimaryContainer,
+                child: SvgPicture.asset(
+                  'assets/icons/headphones.svg',
+                  width: 18,
+                  height: 18,
+                  colorFilter: ColorFilter.mode(
+                    cs.onPrimaryContainer,
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   'Áudio de referência',
-                  style: theme.textTheme.titleSmall?.copyWith(
+                  style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -152,8 +161,21 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer> {
                         style: IconButton.styleFrom(
                           backgroundColor: cs.secondaryContainer,
                           foregroundColor: cs.onSecondaryContainer,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AppRadius.badge,
+                            ),
+                          ),
                         ),
-                        icon: const Icon(Icons.download_rounded, size: 20),
+                        icon: SvgPicture.asset(
+                          'assets/icons/arrow-down-to-line.svg',
+                          width: 20,
+                          height: 20,
+                          colorFilter: ColorFilter.mode(
+                            cs.onSecondaryContainer,
+                            BlendMode.srcIn,
+                          ),
+                        ),
                         onPressed: _download,
                       ),
             ],
@@ -172,6 +194,67 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer> {
               ],
             )
           else ...[
+            // ── Seletor de tom, em cápsula centralizada ────────────
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: cs.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton.filledTonal(
+                      visualDensity: VisualDensity.compact,
+                      style: IconButton.styleFrom(
+                        backgroundColor: _semitones > -12
+                            ? cs.secondaryContainer
+                            : Colors.transparent,
+                        foregroundColor: _semitones > -12
+                            ? cs.onSecondaryContainer
+                            : mutedColor.withValues(alpha: 0.4),
+                      ),
+                      icon: const Icon(Icons.remove_rounded, size: 18),
+                      onPressed: _semitones > -12
+                          ? () => _changeSemitones(-1)
+                          : null,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Text(
+                        _semitoneLabel,
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: _semitones == 0 ? cs.onSurface : cs.primary,
+                        ),
+                      ),
+                    ),
+                    IconButton.filledTonal(
+                      visualDensity: VisualDensity.compact,
+                      style: IconButton.styleFrom(
+                        backgroundColor: _semitones < 12
+                            ? cs.secondaryContainer
+                            : Colors.transparent,
+                        foregroundColor: _semitones < 12
+                            ? cs.onSecondaryContainer
+                            : mutedColor.withValues(alpha: 0.4),
+                      ),
+                      icon: const Icon(Icons.add_rounded, size: 18),
+                      onPressed: _semitones < 12
+                          ? () => _changeSemitones(1)
+                          : null,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
             StreamBuilder<PlayerState>(
               stream: _player.playerStateStream,
               builder: (context, snapshot) {
@@ -199,102 +282,134 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer> {
                               )
                             : 0.0;
 
-                        return Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                        return Column(
                           children: [
-                            SizedBox(
-                              width: 52,
-                              height: 52,
-                              child: isBuffering
-                                  ? const Padding(
-                                      padding: EdgeInsets.all(14),
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                      ),
-                                    )
-                                  : IconButton.filled(
-                                      style: IconButton.styleFrom(
-                                        backgroundColor: cs.primary,
-                                        foregroundColor: cs.onPrimary,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: playShape,
-                                        ),
-                                        minimumSize: const Size(52, 52),
-                                        padding: EdgeInsets.zero,
-                                      ),
-                                      icon: Icon(
-                                        isPlaying
-                                            ? Icons.pause_rounded
-                                            : Icons.play_arrow_rounded,
-                                        size: 28,
-                                      ),
-                                      onPressed: () => isPlaying
-                                          ? _player.pause()
-                                          : _player.play(),
-                                    ),
+                            // ── Barra de progresso ──────────────────
+                            SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                trackHeight: 6,
+                                thumbShape: const RoundSliderThumbShape(
+                                  enabledThumbRadius: 8,
+                                ),
+                                overlayShape: const RoundSliderOverlayShape(
+                                  overlayRadius: 18,
+                                ),
+                                activeTrackColor: cs.primary,
+                                inactiveTrackColor: cs.primary.withValues(
+                                  alpha: 0.15,
+                                ),
+                                thumbColor: cs.onSurfaceVariant,
+                                overlayColor: cs.primary.withValues(
+                                  alpha: 0.15,
+                                ),
+                              ),
+                              child: Slider(
+                                value: curVal,
+                                min: 0,
+                                max: maxVal > 0 ? maxVal : 1,
+                                onChanged: maxVal > 0
+                                    ? (v) => _player.seek(
+                                        Duration(milliseconds: v.toInt()),
+                                      )
+                                    : null,
+                              ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 4,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  SliderTheme(
-                                    data: SliderTheme.of(context).copyWith(
-                                      trackHeight: 6,
-                                      thumbShape: const RoundSliderThumbShape(
-                                        enabledThumbRadius: 8,
-                                      ),
-                                      overlayShape:
-                                          const RoundSliderOverlayShape(
-                                            overlayRadius: 18,
-                                          ),
-                                      activeTrackColor: cs.primary,
-                                      inactiveTrackColor: cs.primary
-                                          .withValues(alpha: 0.15),
-                                      thumbColor: cs.primary,
-                                      overlayColor: cs.primary.withValues(
-                                        alpha: 0.15,
-                                      ),
-                                    ),
-                                    child: Slider(
-                                      value: curVal,
-                                      min: 0,
-                                      max: maxVal > 0 ? maxVal : 1,
-                                      onChanged: maxVal > 0
-                                          ? (v) => _player.seek(
-                                              Duration(milliseconds: v.toInt()),
-                                            )
-                                          : null,
+                                  Text(
+                                    _fmt(position),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: cs.primary,
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 4,
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          _fmt(position),
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700,
-                                            color: mutedColor,
-                                          ),
-                                        ),
-                                        Text(
-                                          _fmt(duration),
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w700,
-                                            color: mutedColor,
-                                          ),
-                                        ),
-                                      ],
+                                  Text(
+                                    _fmt(duration),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: cs.primary,
                                     ),
                                   ),
                                 ],
                               ),
+                            ),
+                            const SizedBox(height: 12),
+
+                            // ── Controles de reprodução ─────────────
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                IconButton.filledTonal(
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: cs.secondaryContainer,
+                                    foregroundColor: cs.onSecondaryContainer,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.replay_10_rounded,
+                                    size: 24,
+                                  ),
+                                  onPressed: () =>
+                                      _skip(const Duration(seconds: -10)),
+                                ),
+                                const SizedBox(width: 20),
+                                SizedBox(
+                                  width: 58,
+                                  height: 58,
+                                  child: isBuffering
+                                      ? const Padding(
+                                          padding: EdgeInsets.all(16),
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                          ),
+                                        )
+                                      : IconButton.filled(
+                                          style: IconButton.styleFrom(
+                                            backgroundColor: cs.primary,
+                                            foregroundColor: cs.onPrimary,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: playShape,
+                                            ),
+                                            minimumSize: const Size(58, 58),
+                                            padding: EdgeInsets.zero,
+                                          ),
+                                          icon: SvgPicture.asset(
+                                            isPlaying
+                                                ? 'assets/icons/pause.svg'
+                                                : 'assets/icons/play.svg',
+                                            width: 32,
+                                            height: 32,
+                                            colorFilter: ColorFilter.mode(
+                                              cs.onPrimary,
+                                              BlendMode.srcIn,
+                                            ),
+                                          ),
+                                          onPressed: () => isPlaying
+                                              ? _player.pause()
+                                              : _player.play(),
+                                        ),
+                                ),
+                                const SizedBox(width: 20),
+                                IconButton.filledTonal(
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: cs.secondaryContainer,
+                                    foregroundColor: cs.onSecondaryContainer,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.forward_10_rounded,
+                                    size: 24,
+                                  ),
+                                  onPressed: () =>
+                                      _skip(const Duration(seconds: 10)),
+                                ),
+                              ],
                             ),
                           ],
                         );
@@ -304,60 +419,9 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer> {
                 );
               },
             ),
-            const SizedBox(height: 14),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              decoration: BoxDecoration(
-                color: cs.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-              ),
-              child: Row(
-                children: [
-                  IconButton.filledTonal(
-                    visualDensity: VisualDensity.compact,
-                    style: IconButton.styleFrom(
-                      backgroundColor: _semitones > -12
-                          ? cs.secondaryContainer
-                          : Colors.transparent,
-                      foregroundColor: _semitones > -12
-                          ? cs.onSecondaryContainer
-                          : mutedColor.withValues(alpha: 0.4),
-                    ),
-                    icon: const Icon(Icons.remove_rounded, size: 18),
-                    onPressed: _semitones > -12
-                        ? () => _changeSemitones(-1)
-                        : null,
-                  ),
-                  Expanded(
-                    child: Text(
-                      _semitoneLabel,
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: _semitones == 0 ? cs.onSurface : cs.primary,
-                      ),
-                    ),
-                  ),
-                  IconButton.filledTonal(
-                    visualDensity: VisualDensity.compact,
-                    style: IconButton.styleFrom(
-                      backgroundColor: _semitones < 12
-                          ? cs.secondaryContainer
-                          : Colors.transparent,
-                      foregroundColor: _semitones < 12
-                          ? cs.onSecondaryContainer
-                          : mutedColor.withValues(alpha: 0.4),
-                    ),
-                    icon: const Icon(Icons.add_rounded, size: 18),
-                    onPressed: _semitones < 12
-                        ? () => _changeSemitones(1)
-                        : null,
-                  ),
-                ],
-              ),
-            ),
           ],
         ],
+        ),
       ),
     );
   }

@@ -385,8 +385,8 @@ class _SongsContentState extends State<_SongsContent>
       return SpeedDial(
         heroTag: 'songs_fab',
         activeIcon: Icons.close_rounded,
-        backgroundColor: cs.primaryContainer,
-        foregroundColor: cs.onPrimaryContainer,
+        backgroundColor: cs.primary,
+        foregroundColor: cs.onPrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         elevation: 2,
         children: [
@@ -453,7 +453,7 @@ class _SongsContentState extends State<_SongsContent>
           width: 24,
           height: 24,
           colorFilter: ColorFilter.mode(
-            cs.onPrimaryContainer,
+            cs.onPrimary,
             BlendMode.srcIn,
           ),
         ),
@@ -461,7 +461,7 @@ class _SongsContentState extends State<_SongsContent>
     }
     return PrimaryAddFab(
       heroTag: 'medley_fab',
-      icon: Icons.queue_music_rounded,
+      iconAsset: 'assets/icons/disc-album.svg',
       onPressed: _openCreateMedley,
     );
   }
@@ -683,6 +683,7 @@ class _SongsTabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return TabBar(
       controller: controller,
       indicator: BoxDecoration(
@@ -693,7 +694,7 @@ class _SongsTabBar extends StatelessWidget {
       indicatorPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       dividerColor: Colors.transparent,
       overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-      labelColor: cs.primary,
+      labelColor: isDark ? cs.onPrimaryContainer : cs.primary,
       unselectedLabelColor: cs.onSurfaceVariant,
       labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
       unselectedLabelStyle: const TextStyle(

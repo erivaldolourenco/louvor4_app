@@ -86,11 +86,12 @@ class AppSecondaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final enabled = onPressed != null;
 
     final fgColor = enabled ? cs.primary : cs.onSurface.withValues(alpha: 0.38);
     final borderColor = enabled
-        ? cs.outline
+        ? cs.outlineVariant.withValues(alpha: isDark ? 0.4 : 0.6)
         : cs.onSurface.withValues(alpha: 0.12);
 
     return SpringTap(

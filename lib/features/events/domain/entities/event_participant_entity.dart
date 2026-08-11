@@ -51,6 +51,7 @@ class EventParticipant {
   final String? lastName;
   final String? profileImage;
   final String skillId;
+  final String? skillIconKey;
   final EventParticipantStatus status;
   final Set<EventPermission> permissions;
 
@@ -62,6 +63,7 @@ class EventParticipant {
     this.lastName,
     this.profileImage,
     required this.skillId,
+    this.skillIconKey,
     this.status = EventParticipantStatus.accepted,
     required this.permissions,
   });
@@ -121,6 +123,10 @@ class EventParticipant {
         json['skillId'],
         json['projectSkillId'],
         skill == null ? null : skill['id'],
+      ]),
+      skillIconKey: _firstNullable([
+        json['skillIconKey'],
+        skill == null ? null : skill['iconKey'],
       ]),
       status: _parseStatus(json['status']),
       permissions: permissions,
