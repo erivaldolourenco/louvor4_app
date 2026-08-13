@@ -33,6 +33,7 @@ import '../../domain/entities/event_participant_entity.dart';
 import '../widgets/event_participant_card.dart';
 import '../widgets/event_program_tab.dart';
 import '../../../songs/presentation/pages/chord_sheet_page.dart';
+import '../../../songs/presentation/pages/edit_song_page.dart';
 import '../../../songs/presentation/pages/lyrics_page.dart';
 import '../widgets/manage_event_participants_sheet.dart';
 import '../widgets/manage_event_songs_sheet.dart';
@@ -917,6 +918,18 @@ class _SongsTab extends StatelessWidget {
     required this.onRefresh,
   });
 
+  Future<void> _openEditSong(BuildContext context, dynamic song) async {
+    if (song.songId == null) return;
+    final updated = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => EditSongPage(songId: song.songId!),
+      ),
+    );
+    if (updated == true) {
+      onRefresh();
+    }
+  }
+
   void _openLyrics(BuildContext context, dynamic song) {
     if (song.songId == null) return;
     Navigator.of(context).push(
@@ -1092,6 +1105,9 @@ class _SongsTab extends StatelessWidget {
                       onOpenChords: song.songId == null
                           ? null
                           : () => _openChords(context, song),
+                      onEdit: (song.songId == null || !state.isSongOwner(song))
+                          ? null
+                          : () => _openEditSong(context, song),
                     ),
                     onDelete:
                         (state.canDeleteSong(song) &&
