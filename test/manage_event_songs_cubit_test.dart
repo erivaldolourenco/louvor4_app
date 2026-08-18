@@ -4,6 +4,7 @@ import 'package:louvor4_app/features/events/domain/entities/event_detail_entity.
 import 'package:louvor4_app/features/events/domain/entities/event_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_input_entity.dart';
+import 'package:louvor4_app/features/events/domain/entities/event_permissions_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_song_input_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_song_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/project_member_entity.dart';
@@ -61,7 +62,7 @@ class _FakeEventsRepository implements EventsRepository {
   }
 
   @override
-  Future<String> getProjectMemberRole(String projectId) async {
+  Future<EventPermissionsEntity> getMyEventPermissions(String eventId) async {
     throw UnimplementedError();
   }
 
@@ -136,6 +137,12 @@ class _FakeMedleyRepository implements MedleyRepository {
 
   @override
   Future<void> uploadReferenceAudio(String id, String filePath) async {}
+
+  @override
+  Future<void> updateMedleyCategories(
+    String medleyId,
+    List<String> categoryIds,
+  ) async {}
 }
 
 void main() {

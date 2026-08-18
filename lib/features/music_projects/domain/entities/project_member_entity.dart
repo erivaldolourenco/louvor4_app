@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import 'project_member_role.dart';
+import 'project_skill_entity.dart';
 
 class ProjectMemberEntity extends Equatable {
   final String id;
@@ -11,7 +12,7 @@ class ProjectMemberEntity extends Equatable {
   final String email;
   final String? profileImage;
   final ProjectMemberRole projectRole;
-  final List<String> skillIds;
+  final List<ProjectSkillEntity> skills;
 
   const ProjectMemberEntity({
     required this.id,
@@ -22,13 +23,15 @@ class ProjectMemberEntity extends Equatable {
     required this.email,
     required this.profileImage,
     required this.projectRole,
-    required this.skillIds,
+    required this.skills,
   });
 
   String get fullName {
     final fullName = '$firstName $lastName'.trim();
     return fullName.isEmpty ? username : fullName;
   }
+
+  List<String> get skillIds => skills.map((skill) => skill.id).toList();
 
   bool get isOwner => projectRole == ProjectMemberRole.owner;
 
@@ -44,11 +47,23 @@ class ProjectMemberEntity extends Equatable {
       email: (json['email'] ?? '').toString(),
       profileImage: json['profileImage']?.toString(),
       projectRole: projectMemberRoleFromString(json['projectRole']?.toString()),
-      skillIds: (json['skills'] as List? ?? const [])
-          .map((item) => item.toString())
-          .where((item) => item.trim().isNotEmpty)
+      skills: (json['skills'] as List? ?? const [])
+          .map(_parseSkill)
+          .whereType<ProjectSkillEntity>()
           .toList(),
     );
+  }
+
+  // Aceita tanto o novo formato ({id, name, iconKey}) quanto o antigo
+  // (apenas o id da skill como string), para compatibilidade retroativa.
+  static ProjectSkillEntity? _parseSkill(dynamic item) {
+    if (item is Map<String, dynamic>) return ProjectSkillEntity.fromJson(item);
+    if (item is Map) {
+      return ProjectSkillEntity.fromJson(Map<String, dynamic>.from(item));
+    }
+    final id = item?.toString().trim();
+    if (id == null || id.isEmpty) return null;
+    return ProjectSkillEntity(id: id, name: '');
   }
 
   @override
@@ -61,6 +76,6 @@ class ProjectMemberEntity extends Equatable {
     email,
     profileImage,
     projectRole,
-    skillIds,
+    skills,
   ];
 }

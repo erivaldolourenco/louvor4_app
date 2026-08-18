@@ -184,27 +184,37 @@ class _HomeTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return TabBar(
-      controller: controller,
-      indicator: BoxDecoration(
-        color: cs.primaryContainer,
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.55),
+        ),
       ),
-      indicatorSize: TabBarIndicatorSize.tab,
-      indicatorPadding: const EdgeInsets.symmetric(
-        vertical: 6,
-        horizontal: 12,
+      child: TabBar(
+        controller: controller,
+        indicator: BoxDecoration(
+          color: cs.primaryContainer,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          border: Border.all(color: cs.primary.withValues(alpha: 0.4)),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        indicatorPadding: const EdgeInsets.symmetric(
+          vertical: 6,
+          horizontal: 12,
+        ),
+        dividerColor: Colors.transparent,
+        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+        labelColor: isDark ? cs.onPrimaryContainer : cs.primary,
+        unselectedLabelColor: cs.onSurfaceVariant,
+        labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14.5),
+        tabs: const [
+          Tab(text: 'Próximos'),
+          Tab(text: 'Passados'),
+        ],
       ),
-      dividerColor: Colors.transparent,
-      overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-      labelColor: isDark ? cs.onPrimaryContainer : cs.primary,
-      unselectedLabelColor: cs.onSurfaceVariant,
-      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
-      unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14.5),
-      tabs: const [
-        Tab(text: 'Próximos'),
-        Tab(text: 'Passados'),
-      ],
     );
   }
 }

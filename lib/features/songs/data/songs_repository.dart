@@ -14,6 +14,10 @@ abstract class SongsRepository {
 
   Future<void> deleteSong(String id);
 
+  /// Substitui integralmente as categorias associadas à música pelas
+  /// informadas em [categoryIds].
+  Future<void> updateSongCategories(String songId, List<String> categoryIds);
+
   Future<String?> getSongLyrics(String songId);
 
   Future<void> updateSongLyrics(String songId, String lyrics);

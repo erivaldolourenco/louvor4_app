@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_entity.dart';
 
 import '../../theme/app_radius.dart';
+import '../../utils/skill_icon.dart';
 import 'app_cached_network_image.dart';
 import 'app_card_surface.dart';
 
@@ -14,6 +16,7 @@ Future<void> showUserProfileDialog(
   String? projectPermission,
   List<String>? musicSkills,
   String? eventSkill,
+  String? eventSkillIconKey,
   EventParticipantStatus? eventStatus,
   Future<bool> Function()? onAcceptInvite,
   Future<bool> Function()? onDeclineInvite,
@@ -29,6 +32,7 @@ Future<void> showUserProfileDialog(
       projectPermission: projectPermission,
       musicSkills: musicSkills,
       eventSkill: eventSkill,
+      eventSkillIconKey: eventSkillIconKey,
       eventStatus: eventStatus,
       onAcceptInvite: onAcceptInvite,
       onDeclineInvite: onDeclineInvite,
@@ -44,6 +48,7 @@ class UserProfileDialog extends StatefulWidget {
   final String? projectPermission;
   final List<String>? musicSkills;
   final String? eventSkill;
+  final String? eventSkillIconKey;
   final EventParticipantStatus? eventStatus;
   final Future<bool> Function()? onAcceptInvite;
   final Future<bool> Function()? onDeclineInvite;
@@ -57,6 +62,7 @@ class UserProfileDialog extends StatefulWidget {
     this.projectPermission,
     this.musicSkills,
     this.eventSkill,
+    this.eventSkillIconKey,
     this.eventStatus,
     this.onAcceptInvite,
     this.onDeclineInvite,
@@ -194,7 +200,10 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                   const SizedBox(height: 18),
                   _ProfileSectionTitle(label: 'Função neste evento'),
                   const SizedBox(height: 12),
-                  _ProfileInfoPill(value: normalizedEventSkill),
+                  _ProfileInfoPill(
+                    value: normalizedEventSkill,
+                    iconKey: widget.eventSkillIconKey,
+                  ),
                 ],
                 if (eventStatus != null) ...[
                   const SizedBox(height: 18),
@@ -350,8 +359,9 @@ class _ProfilePermissionPill extends StatelessWidget {
 
 class _ProfileInfoPill extends StatelessWidget {
   final String value;
+  final String? iconKey;
 
-  const _ProfileInfoPill({required this.value});
+  const _ProfileInfoPill({required this.value, this.iconKey});
 
   @override
   Widget build(BuildContext context) {
@@ -368,11 +378,24 @@ class _ProfileInfoPill extends StatelessWidget {
             color: cs.outlineVariant,
           ),
         ),
-        child: Text(
-          value,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (iconKey != null) ...[
+              SvgPicture.asset(
+                skillIconAsset(iconKey),
+                width: 16,
+                height: 16,
+              ),
+              const SizedBox(width: 8),
+            ],
+            Text(
+              value,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -1065,3 +1065,4 @@ class _ThumbFallback extends StatelessWidget {
     );
   }
 }
+

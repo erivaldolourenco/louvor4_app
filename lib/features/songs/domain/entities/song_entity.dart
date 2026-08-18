@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../song_categories/domain/entities/song_category_entity.dart';
+
 class SongEntity extends Equatable {
   final String? id;
   final String artist;
@@ -13,6 +15,7 @@ class SongEntity extends Equatable {
   final String? coverUrl;
   final String? notes;
   final String? referenceAudioUrl;
+  final List<SongCategoryEntity> categories;
 
   const SongEntity({
     this.id,
@@ -27,6 +30,7 @@ class SongEntity extends Equatable {
     this.coverUrl,
     this.notes,
     this.referenceAudioUrl,
+    this.categories = const [],
   });
 
   factory SongEntity.fromJson(Map<String, dynamic> json) {
@@ -45,6 +49,13 @@ class SongEntity extends Equatable {
       coverUrl: _normalizeOptionalValue(json['coverUrl']),
       notes: _normalizeOptionalValue(json['notes']),
       referenceAudioUrl: _normalizeOptionalValue(json['referenceAudioUrl']),
+      categories: (json['categories'] as List? ?? const [])
+          .map(
+            (item) => SongCategoryEntity.fromJson(
+              Map<String, dynamic>.from(item as Map),
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -88,5 +99,6 @@ class SongEntity extends Equatable {
     coverUrl,
     notes,
     referenceAudioUrl,
+    categories,
   ];
 }

@@ -14,6 +14,7 @@ class EventParticipantCard extends StatelessWidget {
   final String? skillIconKey;
   final EventParticipantStatus status;
   final String? profileImage;
+  final bool canAddSong;
   final VoidCallback? onTap;
 
   const EventParticipantCard({
@@ -23,6 +24,7 @@ class EventParticipantCard extends StatelessWidget {
     this.skillIconKey,
     required this.status,
     this.profileImage,
+    this.canAddSong = false,
     this.onTap,
   });
 
@@ -83,14 +85,28 @@ class EventParticipantCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Text(
-                    skill,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: cs.onSurfaceVariant,
+                  if (skill.isNotEmpty || canAddSong) ...[
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        if (skill.isNotEmpty)
+                          _ParticipantTag(
+                            label: skill,
+                            backgroundColor: cs.surfaceContainer,
+                            foregroundColor: cs.onSurfaceVariant,
+                          ),
+                        if (canAddSong)
+                          _ParticipantTag(
+                            label: 'Música',
+                            iconAsset: 'assets/icons/circle-plus.svg',
+                            backgroundColor: cs.secondaryContainer,
+                            foregroundColor: cs.onSecondaryContainer,
+                          ),
+                      ],
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -150,6 +166,54 @@ class EventParticipantCard extends StatelessWidget {
           foregroundColor: cs.onSurfaceVariant,
         );
     }
+  }
+}
+
+class _ParticipantTag extends StatelessWidget {
+  final String label;
+  final String? iconAsset;
+  final Color backgroundColor;
+  final Color foregroundColor;
+
+  const _ParticipantTag({
+    required this.label,
+    this.iconAsset,
+    required this.backgroundColor,
+    required this.foregroundColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (iconAsset != null) ...[
+            SvgPicture.asset(
+              iconAsset!,
+              width: 12,
+              height: 12,
+              colorFilter: ColorFilter.mode(foregroundColor, BlendMode.srcIn),
+            ),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: foregroundColor,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

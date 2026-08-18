@@ -3,10 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../../core/theme/app_radius.dart';
-import '../../../../../core/utils/youtube_utils.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
+import '../../../../core/ui/widgets/circular_icon_action_button.dart';
 import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../domain/entities/program_item_entity.dart';
 import '../../domain/entities/program_item_input_entity.dart';
@@ -220,22 +220,33 @@ class _ProgramItemTile extends StatelessWidget {
     final text = (!isMusic && !isMedley) ? item as TextProgramItemEntity : null;
     final isEditable = text != null;
 
-    final IconData iconData;
-    final Color avatarBgColor;
     final Color avatarFgColor;
+    final Widget avatarIcon;
 
     if (isMusic) {
-      iconData = Icons.music_note_rounded;
-      avatarBgColor = cs.primaryContainer;
-      avatarFgColor = cs.onPrimaryContainer;
+      avatarFgColor = cs.primary;
+      avatarIcon = SvgPicture.asset(
+        'assets/icons/music.svg',
+        width: 26,
+        height: 26,
+        colorFilter: ColorFilter.mode(avatarFgColor, BlendMode.srcIn),
+      );
     } else if (isMedley) {
-      iconData = Icons.queue_music_rounded;
-      avatarBgColor = cs.secondaryContainer;
-      avatarFgColor = cs.onSecondaryContainer;
+      avatarFgColor = cs.secondary;
+      avatarIcon = SvgPicture.asset(
+        'assets/icons/disc-album.svg',
+        width: 26,
+        height: 26,
+        colorFilter: ColorFilter.mode(avatarFgColor, BlendMode.srcIn),
+      );
     } else {
-      iconData = Icons.text_fields_rounded;
-      avatarBgColor = cs.tertiaryContainer;
-      avatarFgColor = cs.onTertiaryContainer;
+      avatarFgColor = cs.tertiary;
+      avatarIcon = SvgPicture.asset(
+        'assets/icons/type-outline.svg',
+        width: 26,
+        height: 26,
+        colorFilter: ColorFilter.mode(avatarFgColor, BlendMode.srcIn),
+      );
     }
 
     final String titleText = isMusic
@@ -244,10 +255,12 @@ class _ProgramItemTile extends StatelessWidget {
         ? medley!.medleyName
         : text!.title;
 
+    final String? artistText = isMusic && music!.songArtist.isNotEmpty
+        ? music.songArtist
+        : null;
+
     String? subtitleText;
-    if (isMusic && music!.songArtist.isNotEmpty) {
-      subtitleText = music.songArtist;
-    } else if (isMedley && medley!.songs.isNotEmpty) {
+    if (isMedley && medley!.songs.isNotEmpty) {
       subtitleText = medley.songs.map((s) => s.title).join(' • ');
     } else if (text?.description?.isNotEmpty == true) {
       subtitleText = text!.description;
@@ -264,27 +277,34 @@ class _ProgramItemTile extends StatelessWidget {
       if (metaParts.isNotEmpty) musicMetaText = metaParts.join(' • ');
     }
 
-    final thumbnailUrl = music?.songYouTubeUrl?.isNotEmpty == true
-        ? YoutubeUtils.getThumbnail(music!.songYouTubeUrl, quality: 'default')
-        : null;
-
-    final Widget avatarFallback = CircleAvatar(
-      radius: 18,
-      backgroundColor: avatarBgColor,
-      child: Icon(iconData, color: avatarFgColor, size: 18),
-    );
-
-    final Widget avatar = thumbnailUrl != null
-        ? ClipOval(
-            child: Image.network(
-              thumbnailUrl,
-              width: 36,
-              height: 36,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => avatarFallback,
+    final Widget avatar = Stack(
+      clipBehavior: Clip.none,
+      children: [
+        SizedBox(width: 36, height: 36, child: Center(child: avatarIcon)),
+        Positioned(
+          left: -6,
+          top: -6,
+          child: Container(
+            width: 18,
+            height: 18,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: cs.surface,
+              border: Border.all(color: cs.outlineVariant.withValues(alpha: 0.5)),
             ),
-          )
-        : avatarFallback;
+            child: Text(
+              '$position',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: cs.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
+                fontSize: 10,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
 
     Widget trailing = ReorderableDragStartListener(
       index: itemIndex,
@@ -299,26 +319,22 @@ class _ProgramItemTile extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (isEditable) ...[
-            IconButton.filledTonal(
-              visualDensity: VisualDensity.compact,
-              style: IconButton.styleFrom(
-                foregroundColor: cs.onSecondaryContainer,
-                backgroundColor: cs.secondaryContainer,
-                shape: const CircleBorder(),
-              ),
-              icon: const Icon(Icons.edit_outlined, size: 18),
+            CircularIconActionButton(
+              tooltip: 'Editar item',
               onPressed: onEdit,
+              assetPath: 'assets/icons/square-pen.svg',
+              iconColor: cs.onSecondaryContainer,
+              backgroundColor: cs.secondaryContainer,
+              borderColor: cs.secondary.withValues(alpha: 0.3),
             ),
             const SizedBox(width: 4),
-            IconButton.filledTonal(
-              visualDensity: VisualDensity.compact,
-              style: IconButton.styleFrom(
-                foregroundColor: cs.onErrorContainer,
-                backgroundColor: cs.errorContainer,
-                shape: const CircleBorder(),
-              ),
-              icon: const Icon(Icons.delete_outline_rounded, size: 18),
+            CircularIconActionButton(
+              tooltip: 'Remover item',
               onPressed: onDelete,
+              assetPath: 'assets/icons/trash-2.svg',
+              iconColor: cs.onErrorContainer,
+              backgroundColor: cs.errorContainer,
+              borderColor: cs.error.withValues(alpha: 0.3),
             ),
           ],
           const SizedBox(width: 4),
@@ -345,11 +361,22 @@ class _ProgramItemTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  titleText,
-                  style: isEditable
-                      ? theme.textTheme.titleLarge
-                      : theme.textTheme.bodyLarge,
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: titleText,
+                        style: theme.textTheme.bodyLarge,
+                      ),
+                      if (artistText != null)
+                        TextSpan(
+                          text: '  •  $artistText',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -385,27 +412,9 @@ class _ProgramItemTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 6),
-            child: Text(
-              '$position',
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: cs.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-          isEditable
-              ? content
-              : DecoratedBox(
-                  decoration: appCardDecoration(context, radius: AppRadius.cardHero),
-                  child: content,
-                ),
-        ],
+      child: DecoratedBox(
+        decoration: appCardDecoration(context, radius: AppRadius.cardHero),
+        child: content,
       ),
     );
   }

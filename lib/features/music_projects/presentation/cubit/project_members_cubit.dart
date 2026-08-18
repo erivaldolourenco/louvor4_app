@@ -34,18 +34,11 @@ class ProjectMembersCubit extends Cubit<ProjectMembersState> {
     }
 
     try {
-      final results = await Future.wait([
-        _repository.getProjectMembers(projectId),
-        _repository.getProjectSkills(projectId),
-      ]);
-
-      final members = results[0] as List<ProjectMemberEntity>;
-      final skills = results[1] as List<ProjectSkillEntity>;
+      final members = await _repository.getProjectMembers(projectId);
       emit(
         state.copyWith(
           status: ProjectMembersStatus.success,
           members: _sortMembers(members),
-          skills: skills,
           clearErrorMessage: true,
         ),
       );
@@ -69,12 +62,22 @@ class ProjectMembersCubit extends Cubit<ProjectMembersState> {
     );
 
     try {
-      final member = await _repository.getProjectMember(projectId, memberId);
+      // O catálogo completo de skills do projeto só é necessário aqui, para
+      // montar as opções de seleção na tela de edição — a listagem de
+      // membros não precisa mais dele, pois cada membro já traz suas
+      // funções musicais embutidas (id, name, iconKey).
+      final results = await Future.wait([
+        _repository.getProjectMember(projectId, memberId),
+        _repository.getProjectSkills(projectId),
+      ]);
+      final member = results[0] as ProjectMemberEntity;
+      final skills = results[1] as List<ProjectSkillEntity>;
       emit(
         state.copyWith(
           submission: ProjectMembersSubmission.idle,
           clearActiveMemberId: true,
           clearActionErrorMessage: true,
+          skills: skills,
         ),
       );
       return member;
@@ -290,18 +293,11 @@ class ProjectMembersCubit extends Cubit<ProjectMembersState> {
   }
 
   Future<void> _refreshDataAfterMutation() async {
-    final results = await Future.wait([
-      _repository.getProjectMembers(projectId),
-      _repository.getProjectSkills(projectId),
-    ]);
-
-    final members = results[0] as List<ProjectMemberEntity>;
-    final skills = results[1] as List<ProjectSkillEntity>;
+    final members = await _repository.getProjectMembers(projectId);
     emit(
       state.copyWith(
         status: ProjectMembersStatus.success,
         members: _sortMembers(members),
-        skills: skills,
       ),
     );
   }

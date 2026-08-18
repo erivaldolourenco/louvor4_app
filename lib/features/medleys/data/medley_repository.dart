@@ -11,4 +11,8 @@ abstract class MedleyRepository {
   Future<void> deleteMedley(String id);
 
   Future<void> uploadReferenceAudio(String id, String filePath);
+
+  /// Substitui integralmente as categorias associadas ao medley pelas
+  /// informadas em [categoryIds].
+  Future<void> updateMedleyCategories(String medleyId, List<String> categoryIds);
 }

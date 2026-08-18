@@ -4,6 +4,7 @@ import 'package:louvor4_app/features/events/domain/entities/skill_entity.dart';
 
 import '../domain/entities/event_detail_entity.dart';
 import '../domain/entities/event_participant_input_entity.dart';
+import '../domain/entities/event_permissions_entity.dart';
 import '../domain/entities/event_song_input_entity.dart';
 import '../domain/entities/event_entity.dart';
 import '../domain/entities/event_participant_entity.dart';
@@ -36,7 +37,7 @@ abstract class EventsRepository {
     String memberId,
   );
 
-  Future<String> getProjectMemberRole(String projectId);
+  Future<EventPermissionsEntity> getMyEventPermissions(String eventId);
 
   Future<void> saveEventParticipants(
     String eventId,

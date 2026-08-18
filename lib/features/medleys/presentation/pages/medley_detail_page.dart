@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,6 +10,10 @@ import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../../../core/ui/widgets/reference_audio_player.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../core/utils/youtube_utils.dart';
+import '../../../song_categories/data/impl/song_categories_repository_impl.dart';
+import '../../../song_categories/domain/entities/song_category_entity.dart';
+import '../../../song_categories/presentation/widgets/category_filter_sheet.dart';
+import '../../data/impl/medley_repository_impl.dart';
 import '../../domain/entities/medley_entity.dart';
 import '../../domain/entities/medley_item_entity.dart';
 
@@ -37,9 +42,7 @@ class MedleyDetailPage extends StatelessWidget {
     final mutedColor = cs.onSurfaceVariant;
     final count = medley.items.length;
     final hasNotes = medley.notes != null && medley.notes!.isNotEmpty;
-    final hasAudio =
-        medley.referenceAudioUrl != null &&
-        medley.referenceAudioUrl!.trim().isNotEmpty;
+    final canEdit = onEdit != null;
 
     int staggerStep = 0;
 
@@ -159,12 +162,28 @@ class MedleyDetailPage extends StatelessWidget {
               ),
             ],
 
-            // ── Player de áudio de referência ──────────────────
-            if (hasAudio) ...[
+            // ── Categorias (somente dono do medley) ────────────
+            if (medley.id != null && canEdit) ...[
               const SizedBox(height: 16),
               FadeSlideIn(
                 delay: staggerDelay(staggerStep++),
-                child: ReferenceAudioPlayer(url: medley.referenceAudioUrl!),
+                child: _MedleyCategoriesQuickEdit(
+                  medleyId: medley.id!,
+                  initialCategories: medley.categories,
+                ),
+              ),
+            ],
+
+            // ── Áudio de referência ─────────────────────────────
+            if (medley.id != null) ...[
+              const SizedBox(height: 16),
+              FadeSlideIn(
+                delay: staggerDelay(staggerStep++),
+                child: _MedleyReferenceAudioQuickEdit(
+                  medleyId: medley.id!,
+                  initialUrl: medley.referenceAudioUrl,
+                  canEdit: canEdit,
+                ),
               ),
             ],
 
@@ -201,16 +220,14 @@ class _SongItemCard extends StatelessWidget {
 
   const _SongItemCard({required this.item});
 
-  Future<void> _openYouTube() async {
-    final url = item.youTubeUrl;
-    if (url == null || url.isEmpty) return;
+  Future<void> _openLink(String url, String label) async {
     final uri = Uri.tryParse(url);
     if (uri == null) {
-      AppFeedback.showError('URL do YouTube inválida.');
+      AppFeedback.showError('URL do $label inválida.');
       return;
     }
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!launched) AppFeedback.showError('Não foi possível abrir o YouTube.');
+    if (!launched) AppFeedback.showError('Não foi possível abrir o $label.');
   }
 
   @override
@@ -220,6 +237,8 @@ class _SongItemCard extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final hasNotes = item.notes != null && item.notes!.isNotEmpty;
     final hasYouTube = item.youTubeUrl != null && item.youTubeUrl!.isNotEmpty;
+    final hasSpotify = item.spotifyUrl != null && item.spotifyUrl!.isNotEmpty;
+    final hasDeezer = item.deezerUrl != null && item.deezerUrl!.isNotEmpty;
     final mutedColor = cs.onSurfaceVariant;
     final dividerColor = cs.outlineVariant;
     final thumbnailUrl = YoutubeUtils.getThumbnail(item.youTubeUrl);
@@ -360,14 +379,42 @@ class _SongItemCard extends StatelessWidget {
             ),
           ],
 
-          // ── Botão YouTube ──────────────────────────────────────
-          if (hasYouTube) ...[
+          // ── Links de referência (YouTube/Spotify/Deezer) ───────
+          if (hasYouTube || hasSpotify || hasDeezer) ...[
             Divider(height: 1, thickness: 1, color: dividerColor),
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [_YoutubeButton(onTap: _openYouTube)],
+              child: Wrap(
+                alignment: WrapAlignment.start,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  if (hasYouTube)
+                    _PlatformLinkPill(
+                      label: 'YouTube',
+                      iconAsset: 'assets/icons/logo-youtube.svg',
+                      color: isDark
+                          ? const Color(0xFFFF5252)
+                          : const Color(0xFFD32F2F),
+                      onTap: () => _openLink(item.youTubeUrl!, 'YouTube'),
+                    ),
+                  if (hasSpotify)
+                    _PlatformLinkPill(
+                      label: 'Spotify',
+                      iconAsset: 'assets/icons/icon-spotify.svg',
+                      color: isDark
+                          ? const Color(0xFF1DB954)
+                          : const Color(0xFF168A3F),
+                      onTap: () => _openLink(item.spotifyUrl!, 'Spotify'),
+                    ),
+                  if (hasDeezer)
+                    _PlatformLinkPill(
+                      label: 'Deezer',
+                      iconAsset: 'assets/icons/icon-deezer.svg',
+                      color: const Color(0xFFA238FF),
+                      onTap: () => _openLink(item.deezerUrl!, 'Deezer'),
+                    ),
+                ],
               ),
             ),
           ],
@@ -378,28 +425,60 @@ class _SongItemCard extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
+// Pílula de link para plataforma (YouTube, Spotify, Deezer)
+// ---------------------------------------------------------------------------
 
-class _YoutubeButton extends StatelessWidget {
+class _PlatformLinkPill extends StatelessWidget {
+  final String label;
+  final String iconAsset;
+  final Color color;
   final VoidCallback onTap;
 
-  const _YoutubeButton({required this.onTap});
+  const _PlatformLinkPill({
+    required this.label,
+    required this.iconAsset,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.pill),
       child: Container(
-        width: 36,
-        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: cs.errorContainer,
+          color: color.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(AppRadius.pill),
-          border: Border.all(color: cs.error.withValues(alpha: 0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
-        child: Center(
-          child: Icon(Icons.ondemand_video_rounded, size: 18, color: cs.error),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SvgPicture.asset(
+              iconAsset,
+              width: 14,
+              height: 14,
+              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w700,
+                fontSize: 12,
+              ),
+            ),
+            const SizedBox(width: 6),
+            SvgPicture.asset(
+              'assets/icons/external-link.svg',
+              width: 12,
+              height: 12,
+              colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+            ),
+          ],
         ),
       ),
     );
@@ -445,6 +524,288 @@ class _KeyChip extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Atalho de categorização
+// ---------------------------------------------------------------------------
+
+class _MedleyCategoriesQuickEdit extends StatefulWidget {
+  final String medleyId;
+  final List<SongCategoryEntity> initialCategories;
+
+  const _MedleyCategoriesQuickEdit({
+    required this.medleyId,
+    required this.initialCategories,
+  });
+
+  @override
+  State<_MedleyCategoriesQuickEdit> createState() =>
+      _MedleyCategoriesQuickEditState();
+}
+
+class _MedleyCategoriesQuickEditState
+    extends State<_MedleyCategoriesQuickEdit> {
+  final _medleyRepo = MedleyRepositoryImpl();
+  final _categoriesRepo = SongCategoriesRepositoryImpl();
+  late List<SongCategoryEntity> _categories;
+  bool _isOpeningPicker = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _categories = widget.initialCategories;
+  }
+
+  Future<void> _openPicker() async {
+    setState(() => _isOpeningPicker = true);
+
+    List<SongCategoryEntity> catalog;
+    try {
+      catalog = await _categoriesRepo.getSongCategories();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isOpeningPicker = false);
+      AppFeedback.showError(e.toString().replaceFirst('Exception: ', ''));
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() => _isOpeningPicker = false);
+
+    if (catalog.isEmpty) {
+      AppFeedback.showInfo('Você ainda não tem categorias cadastradas.');
+      return;
+    }
+
+    final result = await showCategoryFilterSheet(
+      context,
+      categories: catalog,
+      initiallySelectedIds: _categories.map((c) => c.id).toSet(),
+      title: 'Categorizar medley',
+      subtitle: 'Selecione uma ou mais categorias para este medley.',
+      applyLabel: 'Salvar',
+    );
+    if (result == null || !mounted) return;
+
+    try {
+      await _medleyRepo.updateMedleyCategories(widget.medleyId, result.toList());
+      if (!mounted) return;
+      setState(() {
+        _categories = catalog
+            .where((category) => result.contains(category.id))
+            .toList();
+      });
+      AppFeedback.showSuccess('Categorias atualizadas com sucesso.');
+    } catch (e) {
+      if (!mounted) return;
+      AppFeedback.showError(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final mutedColor = cs.onSurfaceVariant;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Categorias',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: _isOpeningPicker ? null : _openPicker,
+              icon: _isOpeningPicker
+                  ? SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: cs.primary,
+                      ),
+                    )
+                  : SvgPicture.asset(
+                      'assets/icons/tag-plus.svg',
+                      width: 16,
+                      height: 16,
+                      colorFilter: ColorFilter.mode(
+                        cs.primary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+              label: Text(_categories.isEmpty ? 'Adicionar' : 'Editar'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        if (_categories.isEmpty)
+          Text(
+            'Nenhuma categoria atribuída.',
+            style: theme.textTheme.bodySmall?.copyWith(color: mutedColor),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _categories.map((category) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: cs.primaryContainer,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  border: Border.all(
+                    color: cs.primary.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Text(
+                  category.name,
+                  style: TextStyle(
+                    color: cs.onPrimaryContainer,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Atalho de áudio de referência
+// ---------------------------------------------------------------------------
+
+class _MedleyReferenceAudioQuickEdit extends StatefulWidget {
+  final String medleyId;
+  final String? initialUrl;
+  final bool canEdit;
+
+  const _MedleyReferenceAudioQuickEdit({
+    required this.medleyId,
+    required this.initialUrl,
+    required this.canEdit,
+  });
+
+  @override
+  State<_MedleyReferenceAudioQuickEdit> createState() =>
+      _MedleyReferenceAudioQuickEditState();
+}
+
+class _MedleyReferenceAudioQuickEditState
+    extends State<_MedleyReferenceAudioQuickEdit> {
+  final _medleyRepo = MedleyRepositoryImpl();
+  late String? _currentUrl;
+  bool _isUploading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUrl = widget.initialUrl;
+  }
+
+  Future<void> _pickAndUpload() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.audio,
+      allowMultiple: false,
+    );
+    final path = (result != null && result.files.isNotEmpty)
+        ? result.files.first.path
+        : null;
+    if (path == null) return;
+
+    setState(() => _isUploading = true);
+    try {
+      await _medleyRepo.uploadReferenceAudio(widget.medleyId, path);
+      final medleys = await _medleyRepo.getUserMedleys();
+      if (!mounted) return;
+      String? updatedUrl;
+      for (final m in medleys) {
+        if (m.id == widget.medleyId) {
+          updatedUrl = m.referenceAudioUrl;
+          break;
+        }
+      }
+      setState(() {
+        _currentUrl = updatedUrl;
+        _isUploading = false;
+      });
+      AppFeedback.showSuccess('Áudio de referência atualizado com sucesso.');
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isUploading = false);
+      AppFeedback.showError(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.canEdit && _currentUrl == null) {
+      return const SizedBox.shrink();
+    }
+
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final mutedColor = cs.onSurfaceVariant;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Áudio de referência',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            if (widget.canEdit)
+              TextButton.icon(
+                onPressed: _isUploading ? null : _pickAndUpload,
+                icon: _isUploading
+                    ? SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: cs.primary,
+                        ),
+                      )
+                    : Icon(
+                        Icons.upload_file_rounded,
+                        size: 16,
+                        color: cs.primary,
+                      ),
+                label: Text(_currentUrl == null ? 'Adicionar' : 'Substituir'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (_currentUrl != null)
+          ReferenceAudioPlayer(url: _currentUrl!)
+        else
+          Text(
+            'Nenhum áudio de referência cadastrado.',
+            style: theme.textTheme.bodySmall?.copyWith(color: mutedColor),
+          ),
+      ],
     );
   }
 }

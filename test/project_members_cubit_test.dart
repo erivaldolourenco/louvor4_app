@@ -40,7 +40,7 @@ class _FakeMusicProjectsRepository implements MusicProjectsRepository {
         email: '${input.username}@mail.com',
         profileImage: null,
         projectRole: ProjectMemberRole.member,
-        skillIds: const [],
+        skills: const [],
       ),
     ];
   }
@@ -87,7 +87,9 @@ class _FakeMusicProjectsRepository implements MusicProjectsRepository {
         email: member.email,
         profileImage: member.profileImage,
         projectRole: input.projectRole,
-        skillIds: input.skillIds,
+        skills: input.skillIds
+            .map((id) => ProjectSkillEntity(id: id, name: ''))
+            .toList(),
       );
     }).toList();
   }
@@ -164,49 +166,96 @@ class _FakeMusicProjectsRepository implements MusicProjectsRepository {
 
 void main() {
   group('ProjectMembersCubit', () {
-    test('carrega membros e skills ordenando owner antes dos demais', () async {
-      final repo = _FakeMusicProjectsRepository(
-        members: const [
-          ProjectMemberEntity(
-            id: 'm2',
-            userId: 'u2',
-            username: 'ana',
-            firstName: 'Ana',
-            lastName: 'Silva',
-            email: 'ana@mail.com',
-            profileImage: null,
-            projectRole: ProjectMemberRole.member,
-            skillIds: ['s1'],
-          ),
-          ProjectMemberEntity(
-            id: 'm1',
-            userId: 'u1',
-            username: 'owner',
-            firstName: 'Carlos',
-            lastName: 'Lima',
-            email: 'carlos@mail.com',
-            profileImage: null,
-            projectRole: ProjectMemberRole.owner,
-            skillIds: [],
-          ),
-        ],
-        skills: const [ProjectSkillEntity(id: 's1', name: 'Vocal')],
-      );
+    test(
+      'carrega membros com as funções musicais já embutidas, ordenando owner antes dos demais, sem chamar /skills',
+      () async {
+        final repo = _FakeMusicProjectsRepository(
+          members: const [
+            ProjectMemberEntity(
+              id: 'm2',
+              userId: 'u2',
+              username: 'ana',
+              firstName: 'Ana',
+              lastName: 'Silva',
+              email: 'ana@mail.com',
+              profileImage: null,
+              projectRole: ProjectMemberRole.member,
+              skills: [ProjectSkillEntity(id: 's1', name: 'Vocal', iconKey: 'MIC_VOCAL')],
+            ),
+            ProjectMemberEntity(
+              id: 'm1',
+              userId: 'u1',
+              username: 'owner',
+              firstName: 'Carlos',
+              lastName: 'Lima',
+              email: 'carlos@mail.com',
+              profileImage: null,
+              projectRole: ProjectMemberRole.owner,
+              skills: [],
+            ),
+          ],
+        );
 
-      final cubit = ProjectMembersCubit(
-        repository: repo,
-        projectId: 'p1',
-        canManageMembers: true,
-      );
+        final cubit = ProjectMembersCubit(
+          repository: repo,
+          projectId: 'p1',
+          canManageMembers: true,
+        );
 
-      await cubit.load();
+        await cubit.load();
 
-      expect(cubit.state.status, ProjectMembersStatus.success);
-      expect(cubit.state.members.first.projectRole, ProjectMemberRole.owner);
-      expect(cubit.state.skills.single.name, 'Vocal');
+        expect(cubit.state.status, ProjectMembersStatus.success);
+        expect(cubit.state.members.first.projectRole, ProjectMemberRole.owner);
+        expect(cubit.state.members.last.skills.single.name, 'Vocal');
+        expect(cubit.state.members.last.skills.single.iconKey, 'MIC_VOCAL');
+        // A listagem não precisa mais do catálogo de skills: ele só é
+        // carregado sob demanda ao abrir a edição de um membro.
+        expect(cubit.state.skills, isEmpty);
 
-      await cubit.close();
-    });
+        await cubit.close();
+      },
+    );
+
+    test(
+      'carrega o catálogo de skills do projeto apenas ao abrir a edição de um membro',
+      () async {
+        const member = ProjectMemberEntity(
+          id: 'm2',
+          userId: 'u2',
+          username: 'ana',
+          firstName: 'Ana',
+          lastName: 'Silva',
+          email: 'ana@mail.com',
+          profileImage: null,
+          projectRole: ProjectMemberRole.member,
+          skills: [ProjectSkillEntity(id: 's1', name: 'Vocal')],
+        );
+
+        final repo = _FakeMusicProjectsRepository(
+          members: const [member],
+          skills: const [
+            ProjectSkillEntity(id: 's1', name: 'Vocal'),
+            ProjectSkillEntity(id: 's2', name: 'Teclado'),
+          ],
+        );
+
+        final cubit = ProjectMembersCubit(
+          repository: repo,
+          projectId: 'p1',
+          canManageMembers: true,
+        );
+
+        await cubit.load();
+        expect(cubit.state.skills, isEmpty);
+
+        final loaded = await cubit.loadMemberDetail(member.id);
+
+        expect(loaded?.id, member.id);
+        expect(cubit.state.skills.map((s) => s.name), ['Vocal', 'Teclado']);
+
+        await cubit.close();
+      },
+    );
 
     test('não permite remover owner', () async {
       const owner = ProjectMemberEntity(
@@ -218,7 +267,7 @@ void main() {
         email: 'carlos@mail.com',
         profileImage: null,
         projectRole: ProjectMemberRole.owner,
-        skillIds: [],
+        skills: [],
       );
 
       final repo = _FakeMusicProjectsRepository(members: const [owner]);
@@ -247,7 +296,7 @@ void main() {
         email: 'ana@mail.com',
         profileImage: null,
         projectRole: ProjectMemberRole.member,
-        skillIds: ['s1'],
+        skills: [ProjectSkillEntity(id: 's1', name: 'Vocal')],
       );
 
       final repo = _FakeMusicProjectsRepository(

@@ -12,11 +12,15 @@ class EventDetailState extends Equatable {
   final List<EventParticipant> participants;
   final List<EventSong> songs;
   final String? errorMessage;
+  final int? errorStatusCode;
   final String? actionErrorMessage;
   final Map<String, String> skillsMap;
   final bool isProjectAdmin;
   final bool canAddSongs;
+  final bool canRemoveSongs;
   final bool canEditChordSheet;
+  final bool canEditEvent;
+  final bool canManageParticipants;
   final String? currentUserId;
   final String? deletingSongId;
   final bool participantsLoadFailed;
@@ -28,11 +32,15 @@ class EventDetailState extends Equatable {
     this.participants = const [],
     this.songs = const [],
     this.errorMessage,
+    this.errorStatusCode,
     this.actionErrorMessage,
     this.skillsMap = const {},
     this.isProjectAdmin = false,
     this.canAddSongs = false,
+    this.canRemoveSongs = false,
     this.canEditChordSheet = false,
+    this.canEditEvent = false,
+    this.canManageParticipants = false,
     this.currentUserId,
     this.deletingSongId,
     this.participantsLoadFailed = false,
@@ -45,12 +53,17 @@ class EventDetailState extends Equatable {
     List<EventParticipant>? participants,
     List<EventSong>? songs,
     String? errorMessage,
+    int? errorStatusCode,
+    bool clearErrorStatusCode = false,
     String? actionErrorMessage,
     bool clearActionErrorMessage = false,
     Map<String, String>? skillsMap,
     bool? isProjectAdmin,
     bool? canAddSongs,
+    bool? canRemoveSongs,
     bool? canEditChordSheet,
+    bool? canEditEvent,
+    bool? canManageParticipants,
     String? currentUserId,
     String? deletingSongId,
     bool clearDeletingSongId = false,
@@ -63,13 +76,20 @@ class EventDetailState extends Equatable {
       participants: participants ?? this.participants,
       songs: songs ?? this.songs,
       errorMessage: errorMessage ?? this.errorMessage,
+      errorStatusCode: clearErrorStatusCode
+          ? null
+          : (errorStatusCode ?? this.errorStatusCode),
       actionErrorMessage: clearActionErrorMessage
           ? null
           : (actionErrorMessage ?? this.actionErrorMessage),
       skillsMap: skillsMap ?? this.skillsMap,
       isProjectAdmin: isProjectAdmin ?? this.isProjectAdmin,
       canAddSongs: canAddSongs ?? this.canAddSongs,
+      canRemoveSongs: canRemoveSongs ?? this.canRemoveSongs,
       canEditChordSheet: canEditChordSheet ?? this.canEditChordSheet,
+      canEditEvent: canEditEvent ?? this.canEditEvent,
+      canManageParticipants:
+          canManageParticipants ?? this.canManageParticipants,
       currentUserId: currentUserId ?? this.currentUserId,
       deletingSongId: clearDeletingSongId
           ? null
@@ -80,8 +100,14 @@ class EventDetailState extends Equatable {
     );
   }
 
+  /// `true` quando o erro de carregamento não deve ser resolvido tentando
+  /// novamente (ex: acesso negado ou evento não encontrado/removido).
+  bool get loadErrorIsRetryable =>
+      errorStatusCode != 403 && errorStatusCode != 404;
+
   bool canDeleteSong(EventSong song) {
     if (isProjectAdmin) return true;
+    if (canRemoveSongs) return true;
     if (!canAddSongs) return false;
     final userId = currentUserId;
     if (userId == null || userId.isEmpty) return false;
@@ -107,11 +133,15 @@ class EventDetailState extends Equatable {
     participants,
     songs,
     errorMessage,
+    errorStatusCode,
     actionErrorMessage,
     skillsMap,
     isProjectAdmin,
     canAddSongs,
+    canRemoveSongs,
     canEditChordSheet,
+    canEditEvent,
+    canManageParticipants,
     currentUserId,
     deletingSongId,
     participantsLoadFailed,

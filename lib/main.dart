@@ -14,6 +14,7 @@ import 'core/ui/app_feedback.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/notifications/presentation/pages/avisos_page.dart';
 import 'features/root/presentation/pages/root_page.dart';
+import 'features/song_categories/presentation/pages/song_categories_page.dart';
 import 'features/user_profile/apresentation/pages/profile_page.dart';
 import 'features/user_profile/apresentation/pages/user_unavailability_page.dart';
 
@@ -93,6 +94,7 @@ class Louvor4App extends StatelessWidget {
             AvisosPage.routeName: (_) => const StandaloneAvisosPage(),
             UserUnavailabilityPage.routeName: (_) =>
                 const UserUnavailabilityPage(),
+            SongCategoriesPage.routeName: (_) => const SongCategoriesPage(),
           },
           navigatorObservers: [appRouteObserver],
           home: isLoggedIn ? const RootPage() : const LoginPage(),

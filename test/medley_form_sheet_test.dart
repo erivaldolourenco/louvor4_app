@@ -32,6 +32,12 @@ class _FakeMedleyRepository implements MedleyRepository {
 
   @override
   Future<void> uploadReferenceAudio(String id, String filePath) async {}
+
+  @override
+  Future<void> updateMedleyCategories(
+    String medleyId,
+    List<String> categoryIds,
+  ) async {}
 }
 
 // ---------------------------------------------------------------------------

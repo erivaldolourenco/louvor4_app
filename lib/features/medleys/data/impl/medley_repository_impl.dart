@@ -107,6 +107,26 @@ class MedleyRepositoryImpl implements MedleyRepository {
     }
   }
 
+  @override
+  Future<void> updateMedleyCategories(
+    String medleyId,
+    List<String> categoryIds,
+  ) async {
+    try {
+      await _dio.put(
+        '/medleys/$medleyId/categories',
+        data: {'categoryIds': categoryIds},
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível atualizar as categorias do medley.',
+        ),
+      );
+    }
+  }
+
   String _extractApiErrorMessage(
     DioException error, {
     String fallback = 'Erro inesperado.',

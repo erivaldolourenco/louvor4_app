@@ -86,6 +86,21 @@ class SongsRepositoryImpl implements SongsRepository {
   }
 
   @override
+  Future<void> updateSongCategories(
+    String songId,
+    List<String> categoryIds,
+  ) async {
+    try {
+      await _dio.put(
+        '/songs/$songId/categories',
+        data: {'categoryIds': categoryIds},
+      );
+    } on DioException catch (e) {
+      throw Exception(_extractApiErrorMessage(e));
+    }
+  }
+
+  @override
   Future<String?> getSongLyrics(String songId) async {
     try {
       final response = await _dio.get('/songs/$songId/lyrics');

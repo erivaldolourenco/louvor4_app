@@ -131,7 +131,9 @@ class _EventDetailViewState extends State<_EventDetailView>
         builder: (context, state) {
           if (state.status != EventDetailStatus.success ||
               state.event == null ||
-              (!state.isProjectAdmin && !state.canAddSongs)) {
+              (!state.isProjectAdmin &&
+                  !state.canAddSongs &&
+                  !state.canManageParticipants)) {
             return const SizedBox.shrink();
           }
           return _buildFab(state);
@@ -149,8 +151,10 @@ class _EventDetailViewState extends State<_EventDetailView>
               message:
                   state.errorMessage ??
                   'Não foi possível carregar os detalhes do evento.',
-              onRetry: () =>
-                  context.read<EventDetailCubit>().load(widget.eventId),
+              onRetry: state.loadErrorIsRetryable
+                  ? () => context.read<EventDetailCubit>().load(widget.eventId)
+                  : null,
+              onBack: () => Navigator.of(context).pop(),
             );
           }
 
@@ -158,8 +162,7 @@ class _EventDetailViewState extends State<_EventDetailView>
           if (event == null) {
             return _DetailErrorState(
               message: 'Evento não encontrado.',
-              onRetry: () =>
-                  context.read<EventDetailCubit>().load(widget.eventId),
+              onBack: () => Navigator.of(context).pop(),
             );
           }
 
@@ -172,7 +175,7 @@ class _EventDetailViewState extends State<_EventDetailView>
                   backgroundImageUrl: event.projectImageUrl,
                   isCollapsed: _headerCollapsed,
                   actions: [
-                    if (state.isProjectAdmin)
+                    if (state.isProjectAdmin || state.canEditEvent)
                       PopupMenuButton<_EventMenuAction>(
                         tooltip: 'Mais opções',
                         icon: const Icon(Icons.more_vert_rounded),
@@ -201,27 +204,28 @@ class _EventDetailViewState extends State<_EventDetailView>
                               contentPadding: EdgeInsets.zero,
                             ),
                           ),
-                          PopupMenuItem(
-                            value: _EventMenuAction.delete,
-                            child: ListTile(
-                              leading: SvgPicture.asset(
-                                'assets/icons/trash-2.svg',
-                                width: 20,
-                                height: 20,
-                                colorFilter: ColorFilter.mode(
-                                  Theme.of(context).colorScheme.error,
-                                  BlendMode.srcIn,
+                          if (state.isProjectAdmin)
+                            PopupMenuItem(
+                              value: _EventMenuAction.delete,
+                              child: ListTile(
+                                leading: SvgPicture.asset(
+                                  'assets/icons/trash-2.svg',
+                                  width: 20,
+                                  height: 20,
+                                  colorFilter: ColorFilter.mode(
+                                    Theme.of(context).colorScheme.error,
+                                    BlendMode.srcIn,
+                                  ),
                                 ),
-                              ),
-                              title: Text(
-                                'Excluir evento',
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
+                                title: Text(
+                                  'Excluir evento',
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.error,
+                                  ),
                                 ),
+                                contentPadding: EdgeInsets.zero,
                               ),
-                              contentPadding: EdgeInsets.zero,
                             ),
-                          ),
                         ],
                       ),
                   ],
@@ -416,7 +420,7 @@ class _EventDetailViewState extends State<_EventDetailView>
         } else {
           // Outras abas: FAB simples com ícones dedicados por aba
           final action = switch (index) {
-            0 when state.isProjectAdmin => (
+            0 when state.isProjectAdmin || state.canManageParticipants => (
               icon: SvgPicture.asset(
                 'assets/icons/user-round-plus.svg',
                 key: ValueKey(index),
@@ -596,49 +600,59 @@ class _EventDetailTabs extends StatelessWidget {
         final activeIndex =
             controller.animation?.value.round() ?? controller.index;
 
-        return TabBar(
-          controller: controller,
-          indicator: BoxDecoration(
-            color: cs.primaryContainer,
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.pill),
+            border: Border.all(
+              color: cs.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.55),
+            ),
           ),
-          indicatorSize: TabBarIndicatorSize.tab,
-          indicatorPadding: const EdgeInsets.symmetric(
-            vertical: 8,
-            horizontal: 6,
-          ),
-          dividerColor: Colors.transparent,
-          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-          labelColor: activeColor,
-          unselectedLabelColor: cs.onSurfaceVariant,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w700),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-          tabs: [
-            for (var i = 0; i < tabs.length; i++)
-              Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      tabs[i].assetPath,
-                      width: 18,
-                      height: 18,
-                      colorFilter: ColorFilter.mode(
-                        i == activeIndex ? activeColor : cs.onSurfaceVariant,
-                        BlendMode.srcIn,
+          child: TabBar(
+            controller: controller,
+            indicator: BoxDecoration(
+              color: cs.primaryContainer,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              border: Border.all(color: cs.primary.withValues(alpha: 0.4)),
+            ),
+            indicatorSize: TabBarIndicatorSize.tab,
+            indicatorPadding: const EdgeInsets.symmetric(
+              vertical: 8,
+              horizontal: 6,
+            ),
+            dividerColor: Colors.transparent,
+            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+            labelColor: activeColor,
+            unselectedLabelColor: cs.onSurfaceVariant,
+            labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+            tabs: [
+              for (var i = 0; i < tabs.length; i++)
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        tabs[i].assetPath,
+                        width: 18,
+                        height: 18,
+                        colorFilter: ColorFilter.mode(
+                          i == activeIndex ? activeColor : cs.onSurfaceVariant,
+                          BlendMode.srcIn,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        tabs[i].label,
-                        overflow: TextOverflow.ellipsis,
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          tabs[i].label,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         );
       },
     );
@@ -701,8 +715,8 @@ class _EventHeroCard extends StatelessWidget {
           alignment: WrapAlignment.center,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
-            _MetaItem(icon: Icons.calendar_today_rounded, label: date),
-            _MetaItem(icon: Icons.access_time_rounded, label: time),
+            _MetaItem(iconAsset: 'assets/icons/calendar.svg', label: date),
+            _MetaItem(iconAsset: 'assets/icons/time.svg', label: time),
             if (onLocationTap != null)
               SpringTap(
                 onTap: onLocationTap,
@@ -733,10 +747,14 @@ class _EventHeroCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Icon(
-                        Icons.open_in_new_rounded,
-                        size: 11,
-                        color: cs.onPrimaryContainer,
+                      SvgPicture.asset(
+                        'assets/icons/external-link.svg',
+                        width: 11,
+                        height: 11,
+                        colorFilter: ColorFilter.mode(
+                          cs.onPrimaryContainer,
+                          BlendMode.srcIn,
+                        ),
                       ),
                     ],
                   ),
@@ -756,24 +774,34 @@ class _EventHeroCard extends StatelessWidget {
 }
 
 class _MetaItem extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? iconAsset;
   final String label;
   final bool muted;
 
   const _MetaItem({
-    required this.icon,
+    this.icon,
+    this.iconAsset,
     required this.label,
     this.muted = false,
-  });
+  }) : assert(icon != null || iconAsset != null);
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final iconColor = muted ? cs.onSurfaceVariant : cs.primary;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 15, color: muted ? cs.onSurfaceVariant : cs.primary),
+        iconAsset != null
+            ? SvgPicture.asset(
+                iconAsset!,
+                width: 15,
+                height: 15,
+                colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+              )
+            : Icon(icon, size: 15, color: iconColor),
         const SizedBox(width: 5),
         Text(
           label,
@@ -878,11 +906,15 @@ class _ParticipantsTab extends StatelessWidget {
               skillIconKey: participant.skillIconKey,
               status: participant.status,
               profileImage: participant.profileImage,
+              canAddSong: participant.permissions.contains(
+                EventPermission.addSong,
+              ),
               onTap: () => showUserProfileDialog(
                 context,
                 name: participant.fullName,
                 profileImageUrl: participant.profileImage,
                 eventSkill: state.skillsMap[participant.skillId] ?? '',
+                eventSkillIconKey: participant.skillIconKey,
                 eventStatus: participant.status,
                 onAcceptInvite: canRespondToInvite
                     ? () => _handleParticipantInviteAction(
@@ -1166,9 +1198,14 @@ class _DetailLoadingState extends StatelessWidget {
 
 class _DetailErrorState extends StatelessWidget {
   final String message;
-  final VoidCallback onRetry;
+  final VoidCallback? onRetry;
+  final VoidCallback onBack;
 
-  const _DetailErrorState({required this.message, required this.onRetry});
+  const _DetailErrorState({
+    required this.message,
+    this.onRetry,
+    required this.onBack,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -1195,10 +1232,18 @@ class _DetailErrorState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Tentar novamente'),
+            if (onRetry != null) ...[
+              FilledButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Tentar novamente'),
+              ),
+              const SizedBox(height: 8),
+            ],
+            OutlinedButton.icon(
+              onPressed: onBack,
+              icon: const Icon(Icons.arrow_back_rounded),
+              label: const Text('Voltar'),
             ),
           ],
         ),

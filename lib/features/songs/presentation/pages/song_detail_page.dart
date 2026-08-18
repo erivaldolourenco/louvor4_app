@@ -1,6 +1,6 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_colors.dart';
@@ -12,6 +12,10 @@ import '../../../../core/ui/widgets/reference_audio_player.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../../../core/utils/youtube_utils.dart';
+import '../../../song_categories/data/impl/song_categories_repository_impl.dart';
+import '../../../song_categories/domain/entities/song_category_entity.dart';
+import '../../../song_categories/presentation/widgets/category_filter_sheet.dart';
+import '../../data/impl/songs_repository_impl.dart';
 
 Future<void> openSongDetailPage(
   BuildContext context, {
@@ -106,24 +110,6 @@ class SongDetailPage extends StatelessWidget {
     }
   }
 
-  void _shareSong() {
-    final buffer = StringBuffer('🎵 $title — $artist');
-    final normalizedKey = musicKey?.trim();
-    final normalizedBpm = bpm?.trim();
-
-    if (normalizedKey != null && normalizedKey.isNotEmpty) {
-      buffer.write('\n🗝️ Tom: $normalizedKey');
-    }
-    if (normalizedBpm != null && normalizedBpm.isNotEmpty) {
-      buffer.write(' | ⏱️ BPM: $normalizedBpm');
-    }
-    if (youTubeUrl != null && youTubeUrl!.trim().isNotEmpty) {
-      buffer.write('\n▶️ YouTube: $youTubeUrl');
-    }
-
-    Share.share(buffer.toString());
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -143,8 +129,6 @@ class SongDetailPage extends StatelessWidget {
     final hasSpotify = spotifyUrl != null && spotifyUrl!.trim().isNotEmpty;
     final hasDeezer = deezerUrl != null && deezerUrl!.trim().isNotEmpty;
     final hasCover = UrlUtils.isValidNetworkUrl(coverUrl);
-    final hasAudio =
-        referenceAudioUrl != null && referenceAudioUrl!.trim().isNotEmpty;
 
     int staggerStep = 0;
 
@@ -152,59 +136,17 @@ class SongDetailPage extends StatelessWidget {
       appBar: StandardSectionAppBar(
         title: 'Detalhes da Música',
         actions: [
-          PopupMenuButton<String>(
-            tooltip: 'Mais opções',
-            color: cs.surface,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.card),
-            ),
-            icon: Icon(Icons.more_vert_rounded, color: cs.primary),
-            onSelected: (value) {
-              if (value == 'share') _shareSong();
-              if (value == 'edit') onEdit?.call();
-            },
-            itemBuilder: (_) => [
-              PopupMenuItem<String>(
-                value: 'share',
-                padding: EdgeInsets.zero,
-                child: ListTile(
-                  leading: SvgPicture.asset(
-                    'assets/icons/shared.svg',
-                    width: 20,
-                    height: 20,
-                    colorFilter: ColorFilter.mode(
-                      cs.onSurface,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                  title: const Text('Compartilhar'),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  dense: true,
-                ),
+          if (onEdit != null)
+            IconButton(
+              tooltip: 'Editar música',
+              icon: SvgPicture.asset(
+                'assets/icons/square-pen.svg',
+                width: 22,
+                height: 22,
+                colorFilter: ColorFilter.mode(cs.primary, BlendMode.srcIn),
               ),
-              if (onEdit != null)
-                PopupMenuItem<String>(
-                  value: 'edit',
-                  padding: EdgeInsets.zero,
-                  child: ListTile(
-                    leading: SvgPicture.asset(
-                      'assets/icons/square-pen.svg',
-                      width: 20,
-                      height: 20,
-                      colorFilter: ColorFilter.mode(
-                        cs.onSurface,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                    title: const Text('Editar música'),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                    ),
-                    dense: true,
-                  ),
-                ),
-            ],
-          ),
+              onPressed: onEdit,
+            ),
         ],
       ),
       body: SafeArea(
@@ -334,7 +276,10 @@ class SongDetailPage extends StatelessWidget {
                             foregroundColor: cs.onSecondaryContainer,
                             minimumSize: const Size.fromHeight(50),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(AppRadius.pill),
+                              side: BorderSide(
+                                color: cs.secondary.withValues(alpha: 0.3),
+                              ),
                             ),
                           ),
                           icon: SvgPicture.asset(
@@ -361,7 +306,10 @@ class SongDetailPage extends StatelessWidget {
                             foregroundColor: cs.onPrimary,
                             minimumSize: const Size.fromHeight(50),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                              borderRadius: BorderRadius.circular(AppRadius.pill),
+                              side: BorderSide(
+                                color: cs.onPrimary.withValues(alpha: 0.3),
+                              ),
                             ),
                           ),
                           icon: SvgPicture.asset(
@@ -410,12 +358,26 @@ class SongDetailPage extends StatelessWidget {
               ),
             ],
 
-            // ── 4. Player de áudio de referência ──────────────────
-            if (hasAudio) ...[
+            // ── 3.5. Categorias (somente dono da música) ────────────
+            if (songId != null && onEdit != null) ...[
               const SizedBox(height: 24),
               FadeSlideIn(
                 delay: staggerDelay(staggerStep++),
-                child: ReferenceAudioPlayer(url: referenceAudioUrl!),
+                child: _CategoriesQuickEdit(songId: songId!),
+              ),
+            ],
+
+            // ── 4. Áudio de referência ──────────────────────────────
+            // Idem: substituir o áudio só é permitido ao dono da música.
+            if (songId != null) ...[
+              const SizedBox(height: 24),
+              FadeSlideIn(
+                delay: staggerDelay(staggerStep++),
+                child: _ReferenceAudioQuickEdit(
+                  songId: songId!,
+                  initialUrl: referenceAudioUrl,
+                  canEdit: onEdit != null,
+                ),
               ),
             ],
 
@@ -550,12 +512,311 @@ class _PlatformTile extends StatelessWidget {
         label,
         style: const TextStyle(fontWeight: FontWeight.w700),
       ),
-      trailing: Icon(
-        Icons.open_in_new_rounded,
-        size: 18,
-        color: cs.onSurfaceVariant,
+      trailing: SvgPicture.asset(
+        'assets/icons/external-link.svg',
+        width: 18,
+        height: 18,
+        colorFilter: ColorFilter.mode(cs.onSurfaceVariant, BlendMode.srcIn),
       ),
       onTap: onTap,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Atalho de categorização
+// ---------------------------------------------------------------------------
+
+class _CategoriesQuickEdit extends StatefulWidget {
+  final String songId;
+
+  const _CategoriesQuickEdit({required this.songId});
+
+  @override
+  State<_CategoriesQuickEdit> createState() => _CategoriesQuickEditState();
+}
+
+class _CategoriesQuickEditState extends State<_CategoriesQuickEdit> {
+  final _songsRepo = SongsRepositoryImpl();
+  final _categoriesRepo = SongCategoriesRepositoryImpl();
+
+  bool _isLoading = true;
+  bool _isOpeningPicker = false;
+  List<SongCategoryEntity> _categories = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final song = await _songsRepo.getSongById(widget.songId);
+      if (!mounted) return;
+      setState(() {
+        _categories = song.categories;
+        _isLoading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _openPicker() async {
+    setState(() => _isOpeningPicker = true);
+
+    List<SongCategoryEntity> catalog;
+    try {
+      catalog = await _categoriesRepo.getSongCategories();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isOpeningPicker = false);
+      AppFeedback.showError(e.toString().replaceFirst('Exception: ', ''));
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() => _isOpeningPicker = false);
+
+    if (catalog.isEmpty) {
+      AppFeedback.showInfo('Você ainda não tem categorias cadastradas.');
+      return;
+    }
+
+    final result = await showCategoryFilterSheet(
+      context,
+      categories: catalog,
+      initiallySelectedIds: _categories.map((c) => c.id).toSet(),
+      title: 'Categorizar música',
+      subtitle: 'Selecione uma ou mais categorias para esta música.',
+      applyLabel: 'Salvar',
+    );
+    if (result == null || !mounted) return;
+
+    try {
+      await _songsRepo.updateSongCategories(widget.songId, result.toList());
+      if (!mounted) return;
+      setState(() {
+        _categories = catalog
+            .where((category) => result.contains(category.id))
+            .toList();
+      });
+      AppFeedback.showSuccess('Categorias atualizadas com sucesso.');
+    } catch (e) {
+      if (!mounted) return;
+      AppFeedback.showError(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final mutedColor = cs.onSurfaceVariant;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Categorias',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: _isOpeningPicker ? null : _openPicker,
+              icon: _isOpeningPicker
+                  ? SizedBox(
+                      width: 14,
+                      height: 14,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: cs.primary,
+                      ),
+                    )
+                  : SvgPicture.asset(
+                      'assets/icons/tag-plus.svg',
+                      width: 16,
+                      height: 16,
+                      colorFilter: ColorFilter.mode(
+                        cs.primary,
+                        BlendMode.srcIn,
+                      ),
+                    ),
+                label: Text(_categories.isEmpty ? 'Adicionar' : 'Editar'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        if (_isLoading)
+          SizedBox(
+            height: 28,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: mutedColor,
+                ),
+              ),
+            ),
+          )
+        else if (_categories.isEmpty)
+          Text(
+            'Nenhuma categoria atribuída.',
+            style: theme.textTheme.bodySmall?.copyWith(color: mutedColor),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _categories.map((category) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: cs.primaryContainer,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  border: Border.all(
+                    color: cs.primary.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Text(
+                  category.name,
+                  style: TextStyle(
+                    color: cs.onPrimaryContainer,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+      ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Atalho de áudio de referência
+// ---------------------------------------------------------------------------
+
+class _ReferenceAudioQuickEdit extends StatefulWidget {
+  final String songId;
+  final String? initialUrl;
+  final bool canEdit;
+
+  const _ReferenceAudioQuickEdit({
+    required this.songId,
+    required this.initialUrl,
+    required this.canEdit,
+  });
+
+  @override
+  State<_ReferenceAudioQuickEdit> createState() =>
+      _ReferenceAudioQuickEditState();
+}
+
+class _ReferenceAudioQuickEditState extends State<_ReferenceAudioQuickEdit> {
+  final _songsRepo = SongsRepositoryImpl();
+  late String? _currentUrl;
+  bool _isUploading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentUrl = widget.initialUrl;
+  }
+
+  Future<void> _pickAndUpload() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.audio,
+      allowMultiple: false,
+    );
+    final path = (result != null && result.files.isNotEmpty)
+        ? result.files.first.path
+        : null;
+    if (path == null) return;
+
+    setState(() => _isUploading = true);
+    try {
+      await _songsRepo.uploadReferenceAudio(widget.songId, path);
+      final updated = await _songsRepo.getSongById(widget.songId);
+      if (!mounted) return;
+      setState(() {
+        _currentUrl = updated.referenceAudioUrl;
+        _isUploading = false;
+      });
+      AppFeedback.showSuccess('Áudio de referência atualizado com sucesso.');
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isUploading = false);
+      AppFeedback.showError(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.canEdit && _currentUrl == null) {
+      return const SizedBox.shrink();
+    }
+
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final mutedColor = cs.onSurfaceVariant;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Áudio de referência',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            if (widget.canEdit)
+              TextButton.icon(
+                onPressed: _isUploading ? null : _pickAndUpload,
+                icon: _isUploading
+                    ? SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: cs.primary,
+                        ),
+                      )
+                    : Icon(
+                        Icons.upload_file_rounded,
+                        size: 16,
+                        color: cs.primary,
+                      ),
+                label: Text(_currentUrl == null ? 'Adicionar' : 'Substituir'),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (_currentUrl != null)
+          ReferenceAudioPlayer(url: _currentUrl!)
+        else
+          Text(
+            'Nenhum áudio de referência cadastrado.',
+            style: theme.textTheme.bodySmall?.copyWith(color: mutedColor),
+          ),
+      ],
     );
   }
 }
@@ -586,6 +847,7 @@ class _MetaChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(color: foregroundColor.withValues(alpha: 0.35)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -27,7 +27,7 @@ class ProjectMembersState extends Equatable {
   });
 
   bool get isLoading =>
-      status == ProjectMembersStatus.loading && members.isEmpty && skills.isEmpty;
+      status == ProjectMembersStatus.loading && members.isEmpty;
 
   bool isBusy(String? memberId) {
     if (submission == ProjectMembersSubmission.idle) return false;

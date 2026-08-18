@@ -6,6 +6,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
+import '../../../../core/ui/widgets/circular_icon_action_button.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/ui/widgets/song_list_card.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
@@ -15,6 +16,8 @@ import '../../../medleys/presentation/cubit/medley_cubit.dart';
 import '../../../medleys/presentation/cubit/medley_state.dart';
 import '../../../medleys/presentation/widgets/medley_card.dart';
 import '../../../medleys/presentation/widgets/medley_form_sheet.dart';
+import '../../../song_categories/domain/entities/song_category_entity.dart';
+import '../../../song_categories/presentation/widgets/category_filter_sheet.dart';
 import '../../data/impl/songs_repository_impl.dart';
 import '../../domain/entities/external_music_entity.dart';
 import '../../domain/entities/song_entity.dart';
@@ -69,6 +72,28 @@ class _SongsContentState extends State<_SongsContent>
   DateTime? _lastLoadedAt;
   String? _deletingSongId;
   String? _deletingMedleyId;
+  final Set<String> _selectedCategoryFilterIds = {};
+
+  List<SongCategoryEntity> _availableFilterCategories(
+    List<MedleyEntity> medleys,
+  ) {
+    final byId = <String, SongCategoryEntity>{};
+    for (final song in _songs) {
+      for (final category in song.categories) {
+        byId[category.id] = category;
+      }
+    }
+    for (final medley in medleys) {
+      for (final category in medley.categories) {
+        byId[category.id] = category;
+      }
+    }
+    final categories = byId.values.toList();
+    categories.sort(
+      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+    );
+    return categories;
+  }
 
   @override
   void initState() {
@@ -255,6 +280,23 @@ class _SongsContentState extends State<_SongsContent>
     }
   }
 
+  Future<void> _openCategoryFilterSheet() async {
+    final result = await showCategoryFilterSheet(
+      context,
+      categories: _availableFilterCategories(
+        context.read<MedleyCubit>().state.medleys,
+      ),
+      initiallySelectedIds: _selectedCategoryFilterIds,
+    );
+
+    if (result == null || !mounted) return;
+    setState(() {
+      _selectedCategoryFilterIds
+        ..clear()
+        ..addAll(result);
+    });
+  }
+
   // ------ Medley actions ------
 
   void _openCreateMedley() {
@@ -308,58 +350,88 @@ class _SongsContentState extends State<_SongsContent>
   @override
   Widget build(BuildContext context) {
     final onSongsTab = _tabController.index == 0;
-    final medleyCount = context.select(
-      (MedleyCubit c) => c.state.medleys.length,
-    );
+    final medleys = context.select((MedleyCubit c) => c.state.medleys);
+    final medleyCount = medleys.length;
     final subtitle = onSongsTab
-        ? '${_songs.length} ${_songs.length == 1 ? 'canção catalogada' : 'canções catalogadas'}'
+        ? '${_songs.length} ${_songs.length == 1 ? 'canção' : 'canções'}'
         : '$medleyCount ${medleyCount == 1 ? 'medley' : 'medleys'}';
+    final availableFilterCategories = _availableFilterCategories(medleys);
 
     return Scaffold(
-      appBar: StandardSectionAppBar(title: 'Músicas', subtitle: subtitle),
+      appBar: StandardSectionAppBar(
+        title: 'Músicas',
+        subtitle: subtitle,
+        actions: [
+          if (availableFilterCategories.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Badge(
+                isLabelVisible: _selectedCategoryFilterIds.isNotEmpty,
+                smallSize: 9,
+                child: CircularIconActionButton(
+                  tooltip: 'Filtrar por categoria',
+                  onPressed: _openCategoryFilterSheet,
+                  assetPath: 'assets/icons/settings-2.svg',
+                  iconColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer,
+                  borderColor: Theme.of(
+                    context,
+                  ).colorScheme.primary.withValues(alpha: 0.3),
+                ),
+              ),
+            ),
+        ],
+      ),
       floatingActionButton: _buildFab(onSongsTab),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (value) => setState(() => _searchQuery = value),
-              decoration: InputDecoration(
-                hintText: onSongsTab
-                    ? 'Buscar por título ou artista...'
-                    : 'Buscar medley...',
-                prefixIcon: const Icon(Icons.search_rounded),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outlineVariant.withValues(alpha: 0.25),
+            child: SizedBox(
+              height: 46,
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) => setState(() => _searchQuery = value),
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 6),
+                  hintText: onSongsTab
+                      ? 'Buscar por título ou artista...'
+                      : 'Buscar medley...',
+                  prefixIcon: const Icon(Icons.search_rounded),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear_rounded),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.input),
+                    borderSide: BorderSide(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outlineVariant.withValues(alpha: 0.25),
+                    ),
                   ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.outlineVariant.withValues(alpha: 0.25),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.input),
+                    borderSide: BorderSide(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outlineVariant.withValues(alpha: 0.25),
+                    ),
                   ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 1.5,
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.input),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).colorScheme.primary,
+                      width: 1.5,
+                    ),
                   ),
                 ),
               ),
@@ -379,7 +451,6 @@ class _SongsContentState extends State<_SongsContent>
 
   Widget? _buildFab(bool onSongsTab) {
     if (onSongsTab) {
-      if (_songs.isEmpty) return null;
       final cs = Theme.of(context).colorScheme;
       final theme = Theme.of(context);
       return SpeedDial(
@@ -452,10 +523,7 @@ class _SongsContentState extends State<_SongsContent>
           'assets/icons/music.svg',
           width: 24,
           height: 24,
-          colorFilter: ColorFilter.mode(
-            cs.onPrimary,
-            BlendMode.srcIn,
-          ),
+          colorFilter: ColorFilter.mode(cs.onPrimary, BlendMode.srcIn),
         ),
       );
     }
@@ -489,14 +557,18 @@ class _SongsContentState extends State<_SongsContent>
               child: Center(
                 child: AppEmptyState(
                   icon: Icons.library_music_rounded,
+                  iconWidget: SvgPicture.asset(
+                    'assets/icons/music.svg',
+                    width: 56,
+                    height: 56,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurfaceVariant,
+                      BlendMode.srcIn,
+                    ),
+                  ),
                   title: 'Sua biblioteca está silenciosa',
                   description:
                       'Você ainda não adicionou nenhuma música ao seu repertório pessoal.',
-                  action: FilledButton.icon(
-                    onPressed: _goToCreate,
-                    icon: const Icon(Icons.add_rounded),
-                    label: const Text('Adicionar Primeira Música'),
-                  ),
                 ),
               ),
             ),
@@ -507,8 +579,15 @@ class _SongsContentState extends State<_SongsContent>
 
     final filteredSongs = _songs.where((song) {
       final query = _searchQuery.toLowerCase();
-      return song.title.toLowerCase().contains(query) ||
+      final matchesQuery =
+          song.title.toLowerCase().contains(query) ||
           song.artist.toLowerCase().contains(query);
+      final matchesCategory =
+          _selectedCategoryFilterIds.isEmpty ||
+          song.categories.any(
+            (category) => _selectedCategoryFilterIds.contains(category.id),
+          );
+      return matchesQuery && matchesCategory;
     }).toList();
 
     return RefreshIndicator(
@@ -529,7 +608,9 @@ class _SongsContentState extends State<_SongsContent>
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Nenhuma música encontrada\npara "$_searchQuery"',
+                        _searchQuery.isNotEmpty
+                            ? 'Nenhuma música encontrada\npara "$_searchQuery"'
+                            : 'Nenhuma música encontrada\npara os filtros selecionados',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -605,13 +686,19 @@ class _SongsContentState extends State<_SongsContent>
           );
         }
         if (state.medleys.isEmpty) {
-          return _MedleysEmpty(onCreateMedley: _openCreateMedley);
+          return const _MedleysEmpty();
         }
 
         final query = _searchQuery.toLowerCase();
-        final filteredMedleys = state.medleys
-            .where((medley) => medley.name.toLowerCase().contains(query))
-            .toList();
+        final filteredMedleys = state.medleys.where((medley) {
+          final matchesQuery = medley.name.toLowerCase().contains(query);
+          final matchesCategory =
+              _selectedCategoryFilterIds.isEmpty ||
+              medley.categories.any(
+                (category) => _selectedCategoryFilterIds.contains(category.id),
+              );
+          return matchesQuery && matchesCategory;
+        }).toList();
 
         return RefreshIndicator(
           onRefresh: () => context.read<MedleyCubit>().loadMedleys(),
@@ -633,7 +720,9 @@ class _SongsContentState extends State<_SongsContent>
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            'Nenhum medley encontrado\npara "$_searchQuery"',
+                            _searchQuery.isNotEmpty
+                                ? 'Nenhum medley encontrado\npara "$_searchQuery"'
+                                : 'Nenhum medley encontrado\npara os filtros selecionados',
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.bodyLarge
                                 ?.copyWith(
@@ -684,27 +773,37 @@ class _SongsTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return TabBar(
-      controller: controller,
-      indicator: BoxDecoration(
-        color: cs.primaryContainer,
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.55),
+        ),
       ),
-      indicatorSize: TabBarIndicatorSize.tab,
-      indicatorPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-      dividerColor: Colors.transparent,
-      overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-      labelColor: isDark ? cs.onPrimaryContainer : cs.primary,
-      unselectedLabelColor: cs.onSurfaceVariant,
-      labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
-      unselectedLabelStyle: const TextStyle(
-        fontWeight: FontWeight.w500,
-        fontSize: 14.5,
+      child: TabBar(
+        controller: controller,
+        indicator: BoxDecoration(
+          color: cs.primaryContainer,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          border: Border.all(color: cs.primary.withValues(alpha: 0.4)),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        indicatorPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        dividerColor: Colors.transparent,
+        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+        labelColor: isDark ? cs.onPrimaryContainer : cs.primary,
+        unselectedLabelColor: cs.onSurfaceVariant,
+        labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 14.5,
+        ),
+        tabs: const [
+          Tab(text: 'Músicas'),
+          Tab(text: 'Medleys'),
+        ],
       ),
-      tabs: const [
-        Tab(text: 'Músicas'),
-        Tab(text: 'Medleys'),
-      ],
     );
   }
 }
@@ -714,9 +813,7 @@ class _SongsTabBar extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _MedleysEmpty extends StatelessWidget {
-  final VoidCallback onCreateMedley;
-
-  const _MedleysEmpty({required this.onCreateMedley});
+  const _MedleysEmpty();
 
   @override
   Widget build(BuildContext context) {
@@ -727,10 +824,14 @@ class _MedleysEmpty extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.queue_music_rounded,
-              size: 56,
-              color: cs.onSurfaceVariant,
+            SvgPicture.asset(
+              'assets/icons/disc-album.svg',
+              width: 56,
+              height: 56,
+              colorFilter: ColorFilter.mode(
+                cs.onSurfaceVariant,
+                BlendMode.srcIn,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
@@ -746,12 +847,6 @@ class _MedleysEmpty extends StatelessWidget {
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-            ),
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: onCreateMedley,
-              icon: const Icon(Icons.add_rounded),
-              label: const Text('Criar Medley'),
             ),
           ],
         ),

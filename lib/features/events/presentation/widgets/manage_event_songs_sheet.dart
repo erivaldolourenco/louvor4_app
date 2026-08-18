@@ -10,7 +10,10 @@ import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_inline_error_message.dart';
+import '../../../../core/ui/widgets/circular_icon_action_button.dart';
 import '../../../../core/utils/youtube_utils.dart';
+import '../../../song_categories/domain/entities/song_category_entity.dart';
+import '../../../song_categories/presentation/widgets/category_filter_sheet.dart';
 import '../../data/events_repository.dart';
 import '../cubit/manage_event_songs_cubit.dart';
 import '../cubit/manage_event_songs_state.dart';
@@ -50,12 +53,49 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   bool _medleysLoaded = false;
+  final Set<String> _selectedCategoryFilterIds = {};
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_handleTabChange);
+  }
+
+  List<SongCategoryEntity> _availableFilterCategories(
+    ManageEventSongsState state,
+  ) {
+    final byId = <String, SongCategoryEntity>{};
+    for (final song in state.songs) {
+      for (final category in song.categories) {
+        byId[category.id] = category;
+      }
+    }
+    for (final medley in state.medleys) {
+      for (final category in medley.categories) {
+        byId[category.id] = category;
+      }
+    }
+    final categories = byId.values.toList();
+    categories.sort(
+      (a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()),
+    );
+    return categories;
+  }
+
+  Future<void> _openCategoryFilterSheet(ManageEventSongsState state) async {
+    final result = await showCategoryFilterSheet(
+      context,
+      categories: _availableFilterCategories(state),
+      initiallySelectedIds: _selectedCategoryFilterIds,
+    );
+
+    if (result == null || !mounted) return;
+    setState(() {
+      _selectedCategoryFilterIds
+        ..clear()
+        ..addAll(result);
+    });
   }
 
   void _handleTabChange() {
@@ -124,11 +164,34 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Text(
-                        'Adicionar ao repertório',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          color: titleColor,
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Adicionar ao repertório',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: titleColor,
+                              ),
+                            ),
+                          ),
+                          if (_availableFilterCategories(state).isNotEmpty)
+                            Badge(
+                              isLabelVisible:
+                                  _selectedCategoryFilterIds.isNotEmpty,
+                              smallSize: 9,
+                              child: CircularIconActionButton(
+                                tooltip: 'Filtrar por categoria',
+                                onPressed: () =>
+                                    _openCategoryFilterSheet(state),
+                                assetPath: 'assets/icons/settings-2.svg',
+                                iconColor: cs.onPrimaryContainer,
+                                backgroundColor: cs.primaryContainer,
+                                borderColor: cs.primary.withValues(
+                                  alpha: 0.3,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -163,8 +226,16 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                         child: TabBarView(
                           controller: _tabController,
                           children: [
-                            _SongsTab(searchQuery: _searchQuery),
-                            _MedleysTab(searchQuery: _searchQuery),
+                            _SongsTab(
+                              searchQuery: _searchQuery,
+                              selectedCategoryFilterIds:
+                                  _selectedCategoryFilterIds,
+                            ),
+                            _MedleysTab(
+                              searchQuery: _searchQuery,
+                              selectedCategoryFilterIds:
+                                  _selectedCategoryFilterIds,
+                            ),
                           ],
                         ),
                       ),
@@ -359,8 +430,12 @@ class _SheetTabBar extends StatelessWidget {
 
 class _SongsTab extends StatelessWidget {
   final String searchQuery;
+  final Set<String> selectedCategoryFilterIds;
 
-  const _SongsTab({required this.searchQuery});
+  const _SongsTab({
+    required this.searchQuery,
+    required this.selectedCategoryFilterIds,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -373,8 +448,16 @@ class _SongsTab extends StatelessWidget {
 
         final filteredSongs = state.songs.where((song) {
           final query = searchQuery.toLowerCase();
-          return song.title.toLowerCase().contains(query) ||
+          final matchesQuery =
+              song.title.toLowerCase().contains(query) ||
               song.artist.toLowerCase().contains(query);
+          final matchesCategory =
+              selectedCategoryFilterIds.isEmpty ||
+              song.categories.any(
+                (category) =>
+                    selectedCategoryFilterIds.contains(category.id),
+              );
+          return matchesQuery && matchesCategory;
         }).toList();
 
         return state.isLoading
@@ -413,8 +496,12 @@ class _SongsTab extends StatelessWidget {
 
 class _MedleysTab extends StatelessWidget {
   final String searchQuery;
+  final Set<String> selectedCategoryFilterIds;
 
-  const _MedleysTab({required this.searchQuery});
+  const _MedleysTab({
+    required this.searchQuery,
+    required this.selectedCategoryFilterIds,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -434,9 +521,16 @@ class _MedleysTab extends StatelessWidget {
         }
 
         final query = searchQuery.toLowerCase();
-        final filteredMedleys = state.medleys
-            .where((medley) => medley.name.toLowerCase().contains(query))
-            .toList();
+        final filteredMedleys = state.medleys.where((medley) {
+          final matchesQuery = medley.name.toLowerCase().contains(query);
+          final matchesCategory =
+              selectedCategoryFilterIds.isEmpty ||
+              medley.categories.any(
+                (category) =>
+                    selectedCategoryFilterIds.contains(category.id),
+              );
+          return matchesQuery && matchesCategory;
+        }).toList();
 
         if (filteredMedleys.isEmpty) {
           return Center(

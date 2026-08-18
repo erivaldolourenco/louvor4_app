@@ -24,6 +24,34 @@ extension EventParticipantStatusPresentation on EventParticipantStatus {
   }
 }
 
+EventPermission? parseEventPermission(dynamic value) {
+  final normalized = value?.toString().trim();
+  if (normalized == null || normalized.isEmpty) return null;
+
+  switch (normalized.toUpperCase()) {
+    case 'ADD_SONG':
+    case 'ADDSONG':
+      return EventPermission.addSong;
+    case 'EDIT_SETLIST':
+    case 'EDITSETLIST':
+      return EventPermission.editSetlist;
+    case 'REMOVE_SONG':
+    case 'REMOVESONG':
+      return EventPermission.removeSong;
+    case 'MANAGE_PARTICIPANTS':
+    case 'MANAGEPARTICIPANTS':
+      return EventPermission.manageParticipants;
+    case 'EDIT_EVENT':
+    case 'EDITEVENT':
+      return EventPermission.editEvent;
+    case 'EDIT_CHORD_SHEET':
+    case 'EDITCHORDSHEET':
+      return EventPermission.editChordSheet;
+    default:
+      return null;
+  }
+}
+
 extension EventPermissionApiValue on EventPermission {
   String get apiValue {
     switch (this) {
@@ -76,7 +104,7 @@ class EventParticipant {
     final memberUser = _asMap(member?['user']);
     final skill = _asMap(json['skill']);
     final permissions = (json['permissions'] as List? ?? [])
-        .map(_parsePermission)
+        .map(parseEventPermission)
         .whereType<EventPermission>()
         .toSet();
 
@@ -172,34 +200,6 @@ class EventParticipant {
         return EventParticipantStatus.declined;
       default:
         return EventParticipantStatus.unknown;
-    }
-  }
-
-  static EventPermission? _parsePermission(dynamic value) {
-    final normalized = value?.toString().trim();
-    if (normalized == null || normalized.isEmpty) return null;
-
-    switch (normalized.toUpperCase()) {
-      case 'ADD_SONG':
-      case 'ADDSONG':
-        return EventPermission.addSong;
-      case 'EDIT_SETLIST':
-      case 'EDITSETLIST':
-        return EventPermission.editSetlist;
-      case 'REMOVE_SONG':
-      case 'REMOVESONG':
-        return EventPermission.removeSong;
-      case 'MANAGE_PARTICIPANTS':
-      case 'MANAGEPARTICIPANTS':
-        return EventPermission.manageParticipants;
-      case 'EDIT_EVENT':
-      case 'EDITEVENT':
-        return EventPermission.editEvent;
-      case 'EDIT_CHORD_SHEET':
-      case 'EDITCHORDSHEET':
-        return EventPermission.editChordSheet;
-      default:
-        return null;
     }
   }
 }

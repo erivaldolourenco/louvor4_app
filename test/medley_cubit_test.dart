@@ -74,6 +74,22 @@ class _FakeMedleyRepository implements MedleyRepository {
 
   @override
   Future<void> uploadReferenceAudio(String id, String filePath) async {}
+
+  String? lastCategoriesUpdateId;
+  List<String>? lastCategoryIds;
+  bool throwOnUpdateCategories = false;
+
+  @override
+  Future<void> updateMedleyCategories(
+    String medleyId,
+    List<String> categoryIds,
+  ) async {
+    lastCategoriesUpdateId = medleyId;
+    lastCategoryIds = categoryIds;
+    if (throwOnUpdateCategories) {
+      throw Exception('falha ao atualizar categorias do medley');
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -301,4 +317,10 @@ class _SlowMedleyRepository implements MedleyRepository {
 
   @override
   Future<void> uploadReferenceAudio(String id, String filePath) async => throw UnimplementedError();
+
+  @override
+  Future<void> updateMedleyCategories(
+    String medleyId,
+    List<String> categoryIds,
+  ) async => throw UnimplementedError();
 }

@@ -31,6 +31,7 @@ class EventListCard extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
+    final countColor = isDark ? cs.onSurface : cs.primary;
     final timeDisplay = event.time.length >= 5
         ? event.time.substring(0, 5)
         : event.time;
@@ -255,7 +256,7 @@ class EventListCard extends StatelessWidget {
                                                     width: 13,
                                                     height: 13,
                                                     colorFilter: ColorFilter.mode(
-                                                      cs.primary,
+                                                      countColor,
                                                       BlendMode.srcIn,
                                                     ),
                                                   ),
@@ -266,7 +267,7 @@ class EventListCard extends StatelessWidget {
                                                         .textTheme
                                                         .labelMedium
                                                         ?.copyWith(
-                                                          color: cs.primary,
+                                                          color: countColor,
                                                           fontWeight:
                                                               FontWeight.w700,
                                                         ),
@@ -297,7 +298,7 @@ class EventListCard extends StatelessWidget {
                                                     width: 13,
                                                     height: 13,
                                                     colorFilter: ColorFilter.mode(
-                                                      cs.primary,
+                                                      countColor,
                                                       BlendMode.srcIn,
                                                     ),
                                                   ),
@@ -308,7 +309,7 @@ class EventListCard extends StatelessWidget {
                                                         .textTheme
                                                         .labelMedium
                                                         ?.copyWith(
-                                                          color: cs.primary,
+                                                          color: countColor,
                                                           fontWeight:
                                                               FontWeight.w700,
                                                         ),

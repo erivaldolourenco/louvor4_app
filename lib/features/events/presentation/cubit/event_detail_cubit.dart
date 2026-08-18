@@ -1,10 +1,13 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:louvor4_app/features/user_profile/data/user_repository.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 
+import '../../../../core/network/api_error_message.dart';
 import '../../data/events_repository.dart';
 import '../../domain/entities/event_participant_entity.dart';
+import '../../domain/entities/event_permissions_entity.dart';
 import '../../domain/entities/project_member_entity.dart';
 import '../../domain/entities/event_song_entity.dart';
 import '../../domain/entities/skill_entity.dart';
@@ -73,13 +76,6 @@ class EventDetailCubit extends Cubit<EventDetailState> {
               debugLabel: 'skills do projeto',
             )
           : const <SkillEntity>[];
-      final role = hasProjectId
-          ? await _safeLoad(
-              () => _repository.getProjectMemberRole(event.projectId),
-              fallback: '',
-              debugLabel: 'permissão do projeto',
-            )
-          : '';
       final projectMembers = hasProjectId
           ? await _safeLoad(
               () => _repository.getProjectMembers(event.projectId),
@@ -87,29 +83,30 @@ class EventDetailCubit extends Cubit<EventDetailState> {
               debugLabel: 'membros do projeto',
             )
           : const <ProjectMemberEntity>[];
+      final myPermissions = await _safeLoad(
+        () => _repository.getMyEventPermissions(eventId),
+        fallback: const EventPermissionsEntity(
+          isProjectAdmin: false,
+          permissions: {},
+        ),
+        debugLabel: 'permissões do evento',
+      );
 
       _projectMembers = projectMembers;
       _currentUser = currentUser;
-      final isProjectAdmin =
-          role.toUpperCase() == 'ADMIN' || role.toUpperCase() == 'OWNER';
       final nextState = state.copyWith(
         status: EventDetailStatus.success,
         event: event,
         participants: participants,
         songs: songs,
         skillsMap: _buildSkillsMap(skillsList),
-        isProjectAdmin: isProjectAdmin,
-        canAddSongs: _canCurrentUserAddSongs(
-          isProjectAdmin: isProjectAdmin,
-          projectMembers: projectMembers,
-          participants: participants,
-          currentUser: currentUser,
-        ),
-        canEditChordSheet: _canCurrentUserEditChordSheet(
-          isProjectAdmin: isProjectAdmin,
-          projectMembers: projectMembers,
-          participants: participants,
-          currentUser: currentUser,
+        isProjectAdmin: myPermissions.isProjectAdmin,
+        canAddSongs: myPermissions.has(EventPermission.addSong),
+        canRemoveSongs: myPermissions.has(EventPermission.removeSong),
+        canEditChordSheet: myPermissions.has(EventPermission.editChordSheet),
+        canEditEvent: myPermissions.has(EventPermission.editEvent),
+        canManageParticipants: myPermissions.has(
+          EventPermission.manageParticipants,
         ),
         currentUserId: currentUser?.id,
         participantsLoadFailed: participantsFailed,
@@ -121,11 +118,24 @@ class EventDetailCubit extends Cubit<EventDetailState> {
         currentUser: currentUser,
         projectMembers: projectMembers,
       );
+    } on DioException catch (e) {
+      emit(
+        state.copyWith(
+          status: EventDetailStatus.failure,
+          errorMessage: extractApiErrorMessage(
+            e,
+            fallback: 'Não foi possível carregar os detalhes do evento.',
+          ),
+          errorStatusCode: e.response?.statusCode,
+          clearErrorStatusCode: e.response?.statusCode == null,
+        ),
+      );
     } catch (e) {
       emit(
         state.copyWith(
           status: EventDetailStatus.failure,
           errorMessage: 'Não foi possível carregar os detalhes do evento.',
+          clearErrorStatusCode: true,
         ),
       );
     }
@@ -156,25 +166,22 @@ class EventDetailCubit extends Cubit<EventDetailState> {
       final results = await Future.wait([
         _repository.getEventParticipants(event.id),
         _repository.getProjectSkills(event.projectId),
+        _repository.getMyEventPermissions(event.id),
       ]);
 
       final participants = results[0] as List<EventParticipant>;
       final skills = results[1] as List<SkillEntity>;
-      final isProjectAdmin = state.isProjectAdmin;
+      final myPermissions = results[2] as EventPermissionsEntity;
       final nextState = state.copyWith(
         participants: participants,
         skillsMap: _buildSkillsMap(skills),
-        canAddSongs: _canCurrentUserAddSongs(
-          isProjectAdmin: isProjectAdmin,
-          projectMembers: _projectMembers,
-          participants: participants,
-          currentUser: _currentUser,
-        ),
-        canEditChordSheet: _canCurrentUserEditChordSheet(
-          isProjectAdmin: isProjectAdmin,
-          projectMembers: _projectMembers,
-          participants: participants,
-          currentUser: _currentUser,
+        isProjectAdmin: myPermissions.isProjectAdmin,
+        canAddSongs: myPermissions.has(EventPermission.addSong),
+        canRemoveSongs: myPermissions.has(EventPermission.removeSong),
+        canEditChordSheet: myPermissions.has(EventPermission.editChordSheet),
+        canEditEvent: myPermissions.has(EventPermission.editEvent),
+        canManageParticipants: myPermissions.has(
+          EventPermission.manageParticipants,
         ),
       );
       emit(nextState);
@@ -328,68 +335,6 @@ class EventDetailCubit extends Cubit<EventDetailState> {
     );
   }
 
-  bool _canCurrentUserAddSongs({
-    required bool isProjectAdmin,
-    required List<ProjectMemberEntity> projectMembers,
-    required List<EventParticipant> participants,
-    required UserDetailEntity? currentUser,
-  }) {
-    return _currentUserHasPermission(
-      EventPermission.addSong,
-      isProjectAdmin: isProjectAdmin,
-      projectMembers: projectMembers,
-      participants: participants,
-      currentUser: currentUser,
-    );
-  }
-
-  bool _canCurrentUserEditChordSheet({
-    required bool isProjectAdmin,
-    required List<ProjectMemberEntity> projectMembers,
-    required List<EventParticipant> participants,
-    required UserDetailEntity? currentUser,
-  }) {
-    return _currentUserHasPermission(
-      EventPermission.editChordSheet,
-      isProjectAdmin: isProjectAdmin,
-      projectMembers: projectMembers,
-      participants: participants,
-      currentUser: currentUser,
-    );
-  }
-
-  bool _currentUserHasPermission(
-    EventPermission permission, {
-    required bool isProjectAdmin,
-    required List<ProjectMemberEntity> projectMembers,
-    required List<EventParticipant> participants,
-    required UserDetailEntity? currentUser,
-  }) {
-    if (isProjectAdmin) return true;
-
-    final currentUserId = currentUser?.id?.trim();
-    if (currentUserId == null || currentUserId.isEmpty) return false;
-
-    final matchingProjectMembers = projectMembers.where((member) {
-      return member.userId == currentUserId || member.id == currentUserId;
-    }).toList();
-
-    return participants.any((participant) {
-      if (!participant.permissions.contains(permission)) {
-        return false;
-      }
-
-      if (participant.memberId == currentUserId) {
-        return true;
-      }
-
-      return matchingProjectMembers.any(
-        (member) =>
-            participant.memberId == member.id ||
-            participant.memberId == member.userId,
-      );
-    });
-  }
 }
 
 class _CachedEventDetailData {

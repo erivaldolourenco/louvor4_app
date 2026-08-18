@@ -20,9 +20,12 @@ class ReferenceAudioPlayer extends StatefulWidget {
   State<ReferenceAudioPlayer> createState() => _ReferenceAudioPlayerState();
 }
 
-class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer> {
+class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer>
+    with TickerProviderStateMixin {
   late final AudioPlayer _player;
   late final StreamSubscription<PlayerState> _stateSub;
+  late final AnimationController _wavePhaseController;
+  late final AnimationController _waveAmplitudeController;
   bool _isLoading = true;
   bool _hasError = false;
   bool _downloading = false;
@@ -32,10 +35,25 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer> {
   void initState() {
     super.initState();
     _player = AudioPlayer();
+    _wavePhaseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
+    _waveAmplitudeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 260),
+    );
     _stateSub = _player.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
         _player.seek(Duration.zero);
         _player.pause();
+      }
+      if (state.playing) {
+        _waveAmplitudeController.forward();
+        if (!_wavePhaseController.isAnimating) _wavePhaseController.repeat();
+      } else {
+        _waveAmplitudeController.reverse();
+        _wavePhaseController.stop();
       }
     });
     _loadAudio();
@@ -63,6 +81,8 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer> {
   void dispose() {
     _stateSub.cancel();
     _player.dispose();
+    _wavePhaseController.dispose();
+    _waveAmplitudeController.dispose();
     super.dispose();
   }
 
@@ -380,33 +400,53 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer> {
 
                           return Column(
                             children: [
-                              // ── Slider M3 Expressive ──────────────
-                              SliderTheme(
-                                data: SliderTheme.of(context).copyWith(
-                                  trackHeight: 8,
-                                  thumbShape: const RoundSliderThumbShape(
-                                    enabledThumbRadius: 8,
-                                  ),
-                                  overlayShape: const RoundSliderOverlayShape(
-                                    overlayRadius: 18,
-                                  ),
-                                  activeTrackColor: cs.primary,
-                                  inactiveTrackColor:
-                                      cs.primary.withValues(alpha: 0.18),
-                                  thumbColor: cs.primary,
-                                  overlayColor:
-                                      cs.primary.withValues(alpha: 0.15),
-                                ),
-                                child: Slider(
-                                  value: curVal,
-                                  min: 0,
-                                  max: maxVal > 0 ? maxVal : 1,
-                                  onChanged: maxVal > 0
-                                      ? (v) => _player.seek(
-                                          Duration(milliseconds: v.toInt()),
-                                        )
-                                      : null,
-                                ),
+                              // ── Slider M3 Expressive (trilha em onda) ──
+                              AnimatedBuilder(
+                                animation: Listenable.merge([
+                                  _wavePhaseController,
+                                  _waveAmplitudeController,
+                                ]),
+                                builder: (context, _) {
+                                  return SliderTheme(
+                                    data: SliderTheme.of(context).copyWith(
+                                      trackHeight: 8,
+                                      trackShape: _WavySliderTrackShape(
+                                        phase:
+                                            _wavePhaseController.value *
+                                            2 *
+                                            pi,
+                                        amplitude:
+                                            4.5 *
+                                            _waveAmplitudeController.value,
+                                      ),
+                                      thumbShape: const RoundSliderThumbShape(
+                                        enabledThumbRadius: 8,
+                                      ),
+                                      overlayShape:
+                                          const RoundSliderOverlayShape(
+                                        overlayRadius: 18,
+                                      ),
+                                      activeTrackColor: cs.primary,
+                                      inactiveTrackColor:
+                                          cs.primary.withValues(alpha: 0.18),
+                                      thumbColor: cs.primary,
+                                      overlayColor:
+                                          cs.primary.withValues(alpha: 0.15),
+                                    ),
+                                    child: Slider(
+                                      value: curVal,
+                                      min: 0,
+                                      max: maxVal > 0 ? maxVal : 1,
+                                      onChanged: maxVal > 0
+                                          ? (v) => _player.seek(
+                                              Duration(
+                                                milliseconds: v.toInt(),
+                                              ),
+                                            )
+                                          : null,
+                                    ),
+                                  );
+                                },
                               ),
                               Padding(
                                 padding: const EdgeInsets.symmetric(
@@ -583,5 +623,81 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer> {
         ),
       ),
     );
+  }
+}
+
+/// Track shape M3 Expressive: a parte já reproduzida é desenhada como uma
+/// onda senoidal (o padrão de "wavy slider" introduzido no Material 3
+/// Expressive para players de mídia); o restante permanece uma linha reta.
+/// [amplitude] controla o quão "achatada" a onda está (0 = reto, parado) e
+/// [phase] anima o deslocamento horizontal enquanto o áudio toca.
+class _WavySliderTrackShape extends SliderTrackShape with BaseSliderTrackShape {
+  final double phase;
+  final double amplitude;
+  final double wavelength;
+
+  const _WavySliderTrackShape({
+    required this.phase,
+    required this.amplitude,
+    this.wavelength = 24,
+  });
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset offset, {
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required Animation<double> enableAnimation,
+    required Offset thumbCenter,
+    Offset? secondaryOffset,
+    bool isEnabled = false,
+    bool isDiscrete = false,
+    required TextDirection textDirection,
+  }) {
+    final trackRect = getPreferredRect(
+      parentBox: parentBox,
+      offset: offset,
+      sliderTheme: sliderTheme,
+      isEnabled: isEnabled,
+      isDiscrete: isDiscrete,
+    );
+    final centerY = trackRect.center.dy;
+
+    final inactivePaint = Paint()
+      ..color = sliderTheme.inactiveTrackColor ?? Colors.transparent
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = trackRect.height * 0.45
+      ..strokeCap = StrokeCap.round;
+    context.canvas.drawLine(
+      Offset(thumbCenter.dx, centerY),
+      Offset(trackRect.right, centerY),
+      inactivePaint,
+    );
+
+    final activeWidth = thumbCenter.dx - trackRect.left;
+    if (activeWidth <= 0) return;
+
+    final activePaint = Paint()
+      ..color = sliderTheme.activeTrackColor ?? Colors.transparent
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = trackRect.height
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final path = Path();
+    final steps = (activeWidth / 2).ceil().clamp(2, 400);
+    for (var i = 0; i <= steps; i++) {
+      final x = trackRect.left + activeWidth * i / steps;
+      final y = amplitude == 0
+          ? centerY
+          : centerY + amplitude * sin((x / wavelength) * 2 * pi + phase);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    context.canvas.drawPath(path, activePaint);
   }
 }

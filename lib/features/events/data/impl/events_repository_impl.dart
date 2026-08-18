@@ -6,6 +6,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_error_message.dart';
 import '../../domain/entities/event_detail_entity.dart';
 import '../../domain/entities/event_participant_input_entity.dart';
+import '../../domain/entities/event_permissions_entity.dart';
 import '../../domain/entities/event_entity.dart';
 import '../../domain/entities/event_participant_entity.dart';
 import '../../domain/entities/event_song_input_entity.dart';
@@ -141,24 +142,20 @@ class EventsRepositoryImpl implements EventsRepository {
   }
 
   @override
-  Future<String> getProjectMemberRole(String projectId) async {
-    final response = await _dio.get('/music-project/$projectId/member-role');
-    final data = response.data;
-
-    if (data is String) {
-      return data.toUpperCase();
+  Future<EventPermissionsEntity> getMyEventPermissions(String eventId) async {
+    try {
+      final response = await _dio.get('/events/$eventId/me/permissions');
+      return EventPermissionsEntity.fromJson(
+        Map<String, dynamic>.from(response.data as Map),
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível carregar suas permissões no evento.',
+        ),
+      );
     }
-
-    if (data is Map<String, dynamic>) {
-      return (data['role'] ?? '').toString().toUpperCase();
-    }
-
-    if (data is Map) {
-      final map = Map<String, dynamic>.from(data);
-      return (map['role'] ?? '').toString().toUpperCase();
-    }
-
-    throw Exception('Resposta inválida ao buscar permissão do projeto.');
   }
 
   @override

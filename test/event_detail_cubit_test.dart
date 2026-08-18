@@ -3,6 +3,7 @@ import 'package:louvor4_app/features/events/data/events_repository.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_detail_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_entity.dart';
+import 'package:louvor4_app/features/events/domain/entities/event_permissions_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/update_event_input_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_input_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_song_input_entity.dart';
@@ -22,10 +23,13 @@ class _FakeEventsRepository implements EventsRepository {
     required this.refreshedParticipants,
     required this.initialSkills,
     required this.refreshedSkills,
-    this.role = 'admin',
+    this.myPermissions = const EventPermissionsEntity(
+      isProjectAdmin: true,
+      permissions: {},
+    ),
     this.projectMembers = const [],
     this.initialSongs = const [],
-    this.throwOnProjectRole = false,
+    this.throwOnPermissions = false,
     this.throwOnProjectMembers = false,
     this.throwOnProjectSkills = false,
     this.throwOnDeleteEvent = false,
@@ -36,10 +40,10 @@ class _FakeEventsRepository implements EventsRepository {
   final List<EventParticipant> refreshedParticipants;
   final List<SkillEntity> initialSkills;
   final List<SkillEntity> refreshedSkills;
-  final String role;
+  final EventPermissionsEntity myPermissions;
   final List<ProjectMemberEntity> projectMembers;
   final List<EventSong> initialSongs;
-  final bool throwOnProjectRole;
+  final bool throwOnPermissions;
   final bool throwOnProjectMembers;
   final bool throwOnProjectSkills;
   final bool throwOnDeleteEvent;
@@ -72,11 +76,11 @@ class _FakeEventsRepository implements EventsRepository {
   }
 
   @override
-  Future<String> getProjectMemberRole(String projectId) async {
-    if (throwOnProjectRole) {
-      throw Exception('erro role');
+  Future<EventPermissionsEntity> getMyEventPermissions(String eventId) async {
+    if (throwOnPermissions) {
+      throw Exception('erro permissions');
     }
-    return role;
+    return myPermissions;
   }
 
   @override
@@ -350,7 +354,10 @@ void main() {
             participantsCount: 1,
             repertoireCount: 0,
           ),
-          role: 'member',
+          myPermissions: const EventPermissionsEntity(
+            isProjectAdmin: false,
+            permissions: {EventPermission.addSong},
+          ),
           projectMembers: const [
             ProjectMemberEntity(id: 'm1', userId: 'u1', firstName: 'Ana'),
           ],
@@ -373,47 +380,7 @@ void main() {
 
         expect(cubit.state.isProjectAdmin, isFalse);
         expect(cubit.state.canAddSongs, isTrue);
-
-        await cubit.close();
-      },
-    );
-
-    test(
-      'libera adicionar músicas quando participant.memberId vem como userId',
-      () async {
-        final repo = _FakeEventsRepository(
-          event: EventDetailEntity(
-            id: 'e1',
-            projectId: 'p1',
-            title: 'Culto',
-            date: DateTime(2026, 3, 11),
-            time: '19:00',
-            projectTitle: 'Louvor',
-            participantsCount: 1,
-            repertoireCount: 0,
-          ),
-          role: 'member',
-          projectMembers: const [
-            ProjectMemberEntity(id: 'm1', userId: 'u1', firstName: 'Ana'),
-          ],
-          initialParticipants: const [
-            EventParticipant(
-              memberId: 'u1',
-              firstName: 'Ana',
-              skillId: 's1',
-              permissions: {EventPermission.addSong},
-            ),
-          ],
-          refreshedParticipants: const [],
-          initialSkills: const [SkillEntity(id: 's1', name: 'Vocal')],
-          refreshedSkills: const [],
-        );
-
-        final cubit = EventDetailCubit(repo, _FakeUserRepository());
-
-        await cubit.load('e1');
-
-        expect(cubit.state.canAddSongs, isTrue);
+        expect(cubit.state.canRemoveSongs, isFalse);
 
         await cubit.close();
       },
@@ -437,7 +404,7 @@ void main() {
           refreshedParticipants: const [],
           initialSkills: const [],
           refreshedSkills: const [],
-          throwOnProjectRole: true,
+          throwOnPermissions: true,
           throwOnProjectMembers: true,
           throwOnProjectSkills: true,
         );
@@ -517,7 +484,10 @@ void main() {
           participantsCount: 1,
           repertoireCount: 0,
         ),
-        role: 'member',
+        myPermissions: const EventPermissionsEntity(
+          isProjectAdmin: false,
+          permissions: {},
+        ),
         projectMembers: const [],
         initialParticipants: const [
           EventParticipant(

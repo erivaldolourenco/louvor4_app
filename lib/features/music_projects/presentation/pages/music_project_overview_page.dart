@@ -589,49 +589,59 @@ class _ProjectTabs extends StatelessWidget {
         final activeIndex =
             controller.animation?.value.round() ?? controller.index;
 
-        return TabBar(
-          controller: controller,
-          indicator: BoxDecoration(
-            color: cs.primaryContainer,
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.pill),
+            border: Border.all(
+              color: cs.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.55),
+            ),
           ),
-          indicatorSize: TabBarIndicatorSize.tab,
-          indicatorPadding: const EdgeInsets.symmetric(
-            vertical: 8,
-            horizontal: 6,
-          ),
-          dividerColor: Colors.transparent,
-          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-          labelColor: activeColor,
-          unselectedLabelColor: cs.onSurfaceVariant,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w700),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-          tabs: [
-            for (var i = 0; i < tabs.length; i++)
-              Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      tabs[i].assetPath,
-                      width: 18,
-                      height: 18,
-                      colorFilter: ColorFilter.mode(
-                        i == activeIndex ? activeColor : cs.onSurfaceVariant,
-                        BlendMode.srcIn,
+          child: TabBar(
+            controller: controller,
+            indicator: BoxDecoration(
+              color: cs.primaryContainer,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+              border: Border.all(color: cs.primary.withValues(alpha: 0.4)),
+            ),
+            indicatorSize: TabBarIndicatorSize.tab,
+            indicatorPadding: const EdgeInsets.symmetric(
+              vertical: 8,
+              horizontal: 6,
+            ),
+            dividerColor: Colors.transparent,
+            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+            labelColor: activeColor,
+            unselectedLabelColor: cs.onSurfaceVariant,
+            labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+            unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
+            tabs: [
+              for (var i = 0; i < tabs.length; i++)
+                Tab(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        tabs[i].assetPath,
+                        width: 18,
+                        height: 18,
+                        colorFilter: ColorFilter.mode(
+                          i == activeIndex ? activeColor : cs.onSurfaceVariant,
+                          BlendMode.srcIn,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        tabs[i].label,
-                        overflow: TextOverflow.ellipsis,
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          tabs[i].label,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         );
       },
     );

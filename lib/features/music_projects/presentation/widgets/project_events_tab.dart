@@ -210,6 +210,7 @@ class _ProjectEventCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final countColor = isDark ? cs.onSurface : cs.primary;
     final month = _monthAbbreviation(event.date.month);
     final day = event.date.day.toString().padLeft(2, '0');
     final normalizedTime = event.time.trim().isEmpty
@@ -359,7 +360,7 @@ class _ProjectEventCard extends StatelessWidget {
                             width: 15,
                             height: 15,
                             colorFilter: ColorFilter.mode(
-                              cs.primary,
+                              countColor,
                               BlendMode.srcIn,
                             ),
                           ),
@@ -367,7 +368,7 @@ class _ProjectEventCard extends StatelessWidget {
                           Text(
                             '${event.participantsCount}',
                             style: theme.textTheme.labelMedium?.copyWith(
-                              color: cs.primary,
+                              color: countColor,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -377,7 +378,7 @@ class _ProjectEventCard extends StatelessWidget {
                             width: 15,
                             height: 15,
                             colorFilter: ColorFilter.mode(
-                              cs.primary,
+                              countColor,
                               BlendMode.srcIn,
                             ),
                           ),
@@ -385,7 +386,7 @@ class _ProjectEventCard extends StatelessWidget {
                           Text(
                             '${event.repertoireCount}',
                             style: theme.textTheme.labelMedium?.copyWith(
-                              color: cs.primary,
+                              color: countColor,
                               fontWeight: FontWeight.w700,
                             ),
                           ),

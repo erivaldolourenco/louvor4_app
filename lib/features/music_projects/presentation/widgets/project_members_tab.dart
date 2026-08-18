@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 
@@ -12,6 +13,7 @@ import '../../../../core/ui/widgets/app_inline_error_message.dart';
 import '../../../../core/ui/widgets/circular_icon_action_button.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
+import '../../../../core/utils/skill_icon.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../data/music_projects_repository.dart';
 import '../../domain/entities/project_member_entity.dart';
@@ -200,14 +202,8 @@ class _ProjectMemberCard extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final titleColor = theme.textTheme.titleMedium?.color;
-    final skillNames = member.skillIds
-        .map(
-          (skillId) => state.skills
-              .where((skill) => skill.id == skillId)
-              .map((skill) => skill.name)
-              .firstOrNull,
-        )
-        .whereType<String>()
+    final memberSkills = member.skills
+        .where((skill) => skill.name.trim().isNotEmpty)
         .toList();
     final isBusy = state.isBusy(member.id);
 
@@ -247,7 +243,9 @@ class _ProjectMemberCard extends StatelessWidget {
                       username: member.username,
                       email: member.email,
                       projectPermission: member.projectRole.label,
-                      musicSkills: skillNames,
+                      musicSkills: memberSkills
+                          .map((skill) => skill.name)
+                          .toList(),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -288,16 +286,19 @@ class _ProjectMemberCard extends StatelessWidget {
                                 Wrap(
                                   spacing: 8,
                                   runSpacing: 8,
-                                  children: skillNames.isEmpty
+                                  children: memberSkills.isEmpty
                                       ? const [
                                           _SkillTag(
                                             label: 'Sem funções musicais',
                                             muted: true,
                                           ),
                                         ]
-                                      : skillNames
+                                      : memberSkills
                                             .map(
-                                              (name) => _SkillTag(label: name),
+                                              (skill) => _SkillTag(
+                                                label: skill.name,
+                                                iconKey: skill.iconKey,
+                                              ),
                                             )
                                             .toList(),
                                 ),
@@ -1031,13 +1032,15 @@ class _RoleBadge extends StatelessWidget {
 
 class _SkillTag extends StatelessWidget {
   final String label;
+  final String? iconKey;
   final bool muted;
 
-  const _SkillTag({required this.label, this.muted = false});
+  const _SkillTag({required this.label, this.iconKey, this.muted = false});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final foreground = muted ? cs.onSurfaceVariant : cs.onPrimaryContainer;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -1046,12 +1049,25 @@ class _SkillTag extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.pill),
         border: muted ? Border.all(color: cs.outlineVariant) : null,
       ),
-      child: Text(
-        label,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: muted ? cs.onSurfaceVariant : cs.onPrimaryContainer,
-          fontWeight: muted ? FontWeight.w500 : FontWeight.w700,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (!muted && iconKey != null) ...[
+            SvgPicture.asset(
+              skillIconAsset(iconKey),
+              width: 14,
+              height: 14,
+            ),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: foreground,
+              fontWeight: muted ? FontWeight.w500 : FontWeight.w700,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1117,8 +1133,4 @@ class _InlineHint extends StatelessWidget {
       ),
     );
   }
-}
-
-extension _IterableFirstOrNull<T> on Iterable<T> {
-  T? get firstOrNull => isEmpty ? null : first;
 }

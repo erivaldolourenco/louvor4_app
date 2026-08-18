@@ -4,6 +4,7 @@ import 'package:louvor4_app/features/events/domain/entities/event_detail_entity.
 import 'package:louvor4_app/features/events/domain/entities/event_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_participant_input_entity.dart';
+import 'package:louvor4_app/features/events/domain/entities/event_permissions_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_song_input_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/event_song_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/project_member_entity.dart';
@@ -68,7 +69,7 @@ class _FakeEventsRepository implements EventsRepository {
   }) async => (events: const <EventEntity>[], hasMore: false);
 
   @override
-  Future<String> getProjectMemberRole(String projectId) async {
+  Future<EventPermissionsEntity> getMyEventPermissions(String eventId) async {
     throw UnimplementedError();
   }
 
