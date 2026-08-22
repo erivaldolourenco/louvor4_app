@@ -163,10 +163,21 @@ class EventsRepositoryImpl implements EventsRepository {
     String eventId,
     List<EventParticipantInputEntity> participants,
   ) async {
-    await _dio.post(
-      '/events/$eventId/participants',
-      data: participants.map((participant) => participant.toJson()).toList(),
-    );
+    try {
+      await _dio.post(
+        '/events/$eventId/participants',
+        data: participants
+            .map((participant) => participant.toJson())
+            .toList(),
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível salvar os participantes do evento.',
+        ),
+      );
+    }
   }
 
   @override

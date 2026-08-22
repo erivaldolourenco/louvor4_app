@@ -380,7 +380,7 @@ class _EventDetailViewState extends State<_EventDetailView>
             backgroundColor: cs.primary,
             foregroundColor: cs.onPrimary,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppRadius.fab),
             ),
             elevation: 4,
             children: [
@@ -423,7 +423,6 @@ class _EventDetailViewState extends State<_EventDetailView>
             0 when state.isProjectAdmin || state.canManageParticipants => (
               icon: SvgPicture.asset(
                 'assets/icons/user-round-plus.svg',
-                key: ValueKey(index),
                 width: 24,
                 height: 24,
                 colorFilter: ColorFilter.mode(
@@ -436,7 +435,6 @@ class _EventDetailViewState extends State<_EventDetailView>
             1 when state.isProjectAdmin || state.canAddSongs => (
               icon: SvgPicture.asset(
                 'assets/icons/music.svg',
-                key: ValueKey(index),
                 width: 24,
                 height: 24,
                 colorFilter: ColorFilter.mode(
@@ -450,32 +448,36 @@ class _EventDetailViewState extends State<_EventDetailView>
           };
 
           fab = action == null
-              ? const SizedBox.shrink(key: ValueKey('no_fab'))
+              ? SizedBox.shrink(key: ValueKey('no_fab_$index'))
               : FloatingActionButton(
-                  key: const ValueKey('simple_fab'),
-                  heroTag: 'event_detail_fab',
+                  // Chaveado por aba (não um valor fixo) para que o
+                  // AnimatedSwitcher externo trate toda troca de aba como
+                  // um FAB novo — o botão inteiro sai/entra sempre, em vez
+                  // de só o ícone trocar por dentro de um botão parado.
+                  key: ValueKey('simple_fab_$index'),
+                  // heroTag por aba: com a key acima variando por aba, o FAB
+                  // antigo e o novo ficam montados ao mesmo tempo durante a
+                  // transição — uma heroTag fixa poderia colidir com o Hero
+                  // do Flutter se o usuário navegar de rota nesse meio-tempo.
+                  heroTag: 'event_detail_fab_$index',
                   onPressed: action.onPressed,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadius.fab),
                   ),
                   backgroundColor: cs.primary,
                   foregroundColor: cs.onPrimary,
                   elevation: 4,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 220),
-                    transitionBuilder: (child, animation) => ScaleTransition(
-                      scale: animation,
-                      child: FadeTransition(opacity: animation, child: child),
-                    ),
-                    child: action.icon,
-                  ),
+                  child: action.icon,
                 );
         }
 
         return AnimatedSwitcher(
           duration: const Duration(milliseconds: 220),
           transitionBuilder: (child, animation) => ScaleTransition(
-            scale: animation,
+            scale: CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutBack,
+            ),
             child: FadeTransition(opacity: animation, child: child),
           ),
           child: fab,
@@ -1172,7 +1174,7 @@ class _DetailLoadingState extends StatelessWidget {
           height: 200,
           decoration: BoxDecoration(
             color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadius.card),
           ),
         ),
         const SizedBox(height: 14),
@@ -1180,7 +1182,7 @@ class _DetailLoadingState extends StatelessWidget {
           height: 140,
           decoration: BoxDecoration(
             color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadius.card),
           ),
         ),
         const SizedBox(height: 14),

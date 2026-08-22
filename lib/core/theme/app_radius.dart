@@ -4,6 +4,7 @@ abstract final class AppRadius {
   static const double textarea    = 18;   // campos multilinha (textarea)
   static const double card        = 18;   // cards padrão
   static const double thumbnail   = 16;   // miniaturas de música/medley
+  static const double fab         = 16;   // botões de ação flutuante (FAB/SpeedDial)
   static const double cardHero    = 20;   // cards de item em destaque
   static const double cardLarge   = 24;   // cards grandes expressivos
   static const double bottomSheet = 28;   // bottom sheets deslizantes

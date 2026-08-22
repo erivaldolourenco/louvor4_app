@@ -229,4 +229,23 @@ abstract final class AppColors {
 
   /// Sombra do container de ícone no tema claro.
   static const iconContainerShadowLight = Color(0x12000000);
+
+  // ── Platform brands (ícones de plataformas externas) ─────────────────────
+  // Cores de identidade de marca de terceiros — mantidas literais de
+  // propósito (não substituídas por tokens do ColorScheme do app), já que
+  // recolorir o ícone do YouTube/Spotify/Deezer pra paleta do app quebraria
+  // o reconhecimento visual da plataforma. Centralizadas aqui em vez de
+  // hex soltos nas telas, seguindo o mesmo padrão de success/danger/warning.
+
+  /// Vermelho oficial do YouTube.
+  static const youtube = Color(0xFFFF0000);
+
+  /// Verde do Spotify sobre fundo escuro.
+  static const spotifyDark = Color(0xFF1DB954);
+
+  /// Verde do Spotify sobre fundo claro (mais escuro, pra manter contraste).
+  static const spotifyLight = Color(0xFF168A3F);
+
+  /// Roxo oficial do Deezer.
+  static const deezer = Color(0xFFA238FF);
 }

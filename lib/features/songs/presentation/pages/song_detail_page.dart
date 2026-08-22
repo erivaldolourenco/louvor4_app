@@ -6,7 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
-import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../../../core/ui/widgets/reference_audio_player.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
@@ -16,6 +15,15 @@ import '../../../song_categories/data/impl/song_categories_repository_impl.dart'
 import '../../../song_categories/domain/entities/song_category_entity.dart';
 import '../../../song_categories/presentation/widgets/category_filter_sheet.dart';
 import '../../data/impl/songs_repository_impl.dart';
+
+// M3: Card.outlined "sutil" — fundo surface-container, borda outline-variant,
+// sem elevação/sombra, 12dp de raio (padrão de canto do Card no Material 3).
+const double _cardRadius = 12;
+
+ShapeBorder _outlinedCardShape(ColorScheme cs) => RoundedRectangleBorder(
+  borderRadius: BorderRadius.circular(_cardRadius),
+  side: BorderSide(color: cs.outlineVariant),
+);
 
 Future<void> openSongDetailPage(
   BuildContext context, {
@@ -274,7 +282,7 @@ class SongDetailPage extends StatelessWidget {
                           style: FilledButton.styleFrom(
                             backgroundColor: cs.secondaryContainer,
                             foregroundColor: cs.onSecondaryContainer,
-                            minimumSize: const Size.fromHeight(50),
+                            minimumSize: const Size.fromHeight(38),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(AppRadius.pill),
                               side: BorderSide(
@@ -304,7 +312,7 @@ class SongDetailPage extends StatelessWidget {
                           style: FilledButton.styleFrom(
                             backgroundColor: cs.primary,
                             foregroundColor: cs.onPrimary,
-                            minimumSize: const Size.fromHeight(50),
+                            minimumSize: const Size.fromHeight(38),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(AppRadius.pill),
                               side: BorderSide(
@@ -335,24 +343,32 @@ class SongDetailPage extends StatelessWidget {
               const SizedBox(height: 24),
               FadeSlideIn(
                 delay: staggerDelay(staggerStep++),
-                child: AppCardSurface(
-                  radius: AppRadius.cardLarge,
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Observações',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
+                child: Card.outlined(
+                  elevation: 0,
+                  color: cs.surfaceContainerLow,
+                  margin: EdgeInsets.zero,
+                  shape: _outlinedCardShape(cs),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Observações',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        normalizedNotes,
-                        style: TextStyle(color: mutedColor, height: 1.5),
-                      ),
-                    ],
+                        const SizedBox(height: 8),
+                        Text(
+                          normalizedNotes,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: mutedColor,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -393,71 +409,66 @@ class SongDetailPage extends StatelessWidget {
                       'Ouvir nas plataformas',
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: mutedColor,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Card(
+                    const SizedBox(height: 8),
+                    Card.outlined(
                       clipBehavior: Clip.antiAlias,
+                      elevation: 0,
+                      color: cs.surfaceContainerLow,
                       margin: EdgeInsets.zero,
+                      shape: _outlinedCardShape(cs),
                       child: Column(
                         children: [
-                          if (hasYouTube)
-                            Builder(
-                              builder: (context) {
-                                const youtubeRed = Color(0xFFFF0000);
-                                return _PlatformTile(
-                                  label: 'Abrir no YouTube',
-                                  leading: Container(
-                                    width: 28,
-                                    height: 28,
-                                    decoration: BoxDecoration(
-                                      color: youtubeRed,
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: const Icon(
-                                      Icons.play_arrow_rounded,
-                                      size: 18,
-                                      color: Colors.white,
-                                    ),
+                          if (hasYouTube) ...[
+                            _PlatformTile(
+                              label: 'Abrir no YouTube',
+                              leading: Container(
+                                width: 28,
+                                height: 28,
+                                decoration: BoxDecoration(
+                                  color: AppColors.youtube,
+                                  borderRadius: BorderRadius.circular(
+                                    AppRadius.badge,
                                   ),
-                                  onTap: () => _openExternalLink(
-                                    context,
-                                    youTubeUrl!,
-                                    'YouTube',
-                                  ),
-                                );
-                              },
+                                ),
+                                child: const Icon(
+                                  Icons.play_arrow_rounded,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              onTap: () => _openExternalLink(
+                                context,
+                                youTubeUrl!,
+                                'YouTube',
+                              ),
                             ),
-                          if (hasYouTube && (hasSpotify || hasDeezer))
-                            const Divider(height: 1),
-                          if (hasSpotify)
-                            Builder(
-                              builder: (context) {
-                                final spotifyColor =
-                                    theme.brightness == Brightness.dark
-                                    ? const Color(0xFF1DB954)
-                                    : const Color(0xFF168A3F);
-                                return _PlatformTile(
-                                  label: 'Abrir no Spotify',
-                                  leading: SvgPicture.asset(
-                                    'assets/icons/icon-spotify.svg',
-                                    width: 28,
-                                    height: 28,
-                                    colorFilter: ColorFilter.mode(
-                                      spotifyColor,
-                                      BlendMode.srcIn,
-                                    ),
-                                  ),
-                                  onTap: () => _openExternalLink(
-                                    context,
-                                    spotifyUrl!,
-                                    'Spotify',
-                                  ),
-                                );
-                              },
+                            if (hasSpotify || hasDeezer)
+                              const Divider(height: 1),
+                          ],
+                          if (hasSpotify) ...[
+                            _PlatformTile(
+                              label: 'Abrir no Spotify',
+                              leading: SvgPicture.asset(
+                                'assets/icons/icon-spotify.svg',
+                                width: 28,
+                                height: 28,
+                                colorFilter: ColorFilter.mode(
+                                  isDark
+                                      ? AppColors.spotifyDark
+                                      : AppColors.spotifyLight,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                              onTap: () => _openExternalLink(
+                                context,
+                                spotifyUrl!,
+                                'Spotify',
+                              ),
                             ),
-                          if (hasSpotify && hasDeezer) const Divider(height: 1),
+                            if (hasDeezer) const Divider(height: 1),
+                          ],
                           if (hasDeezer)
                             _PlatformTile(
                               label: 'Abrir no Deezer',
@@ -466,7 +477,7 @@ class SongDetailPage extends StatelessWidget {
                                 width: 28,
                                 height: 28,
                                 colorFilter: const ColorFilter.mode(
-                                  Color(0xFFA238FF),
+                                  AppColors.deezer,
                                   BlendMode.srcIn,
                                 ),
                               ),
@@ -648,11 +659,11 @@ class _CategoriesQuickEditState extends State<_CategoriesQuickEdit> {
                         BlendMode.srcIn,
                       ),
                     ),
-                label: Text(_categories.isEmpty ? 'Adicionar' : 'Editar'),
+                label: Text(_categories.isEmpty ? 'Adicionar' : 'Categorias'),
               ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         if (_isLoading)
           SizedBox(
             height: 28,
@@ -692,10 +703,9 @@ class _CategoriesQuickEditState extends State<_CategoriesQuickEdit> {
                 ),
                 child: Text(
                   category.name,
-                  style: TextStyle(
+                  style: theme.textTheme.labelMedium?.copyWith(
                     color: cs.onPrimaryContainer,
                     fontWeight: FontWeight.w700,
-                    fontSize: 13,
                   ),
                 ),
               );
@@ -866,10 +876,9 @@ class _MetaChip extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             label,
-            style: TextStyle(
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
               color: foregroundColor,
               fontWeight: FontWeight.w800,
-              fontSize: 13,
             ),
           ),
         ],

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 
+import '../../../../../core/theme/app_extra_colors.dart';
+import '../../../../../core/theme/app_motion.dart';
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
+import '../../../../core/utils/skill_icon.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../data/events_repository.dart';
 import '../../domain/entities/event_detail_entity.dart';
@@ -123,7 +127,7 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                             padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                             child: Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
                               decoration: BoxDecoration(
                                 color: cs.errorContainer,
                                 borderRadius: BorderRadius.circular(
@@ -133,12 +137,34 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                                   color: cs.error.withValues(alpha: 0.3),
                                 ),
                               ),
-                              child: Text(
-                                state.errorMessage!,
-                                style: TextStyle(
-                                  color: cs.onErrorContainer,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 4,
+                                      ),
+                                      child: Text(
+                                        state.errorMessage!,
+                                        style: TextStyle(
+                                          color: cs.onErrorContainer,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    tooltip: 'Fechar',
+                                    visualDensity: VisualDensity.compact,
+                                    icon: Icon(
+                                      Icons.close_rounded,
+                                      size: 18,
+                                      color: cs.onErrorContainer,
+                                    ),
+                                    onPressed: cubit.dismissError,
+                                  ),
+                                ],
                               ),
                             ),
                           ),
@@ -193,6 +219,7 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                           child: Row(
                             children: [
                               Expanded(
+                                flex: 2,
                                 child: AppSecondaryButton(
                                   onPressed: state.isSubmitting
                                       ? null
@@ -202,6 +229,7 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                               ),
                               const SizedBox(width: 12),
                               Expanded(
+                                flex: 3,
                                 child: AppPrimaryButton(
                                   onPressed: state.isSubmitting
                                       ? null
@@ -251,63 +279,69 @@ class _SelectableMemberCard extends StatelessWidget {
     final cubit = context.read<ManageEventParticipantsCubit>();
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
+      duration: const Duration(milliseconds: 220),
+      curve: appExpressiveCurve,
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.cardLarge),
         border: Border.all(
           color: item.isSelected ? cs.primary : cs.outlineVariant,
           width: item.isSelected ? 1.4 : 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: cs.shadow.withValues(alpha: 0.06),
-            blurRadius: 14,
-            offset: const Offset(0, 8),
-          ),
-        ],
       ),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _MemberAvatar(imageUrl: item.member.profileImage),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.member.fullName,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: cs.onSurface,
-                        ),
+            Material(
+              type: MaterialType.transparency,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(AppRadius.card),
+                onTap: () =>
+                    cubit.toggleMember(item.member.id, !item.isSelected),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    _MemberAvatar(imageUrl: item.member.profileImage),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.member.fullName,
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: cs.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            item.member.projectRole ?? 'Membro',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        item.member.projectRole ?? 'Membro',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: cs.onSurfaceVariant,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    ),
+                    IgnorePointer(
+                      child: Checkbox(
+                        value: item.isSelected,
+                        onChanged: (_) {},
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                Checkbox(
-                  value: item.isSelected,
-                  onChanged: (value) =>
-                      cubit.toggleMember(item.member.id, value ?? false),
-                ),
-              ],
+              ),
             ),
             AnimatedCrossFade(
-              duration: const Duration(milliseconds: 180),
+              duration: const Duration(milliseconds: 220),
+              firstCurve: Curves.easeOut,
+              secondCurve: Curves.easeIn,
+              sizeCurve: appExpressiveCurve,
               crossFadeState: item.isSelected
                   ? CrossFadeState.showSecond
                   : CrossFadeState.showFirst,
@@ -339,6 +373,7 @@ class _SelectableMemberCard extends StatelessWidget {
                         ...item.availableSkills.map(
                           (skill) => _SkillOptionButton(
                             label: skillsMap[skill.id] ?? skill.name,
+                            iconKey: skill.iconKey,
                             isSelected: item.selectedSkillId == skill.id,
                             onTap: () =>
                                 cubit.updateSkill(item.member.id, skill.id),
@@ -390,18 +425,23 @@ class _SelectableMemberCard extends StatelessWidget {
 
 class _SkillOptionButton extends StatelessWidget {
   final String label;
+  final String? iconKey;
   final bool isSelected;
   final VoidCallback onTap;
 
   const _SkillOptionButton({
     required this.label,
+    this.iconKey,
     required this.isSelected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final extraColors = theme.extension<AppExtraColors>()!;
+    final contentColor = isSelected ? cs.onPrimary : cs.onSurfaceVariant;
     return Material(
       color: isSelected ? cs.primary : cs.surface,
       borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -409,7 +449,8 @@ class _SkillOptionButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.pill),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 160),
+          duration: const Duration(milliseconds: 200),
+          curve: appExpressiveCurve,
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -426,12 +467,29 @@ class _SkillOptionButton extends StatelessWidget {
                   ]
                 : null,
           ),
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
-              fontWeight: FontWeight.w700,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (iconKey != null) ...[
+                CircleAvatar(
+                  radius: 11,
+                  backgroundColor: extraColors.iconBadgeSurface,
+                  child: SvgPicture.asset(
+                    skillIconAsset(iconKey),
+                    width: 14,
+                    height: 14,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: contentColor,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -450,7 +508,7 @@ class _MemberAvatar extends StatelessWidget {
     final hasImage = UrlUtils.isValidNetworkUrl(imageUrl);
     return CircleAvatar(
       radius: 24,
-      backgroundColor: cs.surfaceContainerLow,
+      backgroundColor: cs.surfaceContainerHigh,
       backgroundImage: hasImage ? appCachedImageProvider(imageUrl) : null,
       child: hasImage
           ? null

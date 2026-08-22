@@ -115,6 +115,13 @@ class ManageEventParticipantsCubit extends Cubit<ManageEventParticipantsState> {
     );
   }
 
+  void dismissError() {
+    if (state.errorMessage == null) return;
+    emit(
+      state.copyWith(status: _effectiveReadyStatus(), clearErrorMessage: true),
+    );
+  }
+
   Future<bool> submit(String eventId) async {
     final payload = state.members
         .where(

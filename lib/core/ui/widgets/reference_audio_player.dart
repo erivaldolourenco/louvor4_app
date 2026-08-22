@@ -1,15 +1,12 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:path_provider/path_provider.dart';
 
+import '../../theme/app_motion.dart';
 import '../../theme/app_radius.dart';
-import '../app_feedback.dart';
 
 class ReferenceAudioPlayer extends StatefulWidget {
   final String url;
@@ -28,7 +25,6 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer>
   late final AnimationController _waveAmplitudeController;
   bool _isLoading = true;
   bool _hasError = false;
-  bool _downloading = false;
   int _semitones = 0;
 
   @override
@@ -107,25 +103,6 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer>
     _player.seek(target);
   }
 
-  Future<void> _download() async {
-    setState(() => _downloading = true);
-    try {
-      final dir = Platform.isAndroid
-          ? await getExternalStorageDirectory()
-          : await getApplicationDocumentsDirectory();
-      final base = dir ?? await getTemporaryDirectory();
-      final rawName = widget.url.split('/').last.split('?').first;
-      final fileName = rawName.isNotEmpty ? rawName : 'audio_referencia.mp3';
-      final filePath = '${base.path}/$fileName';
-      await Dio().download(widget.url, filePath);
-      AppFeedback.showSuccess('Áudio salvo com sucesso.');
-    } catch (_) {
-      AppFeedback.showError('Erro ao baixar o áudio.');
-    } finally {
-      if (mounted) setState(() => _downloading = false);
-    }
-  }
-
   String _fmt(Duration? d) {
     if (d == null) return '--:--';
     final m = d.inMinutes;
@@ -146,100 +123,22 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer>
     final theme = Theme.of(context);
     final isTransposed = _semitones != 0;
 
-    return Card(
+    // M3: Card.outlined "sutil" — fundo surface-container, borda
+    // outline-variant, sem elevação/sombra, 12dp de raio (padrão de canto
+    // do Card no Material 3), em vez de um Card elevado com sombra.
+    return Card.outlined(
       elevation: 0,
       color: cs.surfaceContainerLow,
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
-        side: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.5)),
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: cs.outlineVariant),
       ),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Cabeçalho M3 Expressive ──────────────────────────────
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: cs.primaryContainer,
-                    borderRadius: BorderRadius.circular(AppRadius.badge),
-                  ),
-                  child: SvgPicture.asset(
-                    'assets/icons/headphones.svg',
-                    width: 20,
-                    height: 20,
-                    colorFilter: ColorFilter.mode(
-                      cs.onPrimaryContainer,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Áudio de referência',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      if (isTransposed)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 2),
-                          child: Text(
-                            _semitoneLabel,
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              color: cs.primary,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                if (!_hasError)
-                  _downloading
-                      ? SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: cs.primary,
-                          ),
-                        )
-                      : IconButton.filledTonal(
-                          tooltip: 'Baixar áudio',
-                          visualDensity: VisualDensity.compact,
-                          style: IconButton.styleFrom(
-                            backgroundColor: cs.secondaryContainer,
-                            foregroundColor: cs.onSecondaryContainer,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                AppRadius.badge,
-                              ),
-                            ),
-                          ),
-                          icon: SvgPicture.asset(
-                            'assets/icons/arrow-down-to-line.svg',
-                            width: 18,
-                            height: 18,
-                            colorFilter: ColorFilter.mode(
-                              cs.onSecondaryContainer,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                          onPressed: _download,
-                        ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
             // ── Estado de Erro M3 ───────────────────────────────────
             if (_hasError)
               Container(
@@ -281,95 +180,6 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer>
                 ),
               )
             else ...[
-              // ── Cápsula Expressiva de Tom (Pitch Shift) ───────────
-              Center(
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isTransposed
-                        ? cs.tertiaryContainer.withValues(alpha: 0.7)
-                        : cs.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                    border: Border.all(
-                      color: isTransposed
-                          ? cs.tertiary.withValues(alpha: 0.4)
-                          : Colors.transparent,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        constraints: const BoxConstraints(
-                          minWidth: 36,
-                          minHeight: 36,
-                        ),
-                        icon: const Icon(Icons.remove_rounded, size: 18),
-                        color: _semitones > -12
-                            ? (isTransposed
-                                ? cs.onTertiaryContainer
-                                : cs.onSurfaceVariant)
-                            : cs.onSurfaceVariant.withValues(alpha: 0.3),
-                        onPressed: _semitones > -12
-                            ? () => _changeSemitones(-1)
-                            : null,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: GestureDetector(
-                          onTap: isTransposed ? _resetSemitones : null,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                _semitoneLabel,
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color: isTransposed
-                                      ? cs.onTertiaryContainer
-                                      : cs.onSurface,
-                                ),
-                              ),
-                              if (isTransposed) ...[
-                                const SizedBox(width: 6),
-                                Icon(
-                                  Icons.close_rounded,
-                                  size: 16,
-                                  color: cs.onTertiaryContainer,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        constraints: const BoxConstraints(
-                          minWidth: 36,
-                          minHeight: 36,
-                        ),
-                        icon: const Icon(Icons.add_rounded, size: 18),
-                        color: _semitones < 12
-                            ? (isTransposed
-                                ? cs.onTertiaryContainer
-                                : cs.onSurfaceVariant)
-                            : cs.onSurfaceVariant.withValues(alpha: 0.3),
-                        onPressed: _semitones < 12
-                            ? () => _changeSemitones(1)
-                            : null,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-
               // ── Stream de Estado & Progresso do Áudio ─────────────
               StreamBuilder<PlayerState>(
                 stream: _player.playerStateStream,
@@ -400,6 +210,19 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer>
 
                           return Column(
                             children: [
+                              // ── Stepper de tom, acima da timeline ──────
+                              Center(
+                                child: _TomStepper(
+                                  label: _semitoneLabel,
+                                  isTransposed: isTransposed,
+                                  canDecrease: _semitones > -12,
+                                  canIncrease: _semitones < 12,
+                                  onDecrease: () => _changeSemitones(-1),
+                                  onIncrease: () => _changeSemitones(1),
+                                  onReset: _resetSemitones,
+                                ),
+                              ),
+
                               // ── Slider M3 Expressive (trilha em onda) ──
                               AnimatedBuilder(
                                 animation: Listenable.merge([
@@ -424,7 +247,7 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer>
                                       ),
                                       overlayShape:
                                           const RoundSliderOverlayShape(
-                                        overlayRadius: 18,
+                                        overlayRadius: 11,
                                       ),
                                       activeTrackColor: cs.primary,
                                       inactiveTrackColor:
@@ -475,32 +298,20 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer>
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 16),
 
-                              // ── Controles Principais M3 Morphing ───
+                              // ── Voltar 10s | Play | Avançar 10s (centralizado) ──
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  IconButton.filledTonal(
-                                    tooltip: 'Voltar 10 segundos',
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: cs.secondaryContainer,
-                                      foregroundColor: cs.onSecondaryContainer,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          AppRadius.badge,
-                                        ),
-                                      ),
-                                    ),
-                                    icon: const Icon(
-                                      Icons.replay_10_rounded,
-                                      size: 22,
-                                    ),
-                                    onPressed: () =>
+                                  _TomStepButton(
+                                    icon: Icons.replay_10_rounded,
+                                    enabled: true,
+                                    onTap: () =>
                                         _skip(const Duration(seconds: -10)),
                                   ),
                                   const SizedBox(width: 20),
-
                                   // Botão Principal Play/Pause com Shape Morphing M3
                                   AnimatedContainer(
                                     duration: const Duration(milliseconds: 300),
@@ -589,23 +400,10 @@ class _ReferenceAudioPlayerState extends State<ReferenceAudioPlayer>
                                     ),
                                   ),
                                   const SizedBox(width: 20),
-
-                                  IconButton.filledTonal(
-                                    tooltip: 'Avançar 10 segundos',
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: cs.secondaryContainer,
-                                      foregroundColor: cs.onSecondaryContainer,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          AppRadius.badge,
-                                        ),
-                                      ),
-                                    ),
-                                    icon: const Icon(
-                                      Icons.forward_10_rounded,
-                                      size: 22,
-                                    ),
-                                    onPressed: () =>
+                                  _TomStepButton(
+                                    icon: Icons.forward_10_rounded,
+                                    enabled: true,
+                                    onTap: () =>
                                         _skip(const Duration(seconds: 10)),
                                   ),
                                 ],
@@ -699,5 +497,141 @@ class _WavySliderTrackShape extends SliderTrackShape with BaseSliderTrackShape {
       }
     }
     context.canvas.drawPath(path, activePaint);
+  }
+}
+
+/// Stepper de tom (pitch): cápsula neutra com dois botões circulares
+/// preenchidos nas pontas — desenho de referência do usuário para o
+/// controle de "Tom original / +N semitons".
+class _TomStepper extends StatelessWidget {
+  final String label;
+  final bool isTransposed;
+  final bool canDecrease;
+  final bool canIncrease;
+  final VoidCallback onDecrease;
+  final VoidCallback onIncrease;
+  final VoidCallback onReset;
+
+  const _TomStepper({
+    required this.label,
+    required this.isTransposed,
+    required this.canDecrease,
+    required this.canIncrease,
+    required this.onDecrease,
+    required this.onIncrease,
+    required this.onReset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _TomStepButton(
+            icon: Icons.remove_rounded,
+            enabled: canDecrease,
+            onTap: onDecrease,
+            size: 30,
+            iconSize: 15,
+          ),
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: GestureDetector(
+                onTap: isTransposed ? onReset : null,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        label.toUpperCase(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.3,
+                          color: cs.onSurface,
+                        ),
+                      ),
+                    ),
+                    if (isTransposed) ...[
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.close_rounded,
+                        size: 12,
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+          _TomStepButton(
+            icon: Icons.add_rounded,
+            enabled: canIncrease,
+            onTap: onIncrease,
+            size: 30,
+            iconSize: 15,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TomStepButton extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+  final double size;
+  final double iconSize;
+
+  const _TomStepButton({
+    required this.icon,
+    required this.enabled,
+    required this.onTap,
+    this.size = 44,
+    this.iconSize = 20,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    // TweenAnimationBuilder (não AnimatedContainer) para que a cor anime
+    // suavemente ao habilitar/desabilitar sem perder o ripple do InkWell —
+    // o ripple é pintado pelo próprio Material, então a cor precisa viver
+    // nele, não num Container por cima (que esconderia o ripple).
+    return TweenAnimationBuilder<Color?>(
+      duration: const Duration(milliseconds: 180),
+      curve: appExpressiveCurve,
+      tween: ColorTween(
+        end: enabled ? cs.primary : cs.primary.withValues(alpha: 0.35),
+      ),
+      builder: (context, color, child) => Material(
+        color: color,
+        shape: const CircleBorder(),
+        child: child,
+      ),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: enabled ? onTap : null,
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Icon(icon, size: iconSize, color: cs.onPrimary),
+        ),
+      ),
+    );
   }
 }

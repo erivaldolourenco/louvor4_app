@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// M3 emphasized-decelerate: começa rápido e assenta com uma leve
-/// "ultrapassagem" (overshoot), a curva de mola característica do
-/// Material 3 Expressive.
-const Curve _m3Emphasized = Cubic(0.05, 0.7, 0.1, 1.0);
+import '../../theme/app_motion.dart';
 
 /// Encolhe o [child] ao toque e o "estica" de volta com uma curva de mola
 /// expressiva ao soltar, somado a uma state layer (tingimento de cor) que
@@ -49,7 +46,7 @@ class _SpringTapState extends State<SpringTap> {
       child: AnimatedScale(
         scale: _pressed ? widget.pressedScale : 1.0,
         duration: Duration(milliseconds: _pressed ? 100 : 380),
-        curve: _pressed ? Curves.easeOut : _m3Emphasized,
+        curve: _pressed ? Curves.easeOut : appExpressiveCurve,
         child: ClipRRect(
           borderRadius: widget.borderRadius,
           child: Stack(

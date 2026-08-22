@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../../../core/theme/app_motion.dart';
+
 class RootBottomNavigationBar extends StatelessWidget {
   final int currentIndex;
   final int unreadNotificationsCount;
@@ -100,7 +102,7 @@ class _ActiveIcon extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 1.0, end: 1.18),
       duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutBack,
+      curve: appExpressiveCurve,
       builder: (context, scale, child) =>
           Transform.scale(scale: scale, child: child),
       child: child,

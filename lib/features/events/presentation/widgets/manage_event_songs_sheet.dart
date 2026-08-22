@@ -6,11 +6,13 @@ import 'package:louvor4_app/features/medleys/domain/entities/medley_entity.dart'
 import 'package:louvor4_app/features/songs/domain/entities/song_entity.dart';
 
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_motion.dart';
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_inline_error_message.dart';
 import '../../../../core/ui/widgets/circular_icon_action_button.dart';
+import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../../../core/utils/youtube_utils.dart';
 import '../../../song_categories/domain/entities/song_category_entity.dart';
 import '../../../song_categories/presentation/widgets/category_filter_sheet.dart';
@@ -119,8 +121,8 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final titleColor = theme.textTheme.titleLarge?.color;
-    final subtitleColor = theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.78);
+    final titleColor = cs.onSurface;
+    final subtitleColor = cs.onSurfaceVariant;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -439,8 +441,7 @@ class _SongsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final subtitleColor =
-        Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.78);
+    final subtitleColor = Theme.of(context).colorScheme.onSurfaceVariant;
 
     return BlocBuilder<ManageEventSongsCubit, ManageEventSongsState>(
       builder: (context, state) {
@@ -475,13 +476,16 @@ class _SongsTab extends StatelessWidget {
                 itemCount: filteredSongs.length,
                 itemBuilder: (context, index) {
                   final song = filteredSongs[index];
-                  return _SelectableSongCard(
-                    song: song,
-                    isSelected: state.selectedSongIds.contains(song.id),
-                    enabled: !state.isSubmitting,
-                    onTap: song.id == null
-                        ? null
-                        : () => cubit.toggleSong(song.id!),
+                  return FadeSlideIn(
+                    delay: staggerDelay(index),
+                    child: _SelectableSongCard(
+                      song: song,
+                      isSelected: state.selectedSongIds.contains(song.id),
+                      enabled: !state.isSubmitting,
+                      onTap: song.id == null
+                          ? null
+                          : () => cubit.toggleSong(song.id!),
+                    ),
                   );
                 },
               );
@@ -505,8 +509,7 @@ class _MedleysTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final subtitleColor =
-        Theme.of(context).textTheme.bodyMedium?.color?.withValues(alpha: 0.78);
+    final subtitleColor = Theme.of(context).colorScheme.onSurfaceVariant;
 
     return BlocBuilder<ManageEventSongsCubit, ManageEventSongsState>(
       builder: (context, state) {
@@ -546,11 +549,14 @@ class _MedleysTab extends StatelessWidget {
           itemBuilder: (context, index) {
             final medley = filteredMedleys[index];
             final id = medley.id;
-            return _SelectableMedleyCard(
-              medley: medley,
-              isSelected: id != null && state.selectedMedleyIds.contains(id),
-              enabled: !state.isSubmitting,
-              onTap: id == null ? null : () => cubit.toggleMedley(id),
+            return FadeSlideIn(
+              delay: staggerDelay(index),
+              child: _SelectableMedleyCard(
+                medley: medley,
+                isSelected: id != null && state.selectedMedleyIds.contains(id),
+                enabled: !state.isSubmitting,
+                onTap: id == null ? null : () => cubit.toggleMedley(id),
+              ),
             );
           },
         );
@@ -575,10 +581,8 @@ class _SelectableMedleyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final theme = Theme.of(context);
-    final titleColor = theme.textTheme.titleMedium?.color;
-    final subtitleColor =
-        theme.textTheme.bodySmall?.color?.withValues(alpha: 0.78);
+    final titleColor = cs.onSurface;
+    final subtitleColor = cs.onSurfaceVariant;
     final count = medley.items.length;
 
     return Opacity(
@@ -591,15 +595,21 @@ class _SelectableMedleyCard extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(AppRadius.card),
             onTap: enabled ? onTap : null,
-            child: Ink(
-              decoration: BoxDecoration(
-                color: isSelected ? cs.primaryContainer : cs.surface,
-                borderRadius: BorderRadius.circular(AppRadius.card),
-                border: Border.all(
-                  color: isSelected ? cs.primary : cs.outlineVariant,
-                  width: isSelected ? 1.6 : 1,
+            child: TweenAnimationBuilder<Decoration>(
+              duration: const Duration(milliseconds: 220),
+              curve: appExpressiveCurve,
+              tween: DecorationTween(
+                end: BoxDecoration(
+                  color: isSelected ? cs.primaryContainer : cs.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.card),
+                  border: Border.all(
+                    color: isSelected ? cs.primary : cs.outlineVariant,
+                    width: isSelected ? 1.6 : 1,
+                  ),
                 ),
               ),
+              builder: (context, decoration, child) =>
+                  Ink(decoration: decoration, child: child),
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Row(
@@ -634,9 +644,8 @@ class _SelectableMedleyCard extends StatelessWidget {
                             medley.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w700,
-                              fontSize: 15,
                               color: titleColor,
                             ),
                           ),
@@ -646,8 +655,7 @@ class _SelectableMedleyCard extends StatelessWidget {
                               medley.description!,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                fontSize: 13,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: subtitleColor,
                               ),
                             ),
@@ -714,9 +722,8 @@ class _SelectableSongCard extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final titleColor = theme.textTheme.titleMedium?.color;
-    final subtitleColor =
-        theme.textTheme.bodySmall?.color?.withValues(alpha: 0.78);
+    final titleColor = cs.onSurface;
+    final subtitleColor = cs.onSurfaceVariant;
 
     return Opacity(
       opacity: enabled ? 1 : 0.72,
@@ -728,15 +735,21 @@ class _SelectableSongCard extends StatelessWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(AppRadius.card),
             onTap: enabled ? onTap : null,
-            child: Ink(
-              decoration: BoxDecoration(
-                color: isSelected ? cs.primaryContainer : cs.surface,
-                borderRadius: BorderRadius.circular(AppRadius.card),
-                border: Border.all(
-                  color: isSelected ? cs.primary : cs.outlineVariant,
-                  width: isSelected ? 1.6 : 1,
+            child: TweenAnimationBuilder<Decoration>(
+              duration: const Duration(milliseconds: 220),
+              curve: appExpressiveCurve,
+              tween: DecorationTween(
+                end: BoxDecoration(
+                  color: isSelected ? cs.primaryContainer : cs.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.card),
+                  border: Border.all(
+                    color: isSelected ? cs.primary : cs.outlineVariant,
+                    width: isSelected ? 1.6 : 1,
+                  ),
                 ),
               ),
+              builder: (context, decoration, child) =>
+                  Ink(decoration: decoration, child: child),
               child: Padding(
                 padding: const EdgeInsets.all(12),
                 child: Row(
@@ -768,9 +781,8 @@ class _SelectableSongCard extends StatelessWidget {
                             song.title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: theme.textTheme.bodyLarge?.copyWith(
+                            style: theme.textTheme.titleSmall?.copyWith(
                               fontWeight: FontWeight.w700,
-                              fontSize: 15,
                               color: titleColor,
                             ),
                           ),
@@ -898,9 +910,9 @@ class _EmptySongsState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = Theme.of(context).textTheme.titleMedium?.color;
-    final subtitleColor =
-        Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.78);
+    final cs = Theme.of(context).colorScheme;
+    final titleColor = cs.onSurface;
+    final subtitleColor = cs.onSurfaceVariant;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 32),
@@ -933,9 +945,9 @@ class _EmptyMedleysState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = Theme.of(context).textTheme.titleMedium?.color;
-    final subtitleColor =
-        Theme.of(context).textTheme.bodySmall?.color?.withValues(alpha: 0.78);
+    final cs = Theme.of(context).colorScheme;
+    final titleColor = cs.onSurface;
+    final subtitleColor = cs.onSurfaceVariant;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 32),
@@ -946,10 +958,7 @@ class _EmptyMedleysState extends StatelessWidget {
               'assets/icons/disc-album.svg',
               width: 44,
               height: 44,
-              colorFilter: ColorFilter.mode(
-                subtitleColor ?? Theme.of(context).colorScheme.onSurfaceVariant,
-                BlendMode.srcIn,
-              ),
+              colorFilter: ColorFilter.mode(subtitleColor, BlendMode.srcIn),
             ),
             const SizedBox(height: 10),
             Text(
