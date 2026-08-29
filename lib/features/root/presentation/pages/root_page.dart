@@ -56,8 +56,10 @@ class _RootPageState extends State<RootPage>
     _userCubit = UserCubit(UserRepositoryImpl())..load();
     _eventsCubit = EventsCubit(EventsRepositoryImpl())..load();
     _lastEventsRefreshAt = DateTime.now();
-    _notificationsCubit = NotificationsCubit(NotificationsRepositoryImpl())
-      ..load();
+    _notificationsCubit = NotificationsCubit(
+      NotificationsRepositoryImpl(),
+      onProjectInviteAccepted: _projectCubit.invalidateProjects,
+    )..load();
     _lastNotificationsRefreshAt = DateTime.now();
   }
 
@@ -201,89 +203,95 @@ class _RootPageState extends State<RootPage>
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider.value(value: _projectCubit),
-        BlocProvider.value(value: _userCubit),
-        BlocProvider.value(value: _eventsCubit),
-        BlocProvider.value(value: _notificationsCubit),
-      ],
-      child: Builder(
-        builder: (modalContext) {
-          return BlocBuilder<UserCubit, UserState>(
-            builder: (context, userState) {
-              return Scaffold(
-                key: _scaffoldKey,
-                drawerScrimColor: Theme.of(
-                  context,
-                ).colorScheme.scrim.withValues(alpha: 0.28),
-                drawer: RootNavigationDrawer(
-                  user: userState.user,
-                  isLoadingUser: userState.status == UserStatus.loading,
-                  onProfileTap: () => _openRoute(ProfilePage.routeName),
-                  onUnavailabilityTap: () =>
-                      _openRoute(UserUnavailabilityPage.routeName),
-                  onSongCategoriesTap: () =>
-                      _openRoute(SongCategoriesPage.routeName),
-                ),
-                bottomNavigationBar:
-                    BlocBuilder<NotificationsCubit, NotificationsState>(
-                      builder: (context, notificationsState) {
-                        return RootBottomNavigationBar(
-                          currentIndex: _index,
-                          unreadNotificationsCount:
-                              notificationsState.unreadCount,
-                          onTap: (i) => _go(i, modalContext),
+    return PopScope(
+      canPop: _index == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _setIndex(0);
+      },
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: _projectCubit),
+          BlocProvider.value(value: _userCubit),
+          BlocProvider.value(value: _eventsCubit),
+          BlocProvider.value(value: _notificationsCubit),
+        ],
+        child: Builder(
+          builder: (modalContext) {
+            return BlocBuilder<UserCubit, UserState>(
+              builder: (context, userState) {
+                return Scaffold(
+                  key: _scaffoldKey,
+                  drawerScrimColor: Theme.of(
+                    context,
+                  ).colorScheme.scrim.withValues(alpha: 0.28),
+                  drawer: RootNavigationDrawer(
+                    user: userState.user,
+                    isLoadingUser: userState.status == UserStatus.loading,
+                    onProfileTap: () => _openRoute(ProfilePage.routeName),
+                    onUnavailabilityTap: () =>
+                        _openRoute(UserUnavailabilityPage.routeName),
+                    onSongCategoriesTap: () =>
+                        _openRoute(SongCategoriesPage.routeName),
+                  ),
+                  bottomNavigationBar:
+                      BlocBuilder<NotificationsCubit, NotificationsState>(
+                        builder: (context, notificationsState) {
+                          return RootBottomNavigationBar(
+                            currentIndex: _index,
+                            unreadNotificationsCount:
+                                notificationsState.unreadCount,
+                            onTap: (i) => _go(i, modalContext),
+                          );
+                        },
+                      ),
+                  body: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onHorizontalDragEnd: (details) =>
+                        _handleHorizontalDragEnd(details, modalContext),
+                    child: TweenAnimationBuilder<Offset>(
+                      key: ValueKey(_transitionTick),
+                      tween: Tween<Offset>(
+                        begin: _transitionBeginOffset,
+                        end: Offset.zero,
+                      ),
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      builder: (context, offset, child) {
+                        final opacity = (1 - (offset.dx.abs() * 4)).clamp(
+                          0.82,
+                          1.0,
+                        );
+
+                        return Transform.translate(
+                          offset: Offset(
+                            offset.dx * MediaQuery.sizeOf(context).width,
+                            0,
+                          ),
+                          child: Opacity(opacity: opacity, child: child),
                         );
                       },
-                    ),
-                body: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onHorizontalDragEnd: (details) =>
-                      _handleHorizontalDragEnd(details, modalContext),
-                  child: TweenAnimationBuilder<Offset>(
-                    key: ValueKey(_transitionTick),
-                    tween: Tween<Offset>(
-                      begin: _transitionBeginOffset,
-                      end: Offset.zero,
-                    ),
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, offset, child) {
-                      final opacity = (1 - (offset.dx.abs() * 4)).clamp(
-                        0.82,
-                        1.0,
-                      );
-
-                      return Transform.translate(
-                        offset: Offset(
-                          offset.dx * MediaQuery.sizeOf(context).width,
-                          0,
-                        ),
-                        child: Opacity(opacity: opacity, child: child),
-                      );
-                    },
-                    child: IndexedStack(
-                      index: _index,
-                      children: [
-                        EventsListPage(
-                          onOpenDrawer: _openDrawer,
-                          user: userState.user,
-                          isLoadingUser: userState.status == UserStatus.loading,
-                        ),
-                        MusicProjectsTabPage(
-                          onGoHome: () => _setIndex(0),
-                        ),
-                        const SongsListPage(),
-                        const AvisosPage(),
-                      ],
+                      child: IndexedStack(
+                        index: _index,
+                        children: [
+                          EventsListPage(
+                            onOpenDrawer: _openDrawer,
+                            user: userState.user,
+                            isLoadingUser:
+                                userState.status == UserStatus.loading,
+                          ),
+                          MusicProjectsTabPage(onGoHome: () => _setIndex(0)),
+                          const SongsListPage(),
+                          const AvisosPage(),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-          );
-        },
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

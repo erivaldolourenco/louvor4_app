@@ -18,6 +18,7 @@ class SongListCard extends StatelessWidget {
   final String? coverUrl;
   final bool isMedley;
   final bool hasAudio;
+  final bool hasVsAudio;
   final VoidCallback? onTap;
   final Future<bool> Function()? onRemove;
   final VoidCallback? onDelete;
@@ -35,6 +36,7 @@ class SongListCard extends StatelessWidget {
     this.coverUrl,
     this.isMedley = false,
     this.hasAudio = false,
+    this.hasVsAudio = false,
     this.onTap,
     this.onRemove,
     this.onDelete,
@@ -91,6 +93,7 @@ class SongListCard extends StatelessWidget {
                         ),
                       ],
                       if (hasAudio ||
+                          hasVsAudio ||
                           youTubeUrl != null && youTubeUrl!.isNotEmpty ||
                           spotifyUrl != null && spotifyUrl!.isNotEmpty ||
                           deezerUrl != null && deezerUrl!.isNotEmpty) ...[
@@ -106,6 +109,15 @@ class SongListCard extends StatelessWidget {
                                 backgroundColor: cs.primaryContainer
                                     .withValues(alpha: 0.7),
                                 foregroundColor: cs.primary,
+                              ),
+                            if (hasVsAudio)
+                              _SongTag(
+                                label: 'VS',
+                                icon: Icons.graphic_eq_rounded,
+                                backgroundColor: const Color(
+                                  0xFF6366F1,
+                                ).withValues(alpha: 0.12),
+                                foregroundColor: const Color(0xFF6366F1),
                               ),
                             if (youTubeUrl != null && youTubeUrl!.isNotEmpty)
                               Builder(

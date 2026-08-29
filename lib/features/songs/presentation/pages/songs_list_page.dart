@@ -6,7 +6,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
-import '../../../../core/ui/widgets/circular_icon_action_button.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/ui/widgets/song_list_card.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
@@ -17,7 +16,6 @@ import '../../../medleys/presentation/cubit/medley_state.dart';
 import '../../../medleys/presentation/widgets/medley_card.dart';
 import '../../../medleys/presentation/widgets/medley_form_sheet.dart';
 import '../../../song_categories/domain/entities/song_category_entity.dart';
-import '../../../song_categories/presentation/widgets/category_filter_sheet.dart';
 import '../../data/impl/songs_repository_impl.dart';
 import '../../domain/entities/external_music_entity.dart';
 import '../../domain/entities/song_entity.dart';
@@ -280,20 +278,13 @@ class _SongsContentState extends State<_SongsContent>
     }
   }
 
-  Future<void> _openCategoryFilterSheet() async {
-    final result = await showCategoryFilterSheet(
-      context,
-      categories: _availableFilterCategories(
-        context.read<MedleyCubit>().state.medleys,
-      ),
-      initiallySelectedIds: _selectedCategoryFilterIds,
-    );
-
-    if (result == null || !mounted) return;
+  void _toggleCategoryFilter(String categoryId) {
     setState(() {
-      _selectedCategoryFilterIds
-        ..clear()
-        ..addAll(result);
+      if (_selectedCategoryFilterIds.contains(categoryId)) {
+        _selectedCategoryFilterIds.remove(categoryId);
+      } else {
+        _selectedCategoryFilterIds.add(categoryId);
+      }
     });
   }
 
@@ -361,34 +352,12 @@ class _SongsContentState extends State<_SongsContent>
       appBar: StandardSectionAppBar(
         title: 'Músicas',
         subtitle: subtitle,
-        actions: [
-          if (availableFilterCategories.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Badge(
-                isLabelVisible: _selectedCategoryFilterIds.isNotEmpty,
-                smallSize: 9,
-                child: CircularIconActionButton(
-                  tooltip: 'Filtrar por categoria',
-                  onPressed: _openCategoryFilterSheet,
-                  assetPath: 'assets/icons/settings-2.svg',
-                  iconColor: Theme.of(context).colorScheme.onPrimaryContainer,
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.primaryContainer,
-                  borderColor: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.3),
-                ),
-              ),
-            ),
-        ],
       ),
       floatingActionButton: _buildFab(onSongsTab),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: SizedBox(
               height: 46,
               child: TextField(
@@ -437,6 +406,12 @@ class _SongsContentState extends State<_SongsContent>
               ),
             ),
           ),
+          if (availableFilterCategories.isNotEmpty)
+            _CategoryFilterChips(
+              categories: availableFilterCategories,
+              selectedIds: _selectedCategoryFilterIds,
+              onToggle: _toggleCategoryFilter,
+            ),
           _SongsTabBar(controller: _tabController),
           Expanded(
             child: TabBarView(
@@ -635,6 +610,7 @@ class _SongsContentState extends State<_SongsContent>
                   deezerUrl: song.deezerUrl,
                   coverUrl: song.coverUrl,
                   hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
+                  hasVsAudio: song.vsAudioUrl?.isNotEmpty == true,
                   onTap: () => openSongDetailPage(
                     context,
                     songId: song.id,
@@ -649,6 +625,7 @@ class _SongsContentState extends State<_SongsContent>
                     coverUrl: song.coverUrl,
                     notes: song.notes,
                     referenceAudioUrl: song.referenceAudioUrl,
+                    vsAudioUrl: song.vsAudioUrl,
                     onOpenLyrics: song.id == null
                         ? null
                         : () => _goToLyrics(song),
@@ -756,6 +733,58 @@ class _SongsContentState extends State<_SongsContent>
                 ),
         );
       },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Category filter chips (scroll horizontal)
+// ---------------------------------------------------------------------------
+
+class _CategoryFilterChips extends StatelessWidget {
+  final List<SongCategoryEntity> categories;
+  final Set<String> selectedIds;
+  final ValueChanged<String> onToggle;
+
+  const _CategoryFilterChips({
+    required this.categories,
+    required this.selectedIds,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+        itemCount: categories.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (_, index) {
+          final category = categories[index];
+          final selected = selectedIds.contains(category.id);
+          return FilterChip(
+            label: Text(category.name),
+            selected: selected,
+            onSelected: (_) => onToggle(category.id),
+            selectedColor: cs.primaryContainer,
+            checkmarkColor: cs.onPrimaryContainer,
+            labelStyle: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: selected ? cs.onPrimaryContainer : null,
+            ),
+            backgroundColor: cs.surface,
+            side: BorderSide(
+              color: selected ? cs.primary : cs.outlineVariant,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+          );
+        },
+      ),
     );
   }
 }

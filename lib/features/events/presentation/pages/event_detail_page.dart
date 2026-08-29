@@ -175,19 +175,33 @@ class _EventDetailViewState extends State<_EventDetailView>
                   backgroundImageUrl: event.projectImageUrl,
                   isCollapsed: _headerCollapsed,
                   actions: [
-                    if (state.isProjectAdmin || state.canEditEvent)
-                      PopupMenuButton<_EventMenuAction>(
-                        tooltip: 'Mais opções',
-                        icon: const Icon(Icons.more_vert_rounded),
-                        onSelected: (action) {
-                          switch (action) {
-                            case _EventMenuAction.edit:
-                              _onEditEvent();
-                            case _EventMenuAction.delete:
-                              _onDeleteEvent();
-                          }
-                        },
-                        itemBuilder: (context) => [
+                    PopupMenuButton<_EventMenuAction>(
+                      tooltip: 'Mais opções',
+                      icon: const Icon(Icons.more_vert_rounded),
+                      onSelected: (action) {
+                        switch (action) {
+                          case _EventMenuAction.share:
+                            _onShareSetlist();
+                          case _EventMenuAction.edit:
+                            _onEditEvent();
+                          case _EventMenuAction.delete:
+                            _onDeleteEvent();
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: _EventMenuAction.share,
+                          child: ListTile(
+                            leading: Icon(
+                              Icons.share_rounded,
+                              size: 20,
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            title: const Text('Compartilhar repertório'),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                        ),
+                        if (state.isProjectAdmin || state.canEditEvent)
                           PopupMenuItem(
                             value: _EventMenuAction.edit,
                             child: ListTile(
@@ -204,30 +218,30 @@ class _EventDetailViewState extends State<_EventDetailView>
                               contentPadding: EdgeInsets.zero,
                             ),
                           ),
-                          if (state.isProjectAdmin)
-                            PopupMenuItem(
-                              value: _EventMenuAction.delete,
-                              child: ListTile(
-                                leading: SvgPicture.asset(
-                                  'assets/icons/trash-2.svg',
-                                  width: 20,
-                                  height: 20,
-                                  colorFilter: ColorFilter.mode(
-                                    Theme.of(context).colorScheme.error,
-                                    BlendMode.srcIn,
-                                  ),
+                        if (state.isProjectAdmin)
+                          PopupMenuItem(
+                            value: _EventMenuAction.delete,
+                            child: ListTile(
+                              leading: SvgPicture.asset(
+                                'assets/icons/trash-2.svg',
+                                width: 20,
+                                height: 20,
+                                colorFilter: ColorFilter.mode(
+                                  Theme.of(context).colorScheme.error,
+                                  BlendMode.srcIn,
                                 ),
-                                title: Text(
-                                  'Excluir evento',
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.error,
-                                  ),
-                                ),
-                                contentPadding: EdgeInsets.zero,
                               ),
+                              title: Text(
+                                'Excluir evento',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                              ),
+                              contentPadding: EdgeInsets.zero,
                             ),
-                        ],
-                      ),
+                          ),
+                      ],
+                    ),
                   ],
                 ),
                 SliverToBoxAdapter(
@@ -518,6 +532,22 @@ class _EventDetailViewState extends State<_EventDetailView>
     }
   }
 
+  Future<void> _onShareSetlist() async {
+    final event = context.read<EventDetailCubit>().state.event;
+    if (event == null) return;
+
+    final url = 'https://app.louvor4.com.br/repertorio/${event.id}';
+    try {
+      await Share.share(
+        '🎶 Repertório: ${event.title}\n$url',
+        subject: 'Repertório: ${event.title}',
+      );
+    } catch (_) {
+      // Usuário cancelou o compartilhamento ou a plataforma não suportou;
+      // não há necessidade de feedback de erro nesse caso.
+    }
+  }
+
   Future<void> _onEditEvent() async {
     final event = context.read<EventDetailCubit>().state.event;
     if (event == null) return;
@@ -578,7 +608,7 @@ class _EventDetailViewState extends State<_EventDetailView>
   }
 }
 
-enum _EventMenuAction { edit, delete }
+enum _EventMenuAction { share, edit, delete }
 
 class _EventDetailTabs extends StatelessWidget {
   final TabController controller;
@@ -1120,8 +1150,11 @@ class _SongsTab extends StatelessWidget {
                     artist: song.artist ?? 'Desconhecido',
                     musicKey: song.key,
                     youTubeUrl: song.youTubeUrl,
+                    spotifyUrl: song.spotifyUrl,
+                    deezerUrl: song.deezerUrl,
                     coverUrl: song.coverUrl,
                     hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
+                    hasVsAudio: song.vsAudioUrl?.isNotEmpty == true,
                     onTap: () => openSongDetailPage(
                       context,
                       songId: song.songId,
@@ -1130,9 +1163,12 @@ class _SongsTab extends StatelessWidget {
                       musicKey: song.key,
                       bpm: song.bpm?.toString(),
                       youTubeUrl: song.youTubeUrl,
+                      spotifyUrl: song.spotifyUrl,
+                      deezerUrl: song.deezerUrl,
                       coverUrl: song.coverUrl,
                       notes: song.notes,
                       referenceAudioUrl: song.referenceAudioUrl,
+                      vsAudioUrl: song.vsAudioUrl,
                       onOpenLyrics: song.songId == null
                           ? null
                           : () => _openLyrics(context, song),

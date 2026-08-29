@@ -207,7 +207,7 @@ class _IconPickerGrid extends StatelessWidget {
             duration: const Duration(milliseconds: 150),
             decoration: BoxDecoration(
               color: isSelected ? cs.primaryContainer : cs.surfaceContainer,
-              borderRadius: BorderRadius.circular(AppRadius.input),
+              borderRadius: BorderRadius.circular(AppRadius.thumbnail),
               border: Border.all(
                 color: isSelected ? cs.primary : cs.outlineVariant,
                 width: isSelected ? 2 : 1,

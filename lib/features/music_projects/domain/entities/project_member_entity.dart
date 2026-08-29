@@ -3,6 +3,21 @@ import 'package:equatable/equatable.dart';
 import 'project_member_role.dart';
 import 'project_skill_entity.dart';
 
+enum ProjectMemberStatus { active, pendingInvite, declined, removed }
+
+ProjectMemberStatus _parseProjectMemberStatus(dynamic value) {
+  switch (value?.toString().trim().toUpperCase()) {
+    case 'PENDING_INVITE':
+      return ProjectMemberStatus.pendingInvite;
+    case 'DECLINED':
+      return ProjectMemberStatus.declined;
+    case 'REMOVED':
+      return ProjectMemberStatus.removed;
+    default:
+      return ProjectMemberStatus.active;
+  }
+}
+
 class ProjectMemberEntity extends Equatable {
   final String id;
   final String userId;
@@ -12,6 +27,7 @@ class ProjectMemberEntity extends Equatable {
   final String email;
   final String? profileImage;
   final ProjectMemberRole projectRole;
+  final ProjectMemberStatus status;
   final List<ProjectSkillEntity> skills;
 
   const ProjectMemberEntity({
@@ -23,6 +39,7 @@ class ProjectMemberEntity extends Equatable {
     required this.email,
     required this.profileImage,
     required this.projectRole,
+    this.status = ProjectMemberStatus.active,
     required this.skills,
   });
 
@@ -37,6 +54,8 @@ class ProjectMemberEntity extends Equatable {
 
   bool get isAdmin => projectRole.hasAdministrativeAccess;
 
+  bool get isPending => status == ProjectMemberStatus.pendingInvite;
+
   factory ProjectMemberEntity.fromJson(Map<String, dynamic> json) {
     return ProjectMemberEntity(
       id: json['id'].toString(),
@@ -47,6 +66,7 @@ class ProjectMemberEntity extends Equatable {
       email: (json['email'] ?? '').toString(),
       profileImage: json['profileImage']?.toString(),
       projectRole: projectMemberRoleFromString(json['projectRole']?.toString()),
+      status: _parseProjectMemberStatus(json['status']),
       skills: (json['skills'] as List? ?? const [])
           .map(_parseSkill)
           .whereType<ProjectSkillEntity>()
@@ -76,6 +96,7 @@ class ProjectMemberEntity extends Equatable {
     email,
     profileImage,
     projectRole,
+    status,
     skills,
   ];
 }

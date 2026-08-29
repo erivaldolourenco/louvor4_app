@@ -11,6 +11,7 @@ class ProjectMemberEntity extends Equatable {
   final String? projectRole;
   final List<SkillEntity> skills;
   final Set<String> skillNames;
+  final String? status;
 
   const ProjectMemberEntity({
     required this.id,
@@ -21,12 +22,16 @@ class ProjectMemberEntity extends Equatable {
     this.projectRole,
     this.skills = const [],
     this.skillNames = const {},
+    this.status,
   });
 
   String get fullName {
     final name = '$firstName ${lastName ?? ''}'.trim();
     return name.isEmpty ? 'Sem nome' : name;
   }
+
+  /// Convite ainda não aceito pelo membro — não pode ser escalado em eventos.
+  bool get isPending => status?.trim().toUpperCase() == 'PENDING_INVITE';
 
   factory ProjectMemberEntity.fromJson(
     Map<String, dynamic> json, {
@@ -64,6 +69,7 @@ class ProjectMemberEntity extends Equatable {
       ]),
       skills: skills,
       skillNames: skillNames,
+      status: _readNullableString(json, ['status'], fallbackMap: user),
     );
   }
 
@@ -76,6 +82,7 @@ class ProjectMemberEntity extends Equatable {
     String? projectRole,
     List<SkillEntity>? skills,
     Set<String>? skillNames,
+    String? status,
   }) {
     return ProjectMemberEntity(
       id: id ?? this.id,
@@ -86,6 +93,7 @@ class ProjectMemberEntity extends Equatable {
       projectRole: projectRole ?? this.projectRole,
       skills: skills ?? this.skills,
       skillNames: skillNames ?? this.skillNames,
+      status: status ?? this.status,
     );
   }
 
@@ -193,5 +201,6 @@ class ProjectMemberEntity extends Equatable {
     projectRole,
     skills,
     skillNames,
+    status,
   ];
 }

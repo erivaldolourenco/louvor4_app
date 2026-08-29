@@ -11,11 +11,10 @@ import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_inline_error_message.dart';
-import '../../../../core/ui/widgets/circular_icon_action_button.dart';
 import '../../../../core/ui/widgets/fade_slide_in.dart';
+import '../../../../core/utils/url_utils.dart';
 import '../../../../core/utils/youtube_utils.dart';
 import '../../../song_categories/domain/entities/song_category_entity.dart';
-import '../../../song_categories/presentation/widgets/category_filter_sheet.dart';
 import '../../data/events_repository.dart';
 import '../cubit/manage_event_songs_cubit.dart';
 import '../cubit/manage_event_songs_state.dart';
@@ -85,18 +84,13 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
     return categories;
   }
 
-  Future<void> _openCategoryFilterSheet(ManageEventSongsState state) async {
-    final result = await showCategoryFilterSheet(
-      context,
-      categories: _availableFilterCategories(state),
-      initiallySelectedIds: _selectedCategoryFilterIds,
-    );
-
-    if (result == null || !mounted) return;
+  void _toggleCategoryFilter(String categoryId) {
     setState(() {
-      _selectedCategoryFilterIds
-        ..clear()
-        ..addAll(result);
+      if (_selectedCategoryFilterIds.contains(categoryId)) {
+        _selectedCategoryFilterIds.remove(categoryId);
+      } else {
+        _selectedCategoryFilterIds.add(categoryId);
+      }
     });
   }
 
@@ -122,7 +116,6 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final titleColor = cs.onSurface;
-    final subtitleColor = cs.onSurfaceVariant;
 
     return Padding(
       padding: EdgeInsets.only(
@@ -166,39 +159,11 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Adicionar ao repertório',
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                color: titleColor,
-                              ),
-                            ),
-                          ),
-                          if (_availableFilterCategories(state).isNotEmpty)
-                            Badge(
-                              isLabelVisible:
-                                  _selectedCategoryFilterIds.isNotEmpty,
-                              smallSize: 9,
-                              child: CircularIconActionButton(
-                                tooltip: 'Filtrar por categoria',
-                                onPressed: () =>
-                                    _openCategoryFilterSheet(state),
-                                assetPath: 'assets/icons/settings-2.svg',
-                                iconColor: cs.onPrimaryContainer,
-                                backgroundColor: cs.primaryContainer,
-                                borderColor: cs.primary.withValues(
-                                  alpha: 0.3,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
                       Text(
-                        'Selecione músicas avulsas ou medleys para adicionar ao evento.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: subtitleColor),
+                        'Adicionar ao repertório',
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: titleColor,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       // Search — same style as the Músicas screen, shared by both tabs
@@ -213,6 +178,14 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                           setState(() => _searchQuery = '');
                         },
                       ),
+                      if (_availableFilterCategories(state).isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        _CategoryFilterChips(
+                          categories: _availableFilterCategories(state),
+                          selectedIds: _selectedCategoryFilterIds,
+                          onToggle: _toggleCategoryFilter,
+                        ),
+                      ],
                       const SizedBox(height: 12),
                       // Tab bar
                       _SheetTabBar(controller: _tabController),
@@ -317,36 +290,92 @@ class _RepertoireSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return TextField(
-      controller: controller,
-      onChanged: onSearchChanged,
-      decoration: InputDecoration(
-        hintText: isMedleysTab
-            ? 'Buscar medley...'
-            : 'Buscar por título ou artista...',
-        prefixIcon: const Icon(Icons.search_rounded),
-        suffixIcon: searchQuery.isNotEmpty
-            ? IconButton(
-                icon: const Icon(Icons.clear_rounded),
-                onPressed: onClearSearch,
-              )
-            : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(
-            color: cs.outlineVariant.withValues(alpha: 0.25),
+    return SizedBox(
+      height: 46,
+      child: TextField(
+        controller: controller,
+        onChanged: onSearchChanged,
+        decoration: InputDecoration(
+          isDense: true,
+          contentPadding: const EdgeInsets.symmetric(vertical: 6),
+          hintText: isMedleysTab
+              ? 'Buscar medley...'
+              : 'Buscar por título ou artista...',
+          prefixIcon: const Icon(Icons.search_rounded),
+          suffixIcon: searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear_rounded),
+                  onPressed: onClearSearch,
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.input),
+            borderSide: BorderSide(
+              color: cs.outlineVariant.withValues(alpha: 0.25),
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.input),
+            borderSide: BorderSide(
+              color: cs.outlineVariant.withValues(alpha: 0.25),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.input),
+            borderSide: BorderSide(color: cs.primary, width: 1.5),
           ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(
-            color: cs.outlineVariant.withValues(alpha: 0.25),
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(color: cs.primary, width: 1.5),
-        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Category filter chips (scroll horizontal)
+// ---------------------------------------------------------------------------
+
+class _CategoryFilterChips extends StatelessWidget {
+  final List<SongCategoryEntity> categories;
+  final Set<String> selectedIds;
+  final ValueChanged<String> onToggle;
+
+  const _CategoryFilterChips({
+    required this.categories,
+    required this.selectedIds,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: categories.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (_, index) {
+          final category = categories[index];
+          final selected = selectedIds.contains(category.id);
+          return FilterChip(
+            label: Text(category.name),
+            selected: selected,
+            onSelected: (_) => onToggle(category.id),
+            selectedColor: cs.primaryContainer,
+            checkmarkColor: cs.onPrimaryContainer,
+            labelStyle: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: selected ? cs.onPrimaryContainer : null,
+            ),
+            backgroundColor: cs.surface,
+            side: BorderSide(
+              color: selected ? cs.primary : cs.outlineVariant,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+          );
+        },
       ),
     );
   }
@@ -365,63 +394,39 @@ class _SheetTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activeColor = isDark ? cs.onPrimaryContainer : cs.primary;
-    const tabs = [
-      (assetPath: 'assets/icons/music.svg', label: 'Músicas'),
-      (assetPath: 'assets/icons/disc-album.svg', label: 'Medleys'),
-    ];
-
-    return AnimatedBuilder(
-      animation: controller.animation ?? controller,
-      builder: (context, _) {
-        final activeIndex =
-            controller.animation?.value.round() ?? controller.index;
-
-        return TabBar(
-          controller: controller,
-          indicator: BoxDecoration(
-            color: cs.primaryContainer,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-          ),
-          indicatorSize: TabBarIndicatorSize.tab,
-          indicatorPadding: const EdgeInsets.symmetric(
-            vertical: 8,
-            horizontal: 6,
-          ),
-          dividerColor: Colors.transparent,
-          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-          labelColor: activeColor,
-          unselectedLabelColor: cs.onSurfaceVariant,
-          labelStyle: const TextStyle(fontWeight: FontWeight.w700),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
-          tabs: [
-            for (var i = 0; i < tabs.length; i++)
-              Tab(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SvgPicture.asset(
-                      tabs[i].assetPath,
-                      width: 18,
-                      height: 18,
-                      colorFilter: ColorFilter.mode(
-                        i == activeIndex ? activeColor : cs.onSurfaceVariant,
-                        BlendMode.srcIn,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        tabs[i].label,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        );
-      },
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(
+          color: cs.outlineVariant.withValues(alpha: isDark ? 0.35 : 0.55),
+        ),
+      ),
+      child: TabBar(
+        controller: controller,
+        indicator: BoxDecoration(
+          color: cs.primaryContainer,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          border: Border.all(color: cs.primary.withValues(alpha: 0.4)),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        indicatorPadding: const EdgeInsets.symmetric(
+          vertical: 6,
+          horizontal: 12,
+        ),
+        dividerColor: Colors.transparent,
+        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+        labelColor: isDark ? cs.onPrimaryContainer : cs.primary,
+        unselectedLabelColor: cs.onSurfaceVariant,
+        labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 14.5,
+        ),
+        tabs: const [
+          Tab(text: 'Músicas'),
+          Tab(text: 'Medleys'),
+        ],
+      ),
     );
   }
 }
@@ -757,18 +762,17 @@ class _SelectableSongCard extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(AppRadius.card),
                       child: Image.network(
-                        YoutubeUtils.getThumbnail(song.youTubeUrl),
+                        UrlUtils.isValidNetworkUrl(song.coverUrl)
+                            ? song.coverUrl!
+                            : YoutubeUtils.getThumbnail(song.youTubeUrl),
                         width: 72,
                         height: 72,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => Container(
+                        errorBuilder: (_, _, _) => Image.asset(
+                          YoutubeUtils.defaultThumb,
                           width: 72,
                           height: 72,
-                          color: cs.surfaceContainerLow,
-                          child: Icon(
-                            Icons.music_note_rounded,
-                            color: subtitleColor,
-                          ),
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),

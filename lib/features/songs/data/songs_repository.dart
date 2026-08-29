@@ -12,6 +12,8 @@ abstract class SongsRepository {
 
   Future<void> uploadReferenceAudio(String songId, String filePath);
 
+  Future<void> uploadVsAudio(String songId, String filePath);
+
   Future<void> deleteSong(String id);
 
   /// Substitui integralmente as categorias associadas à música pelas

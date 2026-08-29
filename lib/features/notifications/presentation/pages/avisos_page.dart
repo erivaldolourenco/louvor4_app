@@ -6,6 +6,8 @@ import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/repositories/notifications_repository_impl.dart';
+import '../../domain/entities/notification_item_entity.dart';
+import '../../domain/entities/notification_type.dart';
 import '../cubit/notifications_cubit.dart';
 import '../cubit/notifications_state.dart';
 import '../widgets/notification_card.dart';
@@ -64,6 +66,38 @@ class _AvisosViewState extends State<_AvisosView> {
     if (_scrollController.position.pixels >= threshold) {
       context.read<NotificationsCubit>().loadMore();
     }
+  }
+
+  Future<void> _confirmAndDecline(NotificationItemEntity notification) async {
+    final isProjectInvite =
+        notification.type == NotificationType.projectMemberInvite;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Recusar convite'),
+        content: Text(
+          isProjectInvite
+              ? 'Tem certeza que deseja recusar este convite para participar do projeto?'
+              : 'Tem certeza que deseja recusar este convite para participar do evento?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Recusar'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    context.read<NotificationsCubit>().declineInvite(notification);
   }
 
   @override
@@ -164,9 +198,7 @@ class _AvisosViewState extends State<_AvisosView> {
                   )
                 : null,
             onDecline: notification.canRespondToInvite
-                ? () => context.read<NotificationsCubit>().declineInvite(
-                    notification,
-                  )
+                ? () => _confirmAndDecline(notification)
                 : null,
             onDismiss: notification.canRespondToInvite
                 ? null

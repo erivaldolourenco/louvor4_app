@@ -174,7 +174,9 @@ class ManageEventParticipantsCubit extends Cubit<ManageEventParticipantsState> {
       for (final participant in participants) participant.memberId: participant,
     };
 
-    final merged = members.map((member) {
+    // Membros com convite pendente ainda não aceitaram participar do
+    // projeto, então não podem ser escalados para eventos.
+    final merged = members.where((member) => !member.isPending).map((member) {
       final participant = participantsByMemberId[member.id];
       final skillId = participant?.skillId;
       final hasSkill = member.skills.any((skill) => skill.id == skillId);

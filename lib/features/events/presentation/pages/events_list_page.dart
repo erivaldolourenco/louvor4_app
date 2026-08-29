@@ -62,7 +62,7 @@ List<Widget> _buildStaggeredSections(
               isFirstInGroup: index == 0,
               isLastInGroup: index == section.value.length - 1,
               showTimelineRail: false,
-              bottomSpacing: 0,
+              bottomSpacing: 10,
               isNext: isNext,
             ),
           ),

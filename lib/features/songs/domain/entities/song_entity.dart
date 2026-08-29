@@ -15,6 +15,7 @@ class SongEntity extends Equatable {
   final String? coverUrl;
   final String? notes;
   final String? referenceAudioUrl;
+  final String? vsAudioUrl;
   final List<SongCategoryEntity> categories;
 
   const SongEntity({
@@ -30,6 +31,7 @@ class SongEntity extends Equatable {
     this.coverUrl,
     this.notes,
     this.referenceAudioUrl,
+    this.vsAudioUrl,
     this.categories = const [],
   });
 
@@ -49,6 +51,7 @@ class SongEntity extends Equatable {
       coverUrl: _normalizeOptionalValue(json['coverUrl']),
       notes: _normalizeOptionalValue(json['notes']),
       referenceAudioUrl: _normalizeOptionalValue(json['referenceAudioUrl']),
+      vsAudioUrl: _normalizeOptionalValue(json['vsAudioUrl']),
       categories: (json['categories'] as List? ?? const [])
           .map(
             (item) => SongCategoryEntity.fromJson(
@@ -76,6 +79,8 @@ class SongEntity extends Equatable {
       if (notes != null && notes!.isNotEmpty) 'notes': notes,
       if (referenceAudioUrl != null && referenceAudioUrl!.isNotEmpty)
         'referenceAudioUrl': referenceAudioUrl,
+      if (vsAudioUrl != null && vsAudioUrl!.isNotEmpty)
+        'vsAudioUrl': vsAudioUrl,
     };
   }
 
@@ -99,6 +104,7 @@ class SongEntity extends Equatable {
     coverUrl,
     notes,
     referenceAudioUrl,
+    vsAudioUrl,
     categories,
   ];
 }

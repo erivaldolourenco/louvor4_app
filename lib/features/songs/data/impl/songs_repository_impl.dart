@@ -77,6 +77,21 @@ class SongsRepositoryImpl implements SongsRepository {
   }
 
   @override
+  Future<void> uploadVsAudio(String songId, String filePath) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          filePath,
+          filename: File(filePath).uri.pathSegments.last,
+        ),
+      });
+      await _dio.post('/songs/$songId/audio?type=VS', data: formData);
+    } on DioException catch (e) {
+      throw Exception(_extractApiErrorMessage(e));
+    }
+  }
+
+  @override
   Future<void> deleteSong(String id) async {
     try {
       await _dio.delete('/songs/$id/delete');

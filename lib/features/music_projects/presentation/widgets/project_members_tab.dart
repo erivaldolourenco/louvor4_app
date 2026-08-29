@@ -104,6 +104,10 @@ class _ProjectMembersTabView extends StatelessWidget {
         final subtitleColor = Theme.of(
           context,
         ).textTheme.bodySmall?.color?.withValues(alpha: 0.78);
+        // Membros com convite pendente só são visíveis para admins do projeto.
+        final visibleMembers = cubit.canManageMembers
+            ? state.members
+            : state.members.where((member) => !member.isPending).toList();
 
         if (state.isLoading) {
           return const AppLoadingState();
@@ -139,8 +143,9 @@ class _ProjectMembersTabView extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           'Equipe do projeto, permissões e funções musicais',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: subtitleColor),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(color: subtitleColor),
                         ),
                       ],
                     ),
@@ -148,10 +153,10 @@ class _ProjectMembersTabView extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 14),
-              if (state.members.isEmpty)
+              if (visibleMembers.isEmpty)
                 _MembersEmptyState(canManageMembers: cubit.canManageMembers),
-              if (state.members.isNotEmpty)
-                ...state.members.map(
+              if (visibleMembers.isNotEmpty)
+                ...visibleMembers.map(
                   (member) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
                     child: _ProjectMemberCard(
@@ -217,261 +222,279 @@ class _ProjectMemberCard extends StatelessWidget {
           : null,
     );
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: decoration.borderRadius,
-        boxShadow: decoration.boxShadow,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppRadius.cardLarge),
-        clipBehavior: Clip.antiAlias,
-        child: Ink(
-          decoration: decoration.copyWith(boxShadow: const []),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(AppRadius.card),
-                    onTap: () => showUserProfileDialog(
-                      context,
-                      name: member.fullName,
-                      profileImageUrl: member.profileImage,
-                      username: member.username,
-                      email: member.email,
-                      projectPermission: member.projectRole.label,
-                      musicSkills: memberSkills
-                          .map((skill) => skill.name)
-                          .toList(),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          _MemberAvatar(
-                            imageUrl: member.profileImage,
-                            fullName: member.fullName,
-                            role: member.projectRole,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        member.fullName,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .titleMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w700,
-                                              color: titleColor,
-                                            ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _RoleBadge(role: member.projectRole),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: memberSkills.isEmpty
-                                      ? const [
-                                          _SkillTag(
-                                            label: 'Sem funções musicais',
-                                            muted: true,
-                                          ),
-                                        ]
-                                      : memberSkills
-                                            .map(
-                                              (skill) => _SkillTag(
-                                                label: skill.name,
-                                                iconKey: skill.iconKey,
-                                              ),
-                                            )
-                                            .toList(),
-                                ),
-                              ],
+    return Opacity(
+      opacity: member.isPending ? 0.6 : 1,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: decoration.borderRadius,
+          boxShadow: decoration.boxShadow,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(AppRadius.cardLarge),
+          clipBehavior: Clip.antiAlias,
+          child: Ink(
+            decoration: decoration.copyWith(boxShadow: const []),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(AppRadius.card),
+                      onTap: member.isPending
+                          ? null
+                          : () => showUserProfileDialog(
+                              context,
+                              name: member.fullName,
+                              profileImageUrl: member.profileImage,
+                              username: member.username,
+                              email: member.email,
+                              projectPermission: member.projectRole.label,
+                              musicSkills: memberSkills
+                                  .map((skill) => skill.name)
+                                  .toList(),
                             ),
-                          ),
-                        ],
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            _MemberAvatar(
+                              imageUrl: member.profileImage,
+                              fullName: member.fullName,
+                              role: member.projectRole,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          member.fullName,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleMedium
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w700,
+                                                color: titleColor,
+                                              ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      member.isPending
+                                          ? const _PendingInviteBadge()
+                                          : _RoleBadge(
+                                              role: member.projectRole,
+                                            ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: memberSkills.isEmpty
+                                        ? const [
+                                            _SkillTag(
+                                              label: 'Sem funções musicais',
+                                              muted: true,
+                                            ),
+                                          ]
+                                        : memberSkills
+                                              .map(
+                                                (skill) => _SkillTag(
+                                                  label: skill.name,
+                                                  iconKey: skill.iconKey,
+                                                ),
+                                              )
+                                              .toList(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Builder(
-                  builder: (context) {
-                    final canEdit = cubit.canEditMember(member);
-                    final canRemove = cubit.canRemoveMember(member);
-                    final canLeave = cubit.canLeaveProject(member);
-                    final hasActions = canEdit || canRemove || canLeave;
+                  Builder(
+                    builder: (context) {
+                      final canEdit =
+                          cubit.canEditMember(member) && !member.isPending;
+                      final canRemove = cubit.canRemoveMember(member);
+                      final canLeave = cubit.canLeaveProject(member);
+                      final hasActions = canEdit || canRemove || canLeave;
 
-                    if (!hasActions) return const SizedBox.shrink();
+                      if (!hasActions) return const SizedBox.shrink();
 
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(width: 10),
-                        if (isBusy)
-                          const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        else
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (canEdit)
-                                CircularIconActionButton(
-                                  tooltip: 'Editar membro',
-                                  onPressed: () async {
-                                    final success = await _openEditMemberPage(
-                                      context,
-                                      member.id,
-                                    );
-                                    if (success == true) {
-                                      AppFeedback.showSuccess(
-                                        'Membro atualizado com sucesso.',
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(width: 10),
+                          if (isBusy)
+                            const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          else
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (canEdit)
+                                  CircularIconActionButton(
+                                    tooltip: 'Editar membro',
+                                    onPressed: () async {
+                                      final success = await _openEditMemberPage(
+                                        context,
+                                        member.id,
                                       );
-                                    }
-                                  },
-                                  assetPath: 'assets/icons/square-pen.svg',
-                                  iconColor: cs.onPrimaryContainer,
-                                  backgroundColor: cs.primaryContainer,
-                                  borderColor: cs.primary.withValues(
-                                    alpha: 0.3,
-                                  ),
-                                ),
-                              if (canEdit && canRemove)
-                                const SizedBox(width: 8),
-                              if (canRemove)
-                                CircularIconActionButton(
-                                  tooltip: 'Remover membro',
-                                  onPressed: () async {
-                                    final confirmed = await showDialog<bool>(
-                                      context: context,
-                                      builder: (ctx) => AlertDialog(
-                                        title: const Text('Remover membro'),
-                                        content: Text(
-                                          'Deseja remover ${member.fullName} do projeto?',
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(ctx).pop(false),
-                                            child: const Text('Cancelar'),
-                                          ),
-                                          FilledButton(
-                                            style: FilledButton.styleFrom(
-                                              backgroundColor: cs.error,
-                                              foregroundColor: cs.onError,
-                                            ),
-                                            onPressed: () =>
-                                                Navigator.of(ctx).pop(true),
-                                            child: const Text('Remover'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                    if (confirmed != true) return;
-                                    final success = await cubit.removeMember(
-                                      member,
-                                    );
-                                    if (!context.mounted) return;
-                                    if (success) {
-                                      AppFeedback.showSuccess(
-                                        'Membro removido com sucesso.',
-                                      );
-                                    } else if (cubit.state.actionErrorMessage !=
-                                        null) {
-                                      AppFeedback.showError(
-                                        cubit.state.actionErrorMessage!,
-                                      );
-                                    }
-                                  },
-                                  assetPath: 'assets/icons/trash-2.svg',
-                                  iconColor: cs.onErrorContainer,
-                                  backgroundColor: cs.errorContainer,
-                                  borderColor: cs.error.withValues(alpha: 0.3),
-                                ),
-                              if (canLeave)
-                                IconButton(
-                                  tooltip: 'Sair do projeto',
-                                  onPressed: () async {
-                                    final confirmed = await showDialog<bool>(
-                                      context: context,
-                                      builder: (ctx) => AlertDialog(
-                                        title: const Text('Sair do projeto'),
-                                        content: const Text(
-                                          'Tem certeza que deseja sair deste projeto? Você perderá acesso a eventos, membros e configurações.',
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.of(ctx).pop(false),
-                                            child: const Text('Cancelar'),
-                                          ),
-                                          FilledButton(
-                                            style: FilledButton.styleFrom(
-                                              backgroundColor: cs.error,
-                                              foregroundColor: cs.onError,
-                                            ),
-                                            onPressed: () =>
-                                                Navigator.of(ctx).pop(true),
-                                            child: const Text('Sair'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                    if (confirmed != true) return;
-                                    final success = await cubit.leaveProject(
-                                      member,
-                                    );
-                                    if (!context.mounted) return;
-                                    if (success) {
-                                      onLeaveProject?.call();
-                                    } else if (cubit.state.actionErrorMessage !=
-                                        null) {
-                                      AppFeedback.showError(
-                                        cubit.state.actionErrorMessage!,
-                                      );
-                                    }
-                                  },
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: cs.errorContainer,
-                                    shape: CircleBorder(
-                                      side: BorderSide(
-                                        color: cs.error.withValues(alpha: 0.3),
-                                      ),
+                                      if (success == true) {
+                                        AppFeedback.showSuccess(
+                                          'Membro atualizado com sucesso.',
+                                        );
+                                      }
+                                    },
+                                    assetPath: 'assets/icons/square-pen.svg',
+                                    iconColor: cs.onPrimaryContainer,
+                                    backgroundColor: cs.primaryContainer,
+                                    borderColor: cs.primary.withValues(
+                                      alpha: 0.3,
                                     ),
-                                    minimumSize: const Size(40, 40),
-                                    padding: EdgeInsets.zero,
                                   ),
-                                  icon: Icon(
-                                    Icons.logout_rounded,
-                                    size: 18,
-                                    color: cs.onErrorContainer,
+                                if (canEdit && canRemove)
+                                  const SizedBox(width: 8),
+                                if (canRemove)
+                                  CircularIconActionButton(
+                                    tooltip: 'Remover membro',
+                                    onPressed: () async {
+                                      final confirmed = await showDialog<bool>(
+                                        context: context,
+                                        builder: (ctx) => AlertDialog(
+                                          title: const Text('Remover membro'),
+                                          content: Text(
+                                            'Deseja remover ${member.fullName} do projeto?',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(ctx).pop(false),
+                                              child: const Text('Cancelar'),
+                                            ),
+                                            FilledButton(
+                                              style: FilledButton.styleFrom(
+                                                backgroundColor: cs.error,
+                                                foregroundColor: cs.onError,
+                                              ),
+                                              onPressed: () =>
+                                                  Navigator.of(ctx).pop(true),
+                                              child: const Text('Remover'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (confirmed != true) return;
+                                      final success = await cubit.removeMember(
+                                        member,
+                                      );
+                                      if (!context.mounted) return;
+                                      if (success) {
+                                        AppFeedback.showSuccess(
+                                          'Membro removido com sucesso.',
+                                        );
+                                      } else if (cubit
+                                              .state
+                                              .actionErrorMessage !=
+                                          null) {
+                                        AppFeedback.showError(
+                                          cubit.state.actionErrorMessage!,
+                                        );
+                                      }
+                                    },
+                                    assetPath: 'assets/icons/trash-2.svg',
+                                    iconColor: cs.onErrorContainer,
+                                    backgroundColor: cs.errorContainer,
+                                    borderColor: cs.error.withValues(
+                                      alpha: 0.3,
+                                    ),
                                   ),
-                                ),
-                            ],
-                          ),
-                      ],
-                    );
-                  },
-                ),
-              ],
+                                if (canLeave)
+                                  IconButton(
+                                    tooltip: 'Sair do projeto',
+                                    onPressed: () async {
+                                      final confirmed = await showDialog<bool>(
+                                        context: context,
+                                        builder: (ctx) => AlertDialog(
+                                          title: const Text('Sair do projeto'),
+                                          content: const Text(
+                                            'Tem certeza que deseja sair deste projeto? Você perderá acesso a eventos, membros e configurações.',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(ctx).pop(false),
+                                              child: const Text('Cancelar'),
+                                            ),
+                                            FilledButton(
+                                              style: FilledButton.styleFrom(
+                                                backgroundColor: cs.error,
+                                                foregroundColor: cs.onError,
+                                              ),
+                                              onPressed: () =>
+                                                  Navigator.of(ctx).pop(true),
+                                              child: const Text('Sair'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (confirmed != true) return;
+                                      final success = await cubit.leaveProject(
+                                        member,
+                                      );
+                                      if (!context.mounted) return;
+                                      if (success) {
+                                        onLeaveProject?.call();
+                                      } else if (cubit
+                                              .state
+                                              .actionErrorMessage !=
+                                          null) {
+                                        AppFeedback.showError(
+                                          cubit.state.actionErrorMessage!,
+                                        );
+                                      }
+                                    },
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: cs.errorContainer,
+                                      shape: CircleBorder(
+                                        side: BorderSide(
+                                          color: cs.error.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                        ),
+                                      ),
+                                      minimumSize: const Size(40, 40),
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    icon: Icon(
+                                      Icons.logout_rounded,
+                                      size: 18,
+                                      color: cs.onErrorContainer,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1030,6 +1053,29 @@ class _RoleBadge extends StatelessWidget {
   }
 }
 
+class _PendingInviteBadge extends StatelessWidget {
+  const _PendingInviteBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: cs.tertiaryContainer,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Text(
+        'Pendente',
+        style: Theme.of(
+          context,
+        ).textTheme.labelMedium?.copyWith(color: cs.onTertiaryContainer),
+      ),
+    );
+  }
+}
+
 class _SkillTag extends StatelessWidget {
   final String label;
   final String? iconKey;
@@ -1053,11 +1099,7 @@ class _SkillTag extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (!muted && iconKey != null) ...[
-            SvgPicture.asset(
-              skillIconAsset(iconKey),
-              width: 14,
-              height: 14,
-            ),
+            SvgPicture.asset(skillIconAsset(iconKey), width: 14, height: 14),
             const SizedBox(width: 6),
           ],
           Text(

@@ -15,6 +15,7 @@ import '../../../song_categories/data/impl/song_categories_repository_impl.dart'
 import '../../../song_categories/domain/entities/song_category_entity.dart';
 import '../../../song_categories/presentation/widgets/category_filter_sheet.dart';
 import '../../data/impl/songs_repository_impl.dart';
+import '../../domain/entities/song_entity.dart';
 
 // M3: Card.outlined "sutil" — fundo surface-container, borda outline-variant,
 // sem elevação/sombra, 12dp de raio (padrão de canto do Card no Material 3).
@@ -39,6 +40,7 @@ Future<void> openSongDetailPage(
   String? coverUrl,
   String? notes,
   String? referenceAudioUrl,
+  String? vsAudioUrl,
   VoidCallback? onOpenLyrics,
   VoidCallback? onOpenChords,
   VoidCallback? onEdit,
@@ -58,6 +60,7 @@ Future<void> openSongDetailPage(
         coverUrl: coverUrl,
         notes: notes,
         referenceAudioUrl: referenceAudioUrl,
+        vsAudioUrl: vsAudioUrl,
         onOpenLyrics: onOpenLyrics,
         onOpenChords: onOpenChords,
         onEdit: onEdit,
@@ -79,6 +82,7 @@ class SongDetailPage extends StatelessWidget {
   final String? coverUrl;
   final String? notes;
   final String? referenceAudioUrl;
+  final String? vsAudioUrl;
   final VoidCallback? onOpenLyrics;
   final VoidCallback? onOpenChords;
   final VoidCallback? onEdit;
@@ -97,6 +101,7 @@ class SongDetailPage extends StatelessWidget {
     this.coverUrl,
     this.notes,
     this.referenceAudioUrl,
+    this.vsAudioUrl,
     this.onOpenLyrics,
     this.onOpenChords,
     this.onEdit,
@@ -270,7 +275,7 @@ class SongDetailPage extends StatelessWidget {
 
             // ── 2. Ações principais (Letra secundária, Cifra primária) ────
             if (onOpenLyrics != null || onOpenChords != null) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
               FadeSlideIn(
                 delay: staggerDelay(staggerStep++),
                 child: Row(
@@ -282,7 +287,8 @@ class SongDetailPage extends StatelessWidget {
                           style: FilledButton.styleFrom(
                             backgroundColor: cs.secondaryContainer,
                             foregroundColor: cs.onSecondaryContainer,
-                            minimumSize: const Size.fromHeight(38),
+                            minimumSize: const Size.fromHeight(34),
+                            padding: const EdgeInsets.symmetric(vertical: 6),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(AppRadius.pill),
                               side: BorderSide(
@@ -292,8 +298,8 @@ class SongDetailPage extends StatelessWidget {
                           ),
                           icon: SvgPicture.asset(
                             'assets/icons/file-type-corner.svg',
-                            width: 20,
-                            height: 20,
+                            width: 18,
+                            height: 18,
                             colorFilter: ColorFilter.mode(
                               cs.onSecondaryContainer,
                               BlendMode.srcIn,
@@ -304,7 +310,7 @@ class SongDetailPage extends StatelessWidget {
                       ),
                     ],
                     if (onOpenLyrics != null && onOpenChords != null)
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                     if (onOpenChords != null) ...[
                       Expanded(
                         child: FilledButton.icon(
@@ -312,7 +318,8 @@ class SongDetailPage extends StatelessWidget {
                           style: FilledButton.styleFrom(
                             backgroundColor: cs.primary,
                             foregroundColor: cs.onPrimary,
-                            minimumSize: const Size.fromHeight(38),
+                            minimumSize: const Size.fromHeight(34),
+                            padding: const EdgeInsets.symmetric(vertical: 6),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(AppRadius.pill),
                               side: BorderSide(
@@ -322,8 +329,8 @@ class SongDetailPage extends StatelessWidget {
                           ),
                           icon: SvgPicture.asset(
                             'assets/icons/file-music.svg',
-                            width: 20,
-                            height: 20,
+                            width: 18,
+                            height: 18,
                             colorFilter: ColorFilter.mode(
                               cs.onPrimary,
                               BlendMode.srcIn,
@@ -338,61 +345,81 @@ class SongDetailPage extends StatelessWidget {
               ),
             ],
 
-            // ── 3. Observações ────────────────────────────────────
-            if (hasNotes) ...[
-              const SizedBox(height: 24),
-              FadeSlideIn(
-                delay: staggerDelay(staggerStep++),
-                child: Card.outlined(
-                  elevation: 0,
-                  color: cs.surfaceContainerLow,
-                  margin: EdgeInsets.zero,
-                  shape: _outlinedCardShape(cs),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Observações',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          normalizedNotes,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: mutedColor,
-                            height: 1.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-
-            // ── 3.5. Categorias (somente dono da música) ────────────
+            // ── 2.5. Categorias (somente dono da música) ────────────
             if (songId != null && onEdit != null) ...[
-              const SizedBox(height: 24),
+              const SizedBox(height: 8),
               FadeSlideIn(
                 delay: staggerDelay(staggerStep++),
                 child: _CategoriesQuickEdit(songId: songId!),
               ),
             ],
 
-            // ── 4. Áudio de referência ──────────────────────────────
+            // ── 3. Observações ────────────────────────────────────
+            if (hasNotes) ...[
+              const SizedBox(height: 24),
+              FadeSlideIn(
+                delay: staggerDelay(staggerStep++),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Observações',
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      width: double.infinity,
+                      child: Card.outlined(
+                        elevation: 0,
+                        color: cs.surfaceContainerLow,
+                        margin: EdgeInsets.zero,
+                        shape: _outlinedCardShape(cs),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Text(
+                            normalizedNotes,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: mutedColor,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
+            // ── 4. Áudio de referência e Playback (VS) ──────────────
             // Idem: substituir o áudio só é permitido ao dono da música.
             if (songId != null) ...[
               const SizedBox(height: 24),
               FadeSlideIn(
                 delay: staggerDelay(staggerStep++),
-                child: _ReferenceAudioQuickEdit(
+                child: _AudioQuickEdit(
                   songId: songId!,
                   initialUrl: referenceAudioUrl,
                   canEdit: onEdit != null,
+                  label: 'Áudio de referência',
+                  emptyLabel: 'Nenhum áudio de referência cadastrado.',
+                  upload: (repo, id, path) => repo.uploadReferenceAudio(id, path),
+                  currentUrlOf: (song) => song.referenceAudioUrl,
+                ),
+              ),
+              const SizedBox(height: 24),
+              FadeSlideIn(
+                delay: staggerDelay(staggerStep++),
+                child: _AudioQuickEdit(
+                  songId: songId!,
+                  initialUrl: vsAudioUrl,
+                  canEdit: onEdit != null,
+                  label: 'Playback (VS)',
+                  emptyLabel: 'Nenhum playback (VS) cadastrado.',
+                  upload: (repo, id, path) => repo.uploadVsAudio(id, path),
+                  currentUrlOf: (song) => song.vsAudioUrl,
                 ),
               ),
             ],
@@ -680,9 +707,12 @@ class _CategoriesQuickEditState extends State<_CategoriesQuickEdit> {
             ),
           )
         else if (_categories.isEmpty)
-          Text(
-            'Nenhuma categoria atribuída.',
-            style: theme.textTheme.bodySmall?.copyWith(color: mutedColor),
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              'Nenhuma categoria atribuída.',
+              style: theme.textTheme.bodySmall?.copyWith(color: mutedColor),
+            ),
           )
         else
           Wrap(
@@ -717,26 +747,34 @@ class _CategoriesQuickEditState extends State<_CategoriesQuickEdit> {
 }
 
 // ---------------------------------------------------------------------------
-// Atalho de áudio de referência
+// Atalho de áudio (usado tanto para o áudio de referência quanto para o VS)
 // ---------------------------------------------------------------------------
 
-class _ReferenceAudioQuickEdit extends StatefulWidget {
+class _AudioQuickEdit extends StatefulWidget {
   final String songId;
   final String? initialUrl;
   final bool canEdit;
+  final String label;
+  final String emptyLabel;
+  final Future<void> Function(SongsRepositoryImpl repo, String songId, String path)
+  upload;
+  final String? Function(SongEntity song) currentUrlOf;
 
-  const _ReferenceAudioQuickEdit({
+  const _AudioQuickEdit({
     required this.songId,
     required this.initialUrl,
     required this.canEdit,
+    required this.label,
+    required this.emptyLabel,
+    required this.upload,
+    required this.currentUrlOf,
   });
 
   @override
-  State<_ReferenceAudioQuickEdit> createState() =>
-      _ReferenceAudioQuickEditState();
+  State<_AudioQuickEdit> createState() => _AudioQuickEditState();
 }
 
-class _ReferenceAudioQuickEditState extends State<_ReferenceAudioQuickEdit> {
+class _AudioQuickEditState extends State<_AudioQuickEdit> {
   final _songsRepo = SongsRepositoryImpl();
   late String? _currentUrl;
   bool _isUploading = false;
@@ -759,14 +797,14 @@ class _ReferenceAudioQuickEditState extends State<_ReferenceAudioQuickEdit> {
 
     setState(() => _isUploading = true);
     try {
-      await _songsRepo.uploadReferenceAudio(widget.songId, path);
+      await widget.upload(_songsRepo, widget.songId, path);
       final updated = await _songsRepo.getSongById(widget.songId);
       if (!mounted) return;
       setState(() {
-        _currentUrl = updated.referenceAudioUrl;
+        _currentUrl = widget.currentUrlOf(updated);
         _isUploading = false;
       });
-      AppFeedback.showSuccess('Áudio de referência atualizado com sucesso.');
+      AppFeedback.showSuccess('${widget.label} atualizado com sucesso.');
     } catch (e) {
       if (!mounted) return;
       setState(() => _isUploading = false);
@@ -791,7 +829,7 @@ class _ReferenceAudioQuickEditState extends State<_ReferenceAudioQuickEdit> {
           children: [
             Expanded(
               child: Text(
-                'Áudio de referência',
+                widget.label,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -823,7 +861,7 @@ class _ReferenceAudioQuickEditState extends State<_ReferenceAudioQuickEdit> {
           ReferenceAudioPlayer(url: _currentUrl!)
         else
           Text(
-            'Nenhum áudio de referência cadastrado.',
+            widget.emptyLabel,
             style: theme.textTheme.bodySmall?.copyWith(color: mutedColor),
           ),
       ],
@@ -853,7 +891,7 @@ class _MetaChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -865,18 +903,18 @@ class _MetaChip extends StatelessWidget {
           iconAsset != null
               ? SvgPicture.asset(
                   iconAsset!,
-                  width: 16,
-                  height: 16,
+                  width: 13,
+                  height: 13,
                   colorFilter: ColorFilter.mode(
                     foregroundColor,
                     BlendMode.srcIn,
                   ),
                 )
-              : Icon(icon, size: 16, color: foregroundColor),
-          const SizedBox(width: 6),
+              : Icon(icon, size: 13, color: foregroundColor),
+          const SizedBox(width: 5),
           Text(
             label,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: foregroundColor,
               fontWeight: FontWeight.w800,
             ),

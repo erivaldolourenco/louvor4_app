@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/repositories/notifications_repository.dart';
@@ -8,8 +9,10 @@ import 'notifications_state.dart';
 
 class NotificationsCubit extends Cubit<NotificationsState> {
   final NotificationsRepository _repository;
+  final VoidCallback? onProjectInviteAccepted;
 
-  NotificationsCubit(this._repository) : super(const NotificationsState());
+  NotificationsCubit(this._repository, {this.onProjectInviteAccepted})
+    : super(const NotificationsState());
 
   Future<void> load({bool showLoading = true}) async {
     if (showLoading) {
@@ -130,6 +133,9 @@ class NotificationsCubit extends Cubit<NotificationsState> {
           clearActiveNotificationId: true,
         ),
       );
+      if (accepted && notification.type == NotificationType.projectMemberInvite) {
+        onProjectInviteAccepted?.call();
+      }
       await load(showLoading: false);
     } catch (error) {
       emit(

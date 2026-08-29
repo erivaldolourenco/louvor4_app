@@ -10,9 +10,12 @@ class EventSong {
   final String? key;
   final int? bpm;
   final String? youTubeUrl;
+  final String? spotifyUrl;
+  final String? deezerUrl;
   final String? coverUrl;
   final String? notes;
   final String? referenceAudioUrl;
+  final String? vsAudioUrl;
   final String addedBy;
   final String? addedByUserId;
   final SetlistItemType type;
@@ -30,9 +33,12 @@ class EventSong {
     this.key,
     this.bpm,
     this.youTubeUrl,
+    this.spotifyUrl,
+    this.deezerUrl,
     this.coverUrl,
     this.notes,
     this.referenceAudioUrl,
+    this.vsAudioUrl,
     required this.addedBy,
     this.addedByUserId,
     this.type = SetlistItemType.song,
@@ -76,10 +82,15 @@ class EventSong {
       artist: song['artist']?.toString(),
       key: song['key']?.toString(),
       bpm: _toInt(song['bpm']),
-      youTubeUrl: song['youTubeUrl']?.toString(),
-      coverUrl: song['coverUrl']?.toString(),
+      youTubeUrl: _normalizeOptionalValue(
+        song['youTubeUrl'] ?? song['youtubeUrl'],
+      ),
+      spotifyUrl: _normalizeOptionalValue(song['spotifyUrl']),
+      deezerUrl: _normalizeOptionalValue(song['deezerUrl']),
+      coverUrl: _normalizeOptionalValue(song['coverUrl']),
       notes: json['notes']?.toString(),
-      referenceAudioUrl: song['referenceAudioUrl']?.toString(),
+      referenceAudioUrl: _normalizeOptionalValue(song['referenceAudioUrl']),
+      vsAudioUrl: _normalizeOptionalValue(song['vsAudioUrl']),
       addedBy: json['addedBy']?.toString() ?? '',
       addedByUserId: json['addedByUserId']?.toString(),
       editChordSheetPermission: song['editChordSheetPermission'] == true,
@@ -90,5 +101,11 @@ class EventSong {
     if (value == null) return null;
     if (value is int) return value;
     return int.tryParse(value.toString());
+  }
+
+  static String? _normalizeOptionalValue(dynamic value) {
+    if (value == null) return null;
+    final normalized = value.toString().trim();
+    return normalized.isEmpty ? null : normalized;
   }
 }
