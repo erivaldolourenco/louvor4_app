@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui' show Color;
 
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -85,7 +86,7 @@ class PushNotificationService {
     if (_isLocalNotificationsInitialized) return;
 
     const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
+      '@drawable/ic_stat_notification',
     );
 
     const settings = InitializationSettings(android: androidSettings);
@@ -130,7 +131,8 @@ class PushNotificationService {
         channelDescription: _androidChannelDescription,
         importance: Importance.high,
         priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
+        icon: '@drawable/ic_stat_notification',
+        color: Color(0xFF4F64E8),
       ),
     );
 
