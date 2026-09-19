@@ -9,6 +9,8 @@ class MusicProjectUiUtils {
         return 'Banda';
       case MusicProjectType.singer:
         return 'Cantor(a)';
+      case MusicProjectType.media:
+        return 'Mídia';
       case MusicProjectType.unknown:
         return 'Projeto';
     }

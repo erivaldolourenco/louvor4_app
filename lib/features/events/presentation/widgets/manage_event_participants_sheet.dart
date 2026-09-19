@@ -203,6 +203,7 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
                                             return _SelectableMemberCard(
                                               item: item,
                                               skillsMap: state.skillsMap,
+                                              hasRepertoire: event.hasRepertoire,
                                             );
                                           },
                                         ),
@@ -269,8 +270,13 @@ class _ManageEventParticipantsSheet extends StatelessWidget {
 class _SelectableMemberCard extends StatelessWidget {
   final SelectableEventMember item;
   final Map<String, String> skillsMap;
+  final bool hasRepertoire;
 
-  const _SelectableMemberCard({required this.item, required this.skillsMap});
+  const _SelectableMemberCard({
+    required this.item,
+    required this.skillsMap,
+    required this.hasRepertoire,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -390,28 +396,32 @@ class _SelectableMemberCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    SwitchListTile(
-                      value: item.permissions.contains(EventPermission.addSong),
-                      onChanged: (value) => cubit.togglePermission(
-                        item.member.id,
-                        EventPermission.addSong,
-                        value,
+                    if (hasRepertoire) ...[
+                      SwitchListTile(
+                        value: item.permissions.contains(
+                          EventPermission.addSong,
+                        ),
+                        onChanged: (value) => cubit.togglePermission(
+                          item.member.id,
+                          EventPermission.addSong,
+                          value,
+                        ),
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Permite adicionar músicas'),
                       ),
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('Permite adicionar músicas'),
-                    ),
-                    SwitchListTile(
-                      value: item.permissions.contains(
-                        EventPermission.editChordSheet,
+                      SwitchListTile(
+                        value: item.permissions.contains(
+                          EventPermission.editChordSheet,
+                        ),
+                        onChanged: (value) => cubit.togglePermission(
+                          item.member.id,
+                          EventPermission.editChordSheet,
+                          value,
+                        ),
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Permite editar cifra'),
                       ),
-                      onChanged: (value) => cubit.togglePermission(
-                        item.member.id,
-                        EventPermission.editChordSheet,
-                        value,
-                      ),
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('Permite editar cifra'),
-                    ),
+                    ],
                   ],
                 ),
               ),

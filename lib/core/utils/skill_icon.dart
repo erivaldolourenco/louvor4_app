@@ -7,6 +7,10 @@ const Map<String, String> skillIconLabels = {
   'MIC_VOCAL': 'Vocal',
   'BASS_GUITAR': 'Baixo',
   'MUSIC': 'Música',
+  'CAMERA': 'Câmera',
+  'COMPUTER': 'Computador',
+  'MOBILE_PHONE': 'Celular',
+  'NOTEBOOK_MUSIC': 'Partitura',
 };
 
 const Map<String, String> skillIconAssets = {
@@ -18,6 +22,10 @@ const Map<String, String> skillIconAssets = {
   'MIC_VOCAL': 'assets/icons/skills-icons/mic-vocal.svg',
   'BASS_GUITAR': 'assets/icons/skills-icons/bass-guitar.svg',
   'MUSIC': 'assets/icons/music.svg',
+  'CAMERA': 'assets/icons/skills-icons/camera.svg',
+  'COMPUTER': 'assets/icons/skills-icons/computer.svg',
+  'MOBILE_PHONE': 'assets/icons/skills-icons/mobile-phone.svg',
+  'NOTEBOOK_MUSIC': 'assets/icons/skills-icons/notebook-music.svg',
 };
 
 String skillIconAsset(String? iconKey) {

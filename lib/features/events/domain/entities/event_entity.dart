@@ -11,6 +11,7 @@ class EventEntity {
   final int repertoireCount;
   final List<String>
   participantsProfileImages; // Atualizado para bater com o novo campo
+  final bool hasRepertoire;
 
   const EventEntity({
     required this.id,
@@ -24,6 +25,7 @@ class EventEntity {
     required this.participantsCount,
     required this.repertoireCount,
     this.participantsProfileImages = const [],
+    this.hasRepertoire = true,
   });
 
   factory EventEntity.fromJson(Map<String, dynamic> json) {
@@ -43,7 +45,25 @@ class EventEntity {
               ?.map((e) => e.toString())
               .toList() ??
           [],
+      hasRepertoire: json['hasRepertoire'] as bool? ?? true,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'date': date.toIso8601String(),
+      'time': time,
+      'title': title,
+      'description': description,
+      'location': location,
+      'projectTitle': projectTitle,
+      'projectImageUrl': projectImageUrl,
+      'participantsCount': participantsCount,
+      'repertoireCount': repertoireCount,
+      'participantsProfileImages': participantsProfileImages,
+      'hasRepertoire': hasRepertoire,
+    };
   }
 
   static DateTime _parseDate(dynamic value) {

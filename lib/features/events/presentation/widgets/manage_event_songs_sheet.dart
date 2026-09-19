@@ -11,6 +11,7 @@ import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_inline_error_message.dart';
+import '../../../../core/ui/widgets/category_filter_chips.dart';
 import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../../../core/utils/youtube_utils.dart';
@@ -180,7 +181,7 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                       ),
                       if (_availableFilterCategories(state).isNotEmpty) ...[
                         const SizedBox(height: 12),
-                        _CategoryFilterChips(
+                        CategoryFilterChips(
                           categories: _availableFilterCategories(state),
                           selectedIds: _selectedCategoryFilterIds,
                           onToggle: _toggleCategoryFilter,
@@ -325,57 +326,6 @@ class _RepertoireSearchField extends StatelessWidget {
             borderSide: BorderSide(color: cs.primary, width: 1.5),
           ),
         ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Category filter chips (scroll horizontal)
-// ---------------------------------------------------------------------------
-
-class _CategoryFilterChips extends StatelessWidget {
-  final List<SongCategoryEntity> categories;
-  final Set<String> selectedIds;
-  final ValueChanged<String> onToggle;
-
-  const _CategoryFilterChips({
-    required this.categories,
-    required this.selectedIds,
-    required this.onToggle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (_, index) {
-          final category = categories[index];
-          final selected = selectedIds.contains(category.id);
-          return FilterChip(
-            label: Text(category.name),
-            selected: selected,
-            onSelected: (_) => onToggle(category.id),
-            selectedColor: cs.primaryContainer,
-            checkmarkColor: cs.onPrimaryContainer,
-            labelStyle: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: selected ? cs.onPrimaryContainer : null,
-            ),
-            backgroundColor: cs.surface,
-            side: BorderSide(
-              color: selected ? cs.primary : cs.outlineVariant,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.pill),
-            ),
-          );
-        },
       ),
     );
   }

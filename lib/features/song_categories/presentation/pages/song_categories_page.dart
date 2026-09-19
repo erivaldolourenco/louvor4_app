@@ -45,7 +45,7 @@ class _SongCategoriesView extends StatelessWidget {
         final cubit = context.read<SongCategoriesCubit>();
         final count = state.categories.length;
         final subtitle = count == 0
-            ? 'Organize seu repertório por categoria'
+            ? 'Organize músicas e medleys por categoria'
             : count == 1
             ? '1 categoria cadastrada'
             : '$count categorias cadastradas';

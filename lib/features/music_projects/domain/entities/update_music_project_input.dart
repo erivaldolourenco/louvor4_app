@@ -23,6 +23,8 @@ class UpdateMusicProjectInput {
         return 'MINISTRY';
       case MusicProjectType.singer:
         return 'SINGER';
+      case MusicProjectType.media:
+        return 'MEDIA';
       case MusicProjectType.unknown:
         return 'MINISTRY';
     }

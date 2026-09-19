@@ -11,6 +11,7 @@ class EventDetailEntity {
   final int participantsCount;
   final int repertoireCount;
   final List<String> participantsProfileImages; // Adicionado para os avatares
+  final bool hasRepertoire;
 
   const EventDetailEntity({
     required this.id,
@@ -25,6 +26,7 @@ class EventDetailEntity {
     required this.participantsCount,
     required this.repertoireCount,
     this.participantsProfileImages = const [],
+    this.hasRepertoire = true,
   });
 
   factory EventDetailEntity.fromJson(Map<String, dynamic> json) {
@@ -51,6 +53,7 @@ class EventDetailEntity {
               ?.map((e) => e.toString())
               .toList() ??
           [],
+      hasRepertoire: json['hasRepertoire'] as bool? ?? true,
     );
   }
 

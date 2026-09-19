@@ -1,29 +1,66 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../data/events_local_cache.dart';
 import '../../data/events_repository.dart';
 import 'events_state.dart';
 
 class EventsCubit extends Cubit<EventsState> {
   final EventsRepository _repo;
-  EventsCubit(this._repo) : super(const EventsState());
+  final EventsLocalCache _cache;
+
+  EventsCubit(this._repo, {EventsLocalCache? cache})
+    : _cache = cache ?? EventsLocalCache(),
+      super(const EventsState());
 
   Future<void> load() async {
-    emit(state.copyWith(status: EventsStatus.loading));
+    if (state.events.isEmpty) {
+      final cached = await _cache.readUpcomingEvents();
+      if (cached.isNotEmpty) {
+        emit(
+          state.copyWith(
+            status: EventsStatus.success,
+            events: cached,
+            isOffline: true,
+          ),
+        );
+      } else {
+        emit(state.copyWith(status: EventsStatus.loading));
+      }
+    }
+
     try {
       final events = await _repo.getEvents();
-      emit(state.copyWith(status: EventsStatus.success, events: events));
-    } catch (e) {
       emit(
         state.copyWith(
-          status: EventsStatus.failure,
-          errorMessage: 'Não foi possível carregar os eventos.',
+          status: EventsStatus.success,
+          events: events,
+          isOffline: false,
         ),
       );
+      unawaited(_cache.saveUpcomingEvents(events));
+    } catch (e) {
+      if (state.events.isNotEmpty) {
+        emit(state.copyWith(isOffline: true));
+      } else {
+        emit(
+          state.copyWith(
+            status: EventsStatus.failure,
+            errorMessage: 'Não foi possível carregar os eventos.',
+          ),
+        );
+      }
     }
   }
 
-  Future<void> loadPastEvents() async {
+  Future<void> loadPastEvents({bool force = false}) async {
     if (state.pastEventsStatus == PastEventsStatus.loading) return;
+    // Já carregado com sucesso nesta sessão do cubit — evita refazer a
+    // busca de rede toda vez que a aba "Passados" é reativada (a tela que
+    // a hospeda é recriada a cada navegação, então não dá pra confiar
+    // numa flag local de "já carreguei").
+    if (!force && state.pastEventsStatus == PastEventsStatus.success) return;
     emit(
       state.copyWith(
         pastEventsStatus: PastEventsStatus.loading,

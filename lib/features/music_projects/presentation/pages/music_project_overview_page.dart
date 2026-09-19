@@ -7,12 +7,15 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/header_project_event.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
+import '../../../../core/ui/widgets/tab_edge_swipe_navigator.dart';
+import '../../../../core/utils/url_utils.dart';
 import '../../data/impl/music_projects_repository_impl.dart';
 import '../../domain/entities/music_project_entity.dart';
 import 'edit_music_project_page.dart';
 import '../utils/music_project_ui_utils.dart';
 import '../widgets/project_events_tab.dart';
 import '../widgets/project_members_tab.dart';
+import '../widgets/project_selector_bottom_sheet.dart';
 import '../../../project_skills/domain/entities/project_role.dart';
 import '../../../project_skills/presentation/pages/project_skills_page.dart';
 import '../../../user_profile/apresentation/cubit/user_cubit.dart';
@@ -22,6 +25,10 @@ class MusicProjectOverviewPage extends StatefulWidget {
   final bool embedded;
   final VoidCallback? onLeaveProject;
   final VoidCallback? onDeleteProject;
+  final VoidCallback? onSwipeToNextPage;
+  final VoidCallback? onSwipeToPreviousPage;
+  final Object? tabArrivalToken;
+  final bool tabArrivalLandOnLast;
 
   const MusicProjectOverviewPage({
     super.key,
@@ -29,6 +36,10 @@ class MusicProjectOverviewPage extends StatefulWidget {
     this.embedded = false,
     this.onLeaveProject,
     this.onDeleteProject,
+    this.onSwipeToNextPage,
+    this.onSwipeToPreviousPage,
+    this.tabArrivalToken,
+    this.tabArrivalLandOnLast = false,
   });
 
   @override
@@ -137,6 +148,10 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
     await _loadOverview();
     if (!mounted) return;
     AppFeedback.showSuccess('Projeto atualizado com sucesso.');
+  }
+
+  Future<void> _onSwitchProject() async {
+    await showProjectSelector(context);
   }
 
   void _onOpenDashboard() {
@@ -314,6 +329,9 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
     }
 
     final project = _project!;
+    final hasCoverImage = UrlUtils.isValidNetworkUrl(project.profileImage);
+    final expandedIconColor = hasCoverImage ? Colors.white : cs.onPrimaryContainer;
+    final headerIconColor = _headerCollapsed ? cs.onSurface : expandedIconColor;
 
     return NestedScrollView(
       controller: _scrollController,
@@ -324,6 +342,20 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
             subtitle: MusicProjectUiUtils.typeLabel(project.type),
             isCollapsed: _headerCollapsed,
             actions: [
+              if (widget.embedded)
+                IconButton(
+                  tooltip: 'Trocar projeto',
+                  onPressed: _onSwitchProject,
+                  icon: SvgPicture.asset(
+                    'assets/icons/arrow-right-left.svg',
+                    width: 24,
+                    height: 24,
+                    colorFilter: ColorFilter.mode(
+                      headerIconColor,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ),
               if (_isAdmin)
                 PopupMenuButton<String>(
                   color: cs.surface,
@@ -332,7 +364,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
                   ),
                   icon: Icon(
                     Icons.more_vert_rounded,
-                    color: _headerCollapsed ? cs.onSurface : Colors.white,
+                    color: headerIconColor,
                   ),
                   onSelected: (value) {
                     if (value == 'edit') _onEditProject();
@@ -415,31 +447,38 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
         children: [
           _ProjectTabs(controller: _tabController),
           Expanded(
-            child: TabBarView(
+            child: TabEdgeSwipeNavigator(
               controller: _tabController,
-              children: [
-                ProjectEventsTab(
-                  key: _eventsTabKey,
-                  projectId: project.id,
-                  isAdmin: _isAdmin,
-                  fallbackImageUrl: project.profileImage,
-                  repository: _repository,
-                ),
-                ProjectMembersTab(
-                  key: _membersTabKey,
-                  projectId: project.id,
-                  canManageMembers: _isAdmin,
-                  repository: _repository,
-                  currentUserId: context.read<UserCubit>().state.user?.id,
-                  onLeaveProject: widget.onLeaveProject,
-                ),
-                ProjectSkillsPage(
-                  key: _skillsTabKey,
-                  projectId: project.id,
-                  initialRole: projectRoleFromString(_memberRole),
-                  initialProjectName: project.name,
-                ),
-              ],
+              onSwipePastLast: widget.onSwipeToNextPage,
+              onSwipePastFirst: widget.onSwipeToPreviousPage,
+              arrivalToken: widget.tabArrivalToken,
+              arrivalLandOnLast: widget.tabArrivalLandOnLast,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  ProjectEventsTab(
+                    key: _eventsTabKey,
+                    projectId: project.id,
+                    isAdmin: _isAdmin,
+                    fallbackImageUrl: project.profileImage,
+                    repository: _repository,
+                  ),
+                  ProjectMembersTab(
+                    key: _membersTabKey,
+                    projectId: project.id,
+                    canManageMembers: _isAdmin,
+                    repository: _repository,
+                    currentUserId: context.read<UserCubit>().state.user?.id,
+                    onLeaveProject: widget.onLeaveProject,
+                  ),
+                  ProjectSkillsPage(
+                    key: _skillsTabKey,
+                    projectId: project.id,
+                    initialRole: projectRoleFromString(_memberRole),
+                    initialProjectName: project.name,
+                  ),
+                ],
+              ),
             ),
           ),
         ],

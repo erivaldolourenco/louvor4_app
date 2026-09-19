@@ -87,8 +87,13 @@ class _EventDetailView extends StatefulWidget {
 }
 
 class _EventDetailViewState extends State<_EventDetailView>
-    with SingleTickerProviderStateMixin {
-  late final TabController _tabController;
+    with TickerProviderStateMixin {
+  late TabController _tabController;
+  List<_EventTabKind> _activeTabs = const [
+    _EventTabKind.team,
+    _EventTabKind.songs,
+    _EventTabKind.program,
+  ];
   final ScrollController _scrollController = ScrollController();
   bool _programLoaded = false;
   bool _headerCollapsed = false;
@@ -96,13 +101,54 @@ class _EventDetailViewState extends State<_EventDetailView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: _activeTabs.length, vsync: this);
     _tabController.addListener(_handleTabChange);
     _scrollController.addListener(_handleScroll);
   }
 
+  List<_EventTabKind> _computeActiveTabs(EventDetailState state) {
+    final hasRepertoire = state.event?.hasRepertoire ?? true;
+    return [
+      _EventTabKind.team,
+      if (hasRepertoire) _EventTabKind.songs,
+      _EventTabKind.program,
+    ];
+  }
+
+  // O TabController exige um length fixo na criação, mas hasRepertoire só é
+  // conhecido depois que o evento carrega — por isso recriamos o controller
+  // (preservando o índice atual) quando a quantidade de abas muda.
+  void _syncTabsWithState(EventDetailState state) {
+    if (state.status != EventDetailStatus.success || state.event == null) {
+      return;
+    }
+
+    final nextTabs = _computeActiveTabs(state);
+    if (nextTabs.length == _activeTabs.length) return;
+
+    final oldController = _tabController;
+    final newIndex = oldController.index.clamp(0, nextTabs.length - 1);
+    final newController = TabController(
+      length: nextTabs.length,
+      vsync: this,
+      initialIndex: newIndex,
+    )..addListener(_handleTabChange);
+    oldController.removeListener(_handleTabChange);
+    oldController.dispose();
+
+    setState(() {
+      _activeTabs = nextTabs;
+      _tabController = newController;
+    });
+  }
+
   void _handleTabChange() {
-    if (_tabController.index == 2 && !_programLoaded && mounted) {
+    final index = _tabController.index;
+    final isProgramTab =
+        index >= 0 &&
+        index < _activeTabs.length &&
+        _activeTabs[index] == _EventTabKind.program;
+    if (isProgramTab && !_programLoaded && mounted) {
       _programLoaded = true;
       context.read<EventProgramCubit>().loadProgram();
     }
@@ -139,7 +185,8 @@ class _EventDetailViewState extends State<_EventDetailView>
           return _buildFab(state);
         },
       ),
-      body: BlocBuilder<EventDetailCubit, EventDetailState>(
+      body: BlocConsumer<EventDetailCubit, EventDetailState>(
+        listener: (context, state) => _syncTabsWithState(state),
         builder: (context, state) {
           if (state.status == EventDetailStatus.initial ||
               state.status == EventDetailStatus.loading) {
@@ -267,25 +314,30 @@ class _EventDetailViewState extends State<_EventDetailView>
             },
             body: Column(
               children: [
-                _EventDetailTabs(controller: _tabController),
+                _EventDetailTabs(controller: _tabController, tabs: _activeTabs),
                 Expanded(
                   child: TabBarView(
                     controller: _tabController,
-                    children: [
-                      _ParticipantsTab(
-                        state: state,
-                        onRefresh: () => context
-                            .read<EventDetailCubit>()
-                            .refreshParticipants(),
-                      ),
-                      _SongsTab(
-                        state: state,
-                        onRemoveSong: _onRemoveSong,
-                        onRefresh: () =>
-                            context.read<EventDetailCubit>().refreshSongs(),
-                      ),
-                      EventProgramTab(isAdmin: state.isProjectAdmin),
-                    ],
+                    children: _activeTabs.map((kind) {
+                      switch (kind) {
+                        case _EventTabKind.team:
+                          return _ParticipantsTab(
+                            state: state,
+                            onRefresh: () => context
+                                .read<EventDetailCubit>()
+                                .refreshParticipants(),
+                          );
+                        case _EventTabKind.songs:
+                          return _SongsTab(
+                            state: state,
+                            onRemoveSong: _onRemoveSong,
+                            onRefresh: () =>
+                                context.read<EventDetailCubit>().refreshSongs(),
+                          );
+                        case _EventTabKind.program:
+                          return EventProgramTab(isAdmin: state.isProjectAdmin);
+                      }
+                    }).toList(),
                   ),
                 ),
               ],
@@ -382,11 +434,15 @@ class _EventDetailViewState extends State<_EventDetailView>
         final theme = Theme.of(context);
         final cs = theme.colorScheme;
         final index = _tabController.index;
+        if (index < 0 || index >= _activeTabs.length) {
+          return const SizedBox.shrink(key: ValueKey('no_fab_oob'));
+        }
+        final kind = _activeTabs[index];
 
         Widget fab;
 
         // Aba Roteiro: Speed Dial com opções expandíveis
-        if (index == 2 && state.isProjectAdmin) {
+        if (kind == _EventTabKind.program && state.isProjectAdmin) {
           fab = SpeedDial(
             key: const ValueKey('program_fab'),
             heroTag: 'event_detail_fab_program',
@@ -433,8 +489,9 @@ class _EventDetailViewState extends State<_EventDetailView>
           );
         } else {
           // Outras abas: FAB simples com ícones dedicados por aba
-          final action = switch (index) {
-            0 when state.isProjectAdmin || state.canManageParticipants => (
+          final action = switch (kind) {
+            _EventTabKind.team
+                when state.isProjectAdmin || state.canManageParticipants => (
               icon: SvgPicture.asset(
                 'assets/icons/user-round-plus.svg',
                 width: 24,
@@ -446,7 +503,8 @@ class _EventDetailViewState extends State<_EventDetailView>
               ),
               onPressed: () => _onManageSchedule(state),
             ),
-            1 when state.isProjectAdmin || state.canAddSongs => (
+            _EventTabKind.songs
+                when state.isProjectAdmin || state.canAddSongs => (
               icon: SvgPicture.asset(
                 'assets/icons/music.svg',
                 width: 24,
@@ -462,18 +520,18 @@ class _EventDetailViewState extends State<_EventDetailView>
           };
 
           fab = action == null
-              ? SizedBox.shrink(key: ValueKey('no_fab_$index'))
+              ? SizedBox.shrink(key: ValueKey('no_fab_${kind.name}'))
               : FloatingActionButton(
                   // Chaveado por aba (não um valor fixo) para que o
                   // AnimatedSwitcher externo trate toda troca de aba como
                   // um FAB novo — o botão inteiro sai/entra sempre, em vez
                   // de só o ícone trocar por dentro de um botão parado.
-                  key: ValueKey('simple_fab_$index'),
+                  key: ValueKey('simple_fab_${kind.name}'),
                   // heroTag por aba: com a key acima variando por aba, o FAB
                   // antigo e o novo ficam montados ao mesmo tempo durante a
                   // transição — uma heroTag fixa poderia colidir com o Hero
                   // do Flutter se o usuário navegar de rota nesse meio-tempo.
-                  heroTag: 'event_detail_fab_$index',
+                  heroTag: 'event_detail_fab_${kind.name}',
                   onPressed: action.onPressed,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.fab),
@@ -610,21 +668,34 @@ class _EventDetailViewState extends State<_EventDetailView>
 
 enum _EventMenuAction { share, edit, delete }
 
+enum _EventTabKind { team, songs, program }
+
+({String assetPath, String label}) _eventTabMeta(_EventTabKind kind) {
+  switch (kind) {
+    case _EventTabKind.team:
+      return (assetPath: 'assets/icons/users-round.svg', label: 'Equipe');
+    case _EventTabKind.songs:
+      return (assetPath: 'assets/icons/music.svg', label: 'Músicas');
+    case _EventTabKind.program:
+      return (
+        assetPath: 'assets/icons/clipboard-clock.svg',
+        label: 'Roteiro',
+      );
+  }
+}
+
 class _EventDetailTabs extends StatelessWidget {
   final TabController controller;
+  final List<_EventTabKind> tabs;
 
-  const _EventDetailTabs({required this.controller});
+  const _EventDetailTabs({required this.controller, required this.tabs});
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeColor = isDark ? cs.onPrimaryContainer : cs.primary;
-    const tabs = [
-      (assetPath: 'assets/icons/users-round.svg', label: 'Equipe'),
-      (assetPath: 'assets/icons/music.svg', label: 'Músicas'),
-      (assetPath: 'assets/icons/clipboard-clock.svg', label: 'Roteiro'),
-    ];
+    final tabMetas = tabs.map(_eventTabMeta).toList();
 
     return AnimatedBuilder(
       animation: controller.animation ?? controller,
@@ -659,13 +730,13 @@ class _EventDetailTabs extends StatelessWidget {
             labelStyle: const TextStyle(fontWeight: FontWeight.w700),
             unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
             tabs: [
-              for (var i = 0; i < tabs.length; i++)
+              for (var i = 0; i < tabMetas.length; i++)
                 Tab(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SvgPicture.asset(
-                        tabs[i].assetPath,
+                        tabMetas[i].assetPath,
                         width: 18,
                         height: 18,
                         colorFilter: ColorFilter.mode(
@@ -676,7 +747,7 @@ class _EventDetailTabs extends StatelessWidget {
                       const SizedBox(width: 6),
                       Flexible(
                         child: Text(
-                          tabs[i].label,
+                          tabMetas[i].label,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),

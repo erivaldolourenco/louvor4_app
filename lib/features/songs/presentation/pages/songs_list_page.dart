@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
@@ -6,9 +8,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
+import '../../../../core/ui/widgets/category_filter_chips.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/ui/widgets/song_list_card.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
+import '../../../../core/ui/widgets/tab_edge_swipe_navigator.dart';
 import '../../../medleys/data/impl/medley_repository_impl.dart';
 import '../../../medleys/domain/entities/medley_entity.dart';
 import '../../../medleys/presentation/cubit/medley_cubit.dart';
@@ -17,6 +21,7 @@ import '../../../medleys/presentation/widgets/medley_card.dart';
 import '../../../medleys/presentation/widgets/medley_form_sheet.dart';
 import '../../../song_categories/domain/entities/song_category_entity.dart';
 import '../../data/impl/songs_repository_impl.dart';
+import '../../data/songs_local_cache.dart';
 import '../../domain/entities/external_music_entity.dart';
 import '../../domain/entities/song_entity.dart';
 import 'chord_sheet_page.dart';
@@ -31,13 +36,29 @@ import 'song_detail_page.dart';
 // ---------------------------------------------------------------------------
 
 class SongsListPage extends StatelessWidget {
-  const SongsListPage({super.key});
+  final VoidCallback? onSwipeToNextPage;
+  final VoidCallback? onSwipeToPreviousPage;
+  final Object? tabArrivalToken;
+  final bool tabArrivalLandOnLast;
+
+  const SongsListPage({
+    super.key,
+    this.onSwipeToNextPage,
+    this.onSwipeToPreviousPage,
+    this.tabArrivalToken,
+    this.tabArrivalLandOnLast = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => MedleyCubit(MedleyRepositoryImpl()),
-      child: const _SongsContent(),
+      child: _SongsContent(
+        onSwipeToNextPage: onSwipeToNextPage,
+        onSwipeToPreviousPage: onSwipeToPreviousPage,
+        tabArrivalToken: tabArrivalToken,
+        tabArrivalLandOnLast: tabArrivalLandOnLast,
+      ),
     );
   }
 }
@@ -47,7 +68,17 @@ class SongsListPage extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _SongsContent extends StatefulWidget {
-  const _SongsContent();
+  final VoidCallback? onSwipeToNextPage;
+  final VoidCallback? onSwipeToPreviousPage;
+  final Object? tabArrivalToken;
+  final bool tabArrivalLandOnLast;
+
+  const _SongsContent({
+    this.onSwipeToNextPage,
+    this.onSwipeToPreviousPage,
+    this.tabArrivalToken,
+    this.tabArrivalLandOnLast = false,
+  });
 
   @override
   State<_SongsContent> createState() => _SongsContentState();
@@ -61,8 +92,10 @@ class _SongsContentState extends State<_SongsContent>
   // Songs state
   static const Duration _songsCacheInterval = Duration(minutes: 10);
   final SongsRepositoryImpl _repo = SongsRepositoryImpl();
+  final SongsLocalCache _localCache = SongsLocalCache();
   bool _isLoading = true;
   bool _hasError = false;
+  bool _isOffline = false;
   String? _errorMessage;
   List<SongEntity> _songs = const [];
   final TextEditingController _searchController = TextEditingController();
@@ -130,7 +163,22 @@ class _SongsContentState extends State<_SongsContent>
       return;
     }
 
-    if (!silent) {
+    var cameFromCache = false;
+    if (_songs.isEmpty) {
+      final cached = await _localCache.readSongs();
+      if (!mounted) return;
+      if (cached.isNotEmpty) {
+        cameFromCache = true;
+        setState(() {
+          _songs = cached;
+          _isOffline = true;
+          _hasError = false;
+          _errorMessage = null;
+        });
+      }
+    }
+
+    if (!silent && !cameFromCache) {
       setState(() {
         _isLoading = true;
         _hasError = false;
@@ -145,15 +193,21 @@ class _SongsContentState extends State<_SongsContent>
         _songs = songs;
         _hasError = false;
         _errorMessage = null;
+        _isOffline = false;
       });
       _lastLoadedAt = DateTime.now();
+      unawaited(_localCache.saveSongs(songs));
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _hasError = true;
-        _errorMessage = e.toString().replaceFirst('Exception: ', '');
-      });
-      if (silent) {
+      if (_songs.isNotEmpty) {
+        setState(() => _isOffline = true);
+      } else {
+        setState(() {
+          _hasError = true;
+          _errorMessage = e.toString().replaceFirst('Exception: ', '');
+        });
+      }
+      if (silent && _songs.isEmpty) {
         AppFeedback.showError(_errorMessage ?? 'Erro ao carregar músicas.');
       }
     } finally {
@@ -359,7 +413,7 @@ class _SongsContentState extends State<_SongsContent>
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
             child: SizedBox(
-              height: 46,
+              height: 40,
               child: TextField(
                 controller: _searchController,
                 onChanged: (value) => setState(() => _searchQuery = value),
@@ -369,16 +423,29 @@ class _SongsContentState extends State<_SongsContent>
                   hintText: onSongsTab
                       ? 'Buscar por título ou artista...'
                       : 'Buscar medley...',
-                  prefixIcon: const Icon(Icons.search_rounded),
+                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                  prefixIconConstraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear_rounded),
+                          icon: const Icon(Icons.clear_rounded, size: 20),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 36,
+                            minHeight: 36,
+                          ),
                           onPressed: () {
                             _searchController.clear();
                             setState(() => _searchQuery = '');
                           },
                         )
                       : null,
+                  suffixIconConstraints: const BoxConstraints(
+                    minWidth: 36,
+                    minHeight: 36,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppRadius.input),
                     borderSide: BorderSide(
@@ -407,16 +474,24 @@ class _SongsContentState extends State<_SongsContent>
             ),
           ),
           if (availableFilterCategories.isNotEmpty)
-            _CategoryFilterChips(
+            CategoryFilterChips(
               categories: availableFilterCategories,
               selectedIds: _selectedCategoryFilterIds,
               onToggle: _toggleCategoryFilter,
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
             ),
           _SongsTabBar(controller: _tabController),
           Expanded(
-            child: TabBarView(
+            child: TabEdgeSwipeNavigator(
               controller: _tabController,
-              children: [_buildSongsTab(), _buildMedleysTab()],
+              onSwipePastLast: widget.onSwipeToNextPage,
+              onSwipePastFirst: widget.onSwipeToPreviousPage,
+              arrivalToken: widget.tabArrivalToken,
+              arrivalLandOnLast: widget.tabArrivalLandOnLast,
+              child: TabBarView(
+                controller: _tabController,
+                children: [_buildSongsTab(), _buildMedleysTab()],
+              ),
             ),
           ),
         ],
@@ -567,82 +642,97 @@ class _SongsContentState extends State<_SongsContent>
 
     return RefreshIndicator(
       onRefresh: () => _loadSongs(force: true),
-      child: filteredSongs.isEmpty
-          ? ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(top: 60),
-              children: [
-                Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+      child: Column(
+        children: [
+          if (_isOffline) const _SongsOfflineBanner(),
+          Expanded(
+            child: filteredSongs.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.only(top: 60),
                     children: [
-                      Icon(
-                        Icons.search_off_rounded,
-                        size: 48,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        _searchQuery.isNotEmpty
-                            ? 'Nenhuma música encontrada\npara "$_searchQuery"'
-                            : 'Nenhuma música encontrada\npara os filtros selecionados',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.search_off_rounded,
+                              size: 48,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _searchQuery.isNotEmpty
+                                  ? 'Nenhuma música encontrada\npara "$_searchQuery"'
+                                  : 'Nenhuma música encontrada\npara os filtros selecionados',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyLarge
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                  ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
+                  )
+                : ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 10, 16, 90),
+                    itemBuilder: (_, index) {
+                      final song = filteredSongs[index];
+                      return SongListCard(
+                        title: song.title,
+                        artist: song.artist,
+                        musicKey: song.key,
+                        youTubeUrl: song.youTubeUrl,
+                        spotifyUrl: song.spotifyUrl,
+                        deezerUrl: song.deezerUrl,
+                        coverUrl: song.coverUrl,
+                        hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
+                        hasVsAudio: song.vsAudioUrl?.isNotEmpty == true,
+                        onTap: () => openSongDetailPage(
+                          context,
+                          songId: song.id,
+                          title: song.title,
+                          artist: song.artist,
+                          musicKey: song.key,
+                          bpm: song.bpm,
+                          album: song.album,
+                          youTubeUrl: song.youTubeUrl,
+                          spotifyUrl: song.spotifyUrl,
+                          deezerUrl: song.deezerUrl,
+                          coverUrl: song.coverUrl,
+                          notes: song.notes,
+                          referenceAudioUrl: song.referenceAudioUrl,
+                          vsAudioUrl: song.vsAudioUrl,
+                          onOpenLyrics: song.id == null
+                              ? null
+                              : () => _goToLyrics(song),
+                          onOpenChords: song.id == null
+                              ? null
+                              : () => _goToChords(song),
+                          onEdit: song.id == null
+                              ? null
+                              : () => _goToEdit(song.id!),
+                        ),
+                        onDelete: (song.id == null || _deletingSongId != null)
+                            ? null
+                            : () => _confirmDeleteSong(song),
+                        isRemoving:
+                            song.id != null && _deletingSongId == song.id,
+                        dismissKey: song.id,
+                      );
+                    },
+                    itemCount: filteredSongs.length,
                   ),
-                ),
-              ],
-            )
-          : ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 90),
-              itemBuilder: (_, index) {
-                final song = filteredSongs[index];
-                return SongListCard(
-                  title: song.title,
-                  artist: song.artist,
-                  musicKey: song.key,
-                  youTubeUrl: song.youTubeUrl,
-                  spotifyUrl: song.spotifyUrl,
-                  deezerUrl: song.deezerUrl,
-                  coverUrl: song.coverUrl,
-                  hasAudio: song.referenceAudioUrl?.isNotEmpty == true,
-                  hasVsAudio: song.vsAudioUrl?.isNotEmpty == true,
-                  onTap: () => openSongDetailPage(
-                    context,
-                    songId: song.id,
-                    title: song.title,
-                    artist: song.artist,
-                    musicKey: song.key,
-                    bpm: song.bpm,
-                    album: song.album,
-                    youTubeUrl: song.youTubeUrl,
-                    spotifyUrl: song.spotifyUrl,
-                    deezerUrl: song.deezerUrl,
-                    coverUrl: song.coverUrl,
-                    notes: song.notes,
-                    referenceAudioUrl: song.referenceAudioUrl,
-                    vsAudioUrl: song.vsAudioUrl,
-                    onOpenLyrics: song.id == null
-                        ? null
-                        : () => _goToLyrics(song),
-                    onOpenChords: song.id == null
-                        ? null
-                        : () => _goToChords(song),
-                    onEdit: song.id == null ? null : () => _goToEdit(song.id!),
-                  ),
-                  onDelete: (song.id == null || _deletingSongId != null)
-                      ? null
-                      : () => _confirmDeleteSong(song),
-                  isRemoving: song.id != null && _deletingSongId == song.id,
-                  dismissKey: song.id,
-                );
-              },
-              itemCount: filteredSongs.length,
-            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -738,52 +828,41 @@ class _SongsContentState extends State<_SongsContent>
 }
 
 // ---------------------------------------------------------------------------
-// Category filter chips (scroll horizontal)
+// Offline banner
 // ---------------------------------------------------------------------------
 
-class _CategoryFilterChips extends StatelessWidget {
-  final List<SongCategoryEntity> categories;
-  final Set<String> selectedIds;
-  final ValueChanged<String> onToggle;
-
-  const _CategoryFilterChips({
-    required this.categories,
-    required this.selectedIds,
-    required this.onToggle,
-  });
+class _SongsOfflineBanner extends StatelessWidget {
+  const _SongsOfflineBanner();
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-        itemCount: categories.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (_, index) {
-          final category = categories[index];
-          final selected = selectedIds.contains(category.id);
-          return FilterChip(
-            label: Text(category.name),
-            selected: selected,
-            onSelected: (_) => onToggle(category.id),
-            selectedColor: cs.primaryContainer,
-            checkmarkColor: cs.onPrimaryContainer,
-            labelStyle: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: selected ? cs.onPrimaryContainer : null,
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: cs.tertiaryContainer,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.cloud_off_rounded,
+            size: 18,
+            color: cs.onTertiaryContainer,
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              'Sem conexão — mostrando as últimas músicas salvas.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: cs.onTertiaryContainer,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            backgroundColor: cs.surface,
-            side: BorderSide(
-              color: selected ? cs.primary : cs.outlineVariant,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppRadius.pill),
-            ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }

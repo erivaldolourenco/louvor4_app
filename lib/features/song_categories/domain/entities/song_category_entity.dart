@@ -13,6 +13,8 @@ class SongCategoryEntity extends Equatable {
     );
   }
 
+  Map<String, dynamic> toJson() => {'id': id, 'name': name};
+
   @override
   List<Object?> get props => [id, name];
 }

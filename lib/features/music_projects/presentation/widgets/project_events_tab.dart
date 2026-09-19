@@ -372,24 +372,26 @@ class _ProjectEventCard extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          const SizedBox(width: 10),
-                          SvgPicture.asset(
-                            'assets/icons/music.svg',
-                            width: 15,
-                            height: 15,
-                            colorFilter: ColorFilter.mode(
-                              countColor,
-                              BlendMode.srcIn,
+                          if (event.hasRepertoire) ...[
+                            const SizedBox(width: 10),
+                            SvgPicture.asset(
+                              'assets/icons/music.svg',
+                              width: 15,
+                              height: 15,
+                              colorFilter: ColorFilter.mode(
+                                countColor,
+                                BlendMode.srcIn,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${event.repertoireCount}',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: countColor,
-                              fontWeight: FontWeight.w700,
+                            const SizedBox(width: 4),
+                            Text(
+                              '${event.repertoireCount}',
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: countColor,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
+                          ],
                         ],
                       ),
                     ),

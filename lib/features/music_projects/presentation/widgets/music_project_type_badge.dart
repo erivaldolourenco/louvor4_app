@@ -62,6 +62,8 @@ class _MusicProjectTypeBadgeState extends State<MusicProjectTypeBadge>
         return cs.primary;
       case MusicProjectType.singer:
         return cs.tertiary;
+      case MusicProjectType.media:
+        return cs.outline;
       case MusicProjectType.unknown:
         return cs.onSurfaceVariant;
     }

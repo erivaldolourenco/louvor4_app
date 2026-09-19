@@ -84,6 +84,17 @@ class SongEntity extends Equatable {
     };
   }
 
+  /// Serialização completa (inclui `id` e `categories`) usada para
+  /// persistir a música no cache local — diferente de [toJson], que monta
+  /// o payload de criação/atualização enviado à API.
+  Map<String, dynamic> toCacheJson() {
+    return {
+      ...toJson(),
+      'id': id,
+      'categories': categories.map((c) => c.toJson()).toList(),
+    };
+  }
+
   static String? _normalizeOptionalValue(dynamic value) {
     if (value == null) return null;
     final normalized = value.toString().trim();

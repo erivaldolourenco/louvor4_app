@@ -83,7 +83,9 @@ class EventListCard extends StatelessWidget {
             Expanded(
               child: AppCardSurface(
                 radius: AppRadius.cardHero,
-                color: isDark ? cs.surfaceContainerLow : cs.surfaceContainerLowest,
+                color: isDark
+                    ? cs.surfaceContainerLow
+                    : cs.surfaceContainerLowest,
                 borderColor: isNext ? cs.primary : cs.outlineVariant,
                 boxShadow: isNext
                     ? [
@@ -179,149 +181,143 @@ class EventListCard extends StatelessWidget {
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
-                                  if (event
-                                          .participantsProfileImages
-                                          .isNotEmpty ||
-                                      event.participantsCount > 0 ||
-                                      event.repertoireCount > 0) ...[
-                                    const SizedBox(height: 8),
-                                    SizedBox(
-                                      height: 24,
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child:
-                                                event
-                                                    .participantsProfileImages
-                                                    .isNotEmpty
-                                                ? Stack(
-                                                    children: List.generate(
-                                                      event
-                                                                  .participantsProfileImages
-                                                                  .length >
-                                                              5
-                                                          ? 5
-                                                          : event
+                                  const SizedBox(height: 8),
+                                  SizedBox(
+                                    height: 24,
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child:
+                                              event
+                                                  .participantsProfileImages
+                                                  .isNotEmpty
+                                              ? Stack(
+                                                  children: List.generate(
+                                                    event
                                                                 .participantsProfileImages
-                                                                .length,
-                                                      (index) => Positioned(
-                                                        left: index * 14.0,
-                                                        child: Container(
-                                                          decoration: BoxDecoration(
-                                                            shape:
-                                                                BoxShape.circle,
-                                                            border: Border.all(
-                                                              color:
-                                                                  cs.surface,
-                                                              width: 1.5,
+                                                                .length >
+                                                            5
+                                                        ? 5
+                                                        : event
+                                                              .participantsProfileImages
+                                                              .length,
+                                                    (index) => Positioned(
+                                                      left: index * 14.0,
+                                                      child: Container(
+                                                        decoration:
+                                                            BoxDecoration(
+                                                              shape: BoxShape
+                                                                  .circle,
+                                                              border: Border.all(
+                                                                color:
+                                                                    cs.surface,
+                                                                width: 1.5,
+                                                              ),
                                                             ),
-                                                          ),
-                                                          child: CircleAvatar(
-                                                            radius: 11,
-                                                            backgroundColor: isDark
-                                                                ? cs
-                                                                      .surfaceContainerLow
-                                                                : cs
-                                                                      .outlineVariant,
-                                                            backgroundImage: appCachedImageProvider(
-                                                              event
-                                                                  .participantsProfileImages[index],
-                                                            ),
-                                                          ),
+                                                        child: CircleAvatar(
+                                                          radius: 11,
+                                                          backgroundColor:
+                                                              isDark
+                                                              ? cs.surfaceContainerLow
+                                                              : cs.outlineVariant,
+                                                          backgroundImage:
+                                                              appCachedImageProvider(
+                                                                event
+                                                                    .participantsProfileImages[index],
+                                                              ),
                                                         ),
                                                       ),
                                                     ),
-                                                  )
-                                                : const SizedBox.shrink(),
+                                                  ),
+                                                )
+                                              : const SizedBox.shrink(),
+                                        ),
+                                        if (event.participantsCount > 0) ...[
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 7,
+                                              vertical: 3,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: cs.surfaceContainerHigh,
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    AppRadius.pill,
+                                                  ),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                SvgPicture.asset(
+                                                  'assets/icons/users-round.svg',
+                                                  width: 13,
+                                                  height: 13,
+                                                  colorFilter: ColorFilter.mode(
+                                                    countColor,
+                                                    BlendMode.srcIn,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  '${event.participantsCount}',
+                                                  style: theme
+                                                      .textTheme
+                                                      .labelMedium
+                                                      ?.copyWith(
+                                                        color: countColor,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
                                           ),
-                                          if (event.participantsCount > 0) ...[
-                                            const SizedBox(width: 6),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 7,
-                                                vertical: 3,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: cs.surfaceContainerHigh,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      AppRadius.pill,
-                                                    ),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  SvgPicture.asset(
-                                                    'assets/icons/users-round.svg',
-                                                    width: 13,
-                                                    height: 13,
-                                                    colorFilter: ColorFilter.mode(
-                                                      countColor,
-                                                      BlendMode.srcIn,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    '${event.participantsCount}',
-                                                    style: theme
-                                                        .textTheme
-                                                        .labelMedium
-                                                        ?.copyWith(
-                                                          color: countColor,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                          if (event.repertoireCount > 0) ...[
-                                            const SizedBox(width: 6),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 7,
-                                                vertical: 3,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: cs.surfaceContainerHigh,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      AppRadius.pill,
-                                                    ),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  SvgPicture.asset(
-                                                    'assets/icons/music.svg',
-                                                    width: 13,
-                                                    height: 13,
-                                                    colorFilter: ColorFilter.mode(
-                                                      countColor,
-                                                      BlendMode.srcIn,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  Text(
-                                                    '${event.repertoireCount}',
-                                                    style: theme
-                                                        .textTheme
-                                                        .labelMedium
-                                                        ?.copyWith(
-                                                          color: countColor,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
                                         ],
-                                      ),
+                                        if (event.hasRepertoire) ...[
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 7,
+                                              vertical: 3,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: cs.surfaceContainerHigh,
+                                              borderRadius: BorderRadius.circular(
+                                                AppRadius.pill,
+                                              ),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                SvgPicture.asset(
+                                                  'assets/icons/music.svg',
+                                                  width: 13,
+                                                  height: 13,
+                                                  colorFilter: ColorFilter.mode(
+                                                    countColor,
+                                                    BlendMode.srcIn,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  '${event.repertoireCount}',
+                                                  style: theme
+                                                      .textTheme
+                                                      .labelMedium
+                                                      ?.copyWith(
+                                                        color: countColor,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ],
                               ),
                             ),

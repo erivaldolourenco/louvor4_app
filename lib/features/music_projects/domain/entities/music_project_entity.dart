@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum MusicProjectType { band, ministry, singer, unknown }
+enum MusicProjectType { band, ministry, singer, media, unknown }
 
 class MusicProjectEntity extends Equatable {
   final String id;
@@ -32,6 +32,8 @@ class MusicProjectEntity extends Equatable {
         return MusicProjectType.ministry;
       case 'SINGER':
         return MusicProjectType.singer;
+      case 'MEDIA':
+        return MusicProjectType.media;
       default:
         return MusicProjectType.unknown;
     }

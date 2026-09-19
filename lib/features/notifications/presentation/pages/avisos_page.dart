@@ -44,6 +44,7 @@ class _AvisosView extends StatefulWidget {
 
 class _AvisosViewState extends State<_AvisosView> {
   late final ScrollController _scrollController;
+  bool _isCheckingForNew = false;
 
   @override
   void initState() {
@@ -98,6 +99,21 @@ class _AvisosViewState extends State<_AvisosView> {
     );
     if (confirmed != true || !mounted) return;
     context.read<NotificationsCubit>().declineInvite(notification);
+  }
+
+  Future<void> _checkForNewNotifications() async {
+    if (_isCheckingForNew) return;
+    setState(() => _isCheckingForNew = true);
+
+    final cubit = context.read<NotificationsCubit>();
+    await cubit.load();
+
+    if (!mounted) return;
+    setState(() => _isCheckingForNew = false);
+
+    if (cubit.state.notifications.isEmpty) {
+      AppFeedback.showInfo('Nenhum aviso novo por enquanto.');
+    }
   }
 
   @override
@@ -164,6 +180,21 @@ class _AvisosViewState extends State<_AvisosView> {
               title: 'Nenhum aviso por enquanto',
               description:
                   'Quando houver novidades sobre eventos, projetos ou mensagens, elas aparecerão aqui.',
+              action: FilledButton.icon(
+                onPressed: _isCheckingForNew
+                    ? null
+                    : _checkForNewNotifications,
+                icon: _isCheckingForNew
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.refresh_rounded),
+                label: Text(
+                  _isCheckingForNew ? 'Verificando...' : 'Verificar novos avisos',
+                ),
+              ),
             ),
           ],
         ),

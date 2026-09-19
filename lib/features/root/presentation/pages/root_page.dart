@@ -38,8 +38,14 @@ class _RootPageState extends State<RootPage>
   static const Duration _homeRefreshInterval = Duration(minutes: 10);
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _index = 0;
-  int _transitionTick = 0;
-  Offset _transitionBeginOffset = Offset.zero;
+  bool _movingForward = true;
+  int _tabArrivalNonce = 0;
+  bool _tabArrivalLandOnLast = false;
+  // Índice da página a que o comando de chegada acima se aplica — só
+  // fica preenchido para a única build seguinte à transição que o gerou;
+  // sem isso, uma visita futura e não relacionada ao mesmo índice poderia
+  // reaplicar um comando antigo (ver _setIndex).
+  int? _tabArrivalForIndex;
   late final ProjectCubit _projectCubit;
   late final UserCubit _userCubit;
   late final EventsCubit _eventsCubit;
@@ -91,37 +97,58 @@ class _RootPageState extends State<RootPage>
     await _navigateToIndex(i, modalContext);
   }
 
-  void _setIndex(int newIndex) {
+  void _setIndex(int newIndex, {bool? arrivalLandOnLast}) {
     if (newIndex < 0 || newIndex >= _tabCount || _index == newIndex) return;
 
     final movingForward = newIndex > _index;
     setState(() {
+      _movingForward = movingForward;
       _index = newIndex;
-      _transitionTick += 1;
-      _transitionBeginOffset = movingForward
-          ? const Offset(0.08, 0)
-          : const Offset(-0.08, 0);
+      if (arrivalLandOnLast != null) {
+        _tabArrivalNonce += 1;
+        _tabArrivalLandOnLast = arrivalLandOnLast;
+        _tabArrivalForIndex = newIndex;
+      }
     });
+
+    if (arrivalLandOnLast != null) {
+      // O comando só deve valer para a build que acabou de montar a
+      // página de destino — limpa logo em seguida para não ser reaplicado
+      // numa visita futura e não relacionada ao mesmo índice.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() => _tabArrivalForIndex = null);
+      });
+    }
 
     if (newIndex == 0) {
       _refreshHomeIfStale();
     }
   }
 
-  Future<void> _navigateToIndex(int newIndex, BuildContext modalContext) async {
+  Future<void> _navigateToIndex(
+    int newIndex,
+    BuildContext modalContext, {
+    bool? arrivalLandOnLast,
+  }) async {
     if (newIndex < 0 || newIndex >= _tabCount) return;
 
     if (newIndex == 1) {
+      if (_projectCubit.state.activeProject != null) {
+        _setIndex(1, arrivalLandOnLast: arrivalLandOnLast);
+        return;
+      }
+
       final selected = await showProjectSelector(modalContext);
       if (!mounted) return;
 
       if (selected != null) {
-        _setIndex(1);
+        _setIndex(1, arrivalLandOnLast: arrivalLandOnLast);
       }
       return;
     }
 
-    _setIndex(newIndex);
+    _setIndex(newIndex, arrivalLandOnLast: arrivalLandOnLast);
   }
 
   void _handleHorizontalDragEnd(
@@ -143,12 +170,59 @@ class _RootPageState extends State<RootPage>
 
   void _handleSwipeTarget(int targetIndex, BuildContext modalContext) {
     if (targetIndex < 0 || targetIndex >= _tabCount) return;
+    final arrivalLandOnLast = targetIndex < _index;
     if (targetIndex == 1) {
-      _setIndex(1);
+      _setIndex(1, arrivalLandOnLast: arrivalLandOnLast);
       return;
     }
 
-    _navigateToIndex(targetIndex, modalContext);
+    _navigateToIndex(
+      targetIndex,
+      modalContext,
+      arrivalLandOnLast: arrivalLandOnLast,
+    );
+  }
+
+  /// Chamado quando o usuário arrasta além da primeira/última aba interna
+  /// de uma página (Início, Projetos, Músicas) — avança ou volta para a
+  /// página adjacente do menu inferior, entrando já na aba correspondente
+  /// (primeira ao avançar, última ao voltar), como se fosse um carrossel
+  /// único de abas.
+  void _handleEdgeSwipe(bool forward, BuildContext modalContext) {
+    final targetIndex = _index + (forward ? 1 : -1);
+    _handleSwipeTarget(targetIndex, modalContext);
+  }
+
+  Widget _buildPage(int index, BuildContext modalContext, UserState userState) {
+    switch (index) {
+      case 0:
+        return EventsListPage(
+          onOpenDrawer: _openDrawer,
+          user: userState.user,
+          isLoadingUser: userState.status == UserStatus.loading,
+          onSwipeToNextPage: () => _handleEdgeSwipe(true, modalContext),
+          onSwipeToPreviousPage: () => _handleEdgeSwipe(false, modalContext),
+          tabArrivalToken: _tabArrivalForIndex == 0 ? _tabArrivalNonce : null,
+          tabArrivalLandOnLast: _tabArrivalLandOnLast,
+        );
+      case 1:
+        return MusicProjectsTabPage(
+          onGoHome: () => _setIndex(0),
+          onSwipeToNextPage: () => _handleEdgeSwipe(true, modalContext),
+          onSwipeToPreviousPage: () => _handleEdgeSwipe(false, modalContext),
+          tabArrivalToken: _tabArrivalForIndex == 1 ? _tabArrivalNonce : null,
+          tabArrivalLandOnLast: _tabArrivalLandOnLast,
+        );
+      case 2:
+        return SongsListPage(
+          onSwipeToNextPage: () => _handleEdgeSwipe(true, modalContext),
+          onSwipeToPreviousPage: () => _handleEdgeSwipe(false, modalContext),
+          tabArrivalToken: _tabArrivalForIndex == 2 ? _tabArrivalNonce : null,
+          tabArrivalLandOnLast: _tabArrivalLandOnLast,
+        );
+      default:
+        return const AvisosPage();
+    }
   }
 
   void _openDrawer() {
@@ -163,6 +237,15 @@ class _RootPageState extends State<RootPage>
       _userCubit.load();
     }
     _refreshHomeIfStale();
+  }
+
+  Future<void> _openProjectSelector(BuildContext modalContext) async {
+    Navigator.of(context).pop();
+    final selected = await showProjectSelector(modalContext);
+    if (!mounted) return;
+    if (selected != null) {
+      _setIndex(1);
+    }
   }
 
   void _refreshEvents({bool force = false}) {
@@ -233,6 +316,7 @@ class _RootPageState extends State<RootPage>
                         _openRoute(UserUnavailabilityPage.routeName),
                     onSongCategoriesTap: () =>
                         _openRoute(SongCategoriesPage.routeName),
+                    onProjectsTap: () => _openProjectSelector(modalContext),
                   ),
                   bottomNavigationBar:
                       BlocBuilder<NotificationsCubit, NotificationsState>(
@@ -249,41 +333,37 @@ class _RootPageState extends State<RootPage>
                     behavior: HitTestBehavior.translucent,
                     onHorizontalDragEnd: (details) =>
                         _handleHorizontalDragEnd(details, modalContext),
-                    child: TweenAnimationBuilder<Offset>(
-                      key: ValueKey(_transitionTick),
-                      tween: Tween<Offset>(
-                        begin: _transitionBeginOffset,
-                        end: Offset.zero,
-                      ),
-                      duration: const Duration(milliseconds: 220),
-                      curve: Curves.easeOutCubic,
-                      builder: (context, offset, child) {
-                        final opacity = (1 - (offset.dx.abs() * 4)).clamp(
-                          0.82,
-                          1.0,
-                        );
-
-                        return Transform.translate(
-                          offset: Offset(
-                            offset.dx * MediaQuery.sizeOf(context).width,
-                            0,
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 380),
+                      switchInCurve: Curves.easeInOutCubicEmphasized,
+                      switchOutCurve: Curves.easeInOutCubicEmphasized,
+                      transitionBuilder: (child, animation) {
+                        final isEntering = child.key == ValueKey(_index);
+                        final direction = _movingForward ? 1.0 : -1.0;
+                        // Desloca só uma fração da largura (não 100%) e
+                        // combina com fade — um corte brusco de borda a
+                        // borda parece mais "duro" que um deslize curto
+                        // com esmaecimento, mesmo com a mesma curva/duração.
+                        final tween = isEntering
+                            ? Tween<Offset>(
+                                begin: Offset(direction * 0.28, 0),
+                                end: Offset.zero,
+                              )
+                            : Tween<Offset>(
+                                begin: Offset.zero,
+                                end: Offset(-direction * 0.28, 0),
+                              );
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: tween.animate(animation),
+                            child: child,
                           ),
-                          child: Opacity(opacity: opacity, child: child),
                         );
                       },
-                      child: IndexedStack(
-                        index: _index,
-                        children: [
-                          EventsListPage(
-                            onOpenDrawer: _openDrawer,
-                            user: userState.user,
-                            isLoadingUser:
-                                userState.status == UserStatus.loading,
-                          ),
-                          MusicProjectsTabPage(onGoHome: () => _setIndex(0)),
-                          const SongsListPage(),
-                          const AvisosPage(),
-                        ],
+                      child: KeyedSubtree(
+                        key: ValueKey(_index),
+                        child: _buildPage(_index, modalContext, userState),
                       ),
                     ),
                   ),

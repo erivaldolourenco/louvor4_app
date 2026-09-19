@@ -10,6 +10,8 @@ import 'package:louvor4_app/core/ui/widgets/fade_slide_in.dart';
 import 'package:louvor4_app/core/ui/widgets/spring_tap.dart';
 import 'package:louvor4_app/core/ui/widgets/standard_section_app_bar.dart';
 import 'package:louvor4_app/features/auth/presentation/pages/login_page.dart';
+import 'package:louvor4_app/features/events/data/events_local_cache.dart';
+import 'package:louvor4_app/features/songs/data/songs_local_cache.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 
 import '../../data/impl/user_repository_impl.dart';
@@ -339,6 +341,8 @@ class ProfilePage extends StatelessWidget {
     if (confirmed != true || !context.mounted) return;
 
     await AuthService.instance.logout(ApiClient.dio);
+    await EventsLocalCache().clear();
+    await SongsLocalCache().clear();
     if (context.mounted) {
       Navigator.of(
         context,

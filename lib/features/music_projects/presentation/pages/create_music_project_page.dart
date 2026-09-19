@@ -107,6 +107,10 @@ class _CreateMusicProjectViewState extends State<_CreateMusicProjectView> {
                       value: MusicProjectType.singer,
                       child: Text('Cantor'),
                     ),
+                    DropdownMenuItem(
+                      value: MusicProjectType.media,
+                      child: Text('Mídia'),
+                    ),
                   ],
                   onChanged: state.isSubmitting
                       ? null

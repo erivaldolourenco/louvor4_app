@@ -158,6 +158,8 @@ class UserUnavailabilityCard extends StatelessWidget {
         return Icons.auto_awesome_rounded;
       case MusicProjectType.singer:
         return Icons.mic_rounded;
+      case MusicProjectType.media:
+        return Icons.videocam_rounded;
       case MusicProjectType.unknown:
         return Icons.music_note_rounded;
     }

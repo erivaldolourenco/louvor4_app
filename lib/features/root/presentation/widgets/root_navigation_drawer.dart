@@ -9,6 +9,7 @@ class RootNavigationDrawer extends StatelessWidget {
   final VoidCallback onProfileTap;
   final VoidCallback onUnavailabilityTap;
   final VoidCallback onSongCategoriesTap;
+  final VoidCallback onProjectsTap;
 
   const RootNavigationDrawer({
     super.key,
@@ -17,6 +18,7 @@ class RootNavigationDrawer extends StatelessWidget {
     required this.onProfileTap,
     required this.onUnavailabilityTap,
     required this.onSongCategoriesTap,
+    required this.onProjectsTap,
   });
 
   @override
@@ -33,6 +35,8 @@ class RootNavigationDrawer extends StatelessWidget {
             onUnavailabilityTap();
           case 2:
             onSongCategoriesTap();
+          case 3:
+            onProjectsTap();
         }
       },
       children: [
@@ -58,6 +62,11 @@ class RootNavigationDrawer extends StatelessWidget {
           icon: _SvgIcon('assets/icons/tags.svg', cs.onSurfaceVariant),
           selectedIcon: _SvgIcon('assets/icons/tags.svg', cs.onSecondaryContainer),
           label: const Text('Categorias'),
+        ),
+        NavigationDrawerDestination(
+          icon: _SvgIcon('assets/icons/square-library.svg', cs.onSurfaceVariant),
+          selectedIcon: _SvgIcon('assets/icons/square-library.svg', cs.onSecondaryContainer),
+          label: const Text('Projetos'),
         ),
         const SizedBox(height: 8),
       ],
