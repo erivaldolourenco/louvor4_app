@@ -15,10 +15,10 @@ import 'package:louvor4_app/features/songs/presentation/pages/songs_list_page.da
 import 'package:louvor4_app/features/root/presentation/widgets/root_bottom_navigation_bar.dart';
 import 'package:louvor4_app/features/root/presentation/widgets/root_navigation_drawer.dart';
 import 'package:louvor4_app/features/song_categories/presentation/pages/song_categories_page.dart';
-import 'package:louvor4_app/features/user_profile/apresentation/cubit/user_cubit.dart';
-import 'package:louvor4_app/features/user_profile/apresentation/cubit/user_state.dart';
-import 'package:louvor4_app/features/user_profile/apresentation/pages/profile_page.dart';
-import 'package:louvor4_app/features/user_profile/apresentation/pages/user_unavailability_page.dart';
+import 'package:louvor4_app/features/user_profile/presentation/cubit/user_cubit.dart';
+import 'package:louvor4_app/features/user_profile/presentation/cubit/user_state.dart';
+import 'package:louvor4_app/features/user_profile/presentation/pages/profile_page.dart';
+import 'package:louvor4_app/features/user_profile/presentation/pages/user_unavailability_page.dart';
 import 'package:louvor4_app/features/user_profile/data/impl/user_repository_impl.dart';
 
 import '../../../events/presentation/pages/events_list_page.dart';

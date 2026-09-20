@@ -1,5 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:louvor4_app/features/user_profile/apresentation/cubit/user_state.dart';
+import 'package:louvor4_app/features/user_profile/presentation/cubit/user_state.dart';
 import 'package:louvor4_app/features/user_profile/data/user_repository.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_detail_entity.dart';
 

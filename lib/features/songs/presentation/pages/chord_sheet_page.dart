@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:path_provider/path_provider.dart';
@@ -186,6 +187,7 @@ class _ChordSheetPageState extends State<ChordSheetPage> {
       ),
     );
     if (confirmed != true) return;
+    HapticFeedback.mediumImpact();
     setState(() => _isDeleting = true);
     try {
       await _repo.deleteChordSheet(widget.songId);

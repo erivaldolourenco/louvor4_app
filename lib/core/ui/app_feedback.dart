@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AppFeedback {
   AppFeedback._();
@@ -18,6 +19,14 @@ class AppFeedback {
       _show(message, icon: Icons.info_outline_rounded, type: _Type.info);
 
   static void _show(String message, {required IconData icon, required _Type type}) {
+    switch (type) {
+      case _Type.error:
+        HapticFeedback.mediumImpact();
+      case _Type.success:
+      case _Type.info:
+        HapticFeedback.lightImpact();
+    }
+
     final overlay = navigatorKey.currentState?.overlay;
     if (overlay == null) return;
 

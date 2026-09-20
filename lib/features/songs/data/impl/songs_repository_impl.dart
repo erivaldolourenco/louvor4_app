@@ -16,13 +16,18 @@ class SongsRepositoryImpl implements SongsRepository {
 
   @override
   Future<List<SongEntity>> getUserSongs() async {
-    final response = await _dio.get('/users/songs');
-    final list = response.data as List;
-    return list
-        .map(
-          (item) => SongEntity.fromJson(Map<String, dynamic>.from(item as Map)),
-        )
-        .toList();
+    try {
+      final response = await _dio.get('/users/songs');
+      final list = response.data as List;
+      return list
+          .map(
+            (item) =>
+                SongEntity.fromJson(Map<String, dynamic>.from(item as Map)),
+          )
+          .toList();
+    } on DioException catch (e) {
+      throw Exception(_extractApiErrorMessage(e));
+    }
   }
 
   @override

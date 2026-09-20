@@ -15,8 +15,8 @@ import 'features/auth/presentation/pages/login_page.dart';
 import 'features/notifications/presentation/pages/avisos_page.dart';
 import 'features/root/presentation/pages/root_page.dart';
 import 'features/song_categories/presentation/pages/song_categories_page.dart';
-import 'features/user_profile/apresentation/pages/profile_page.dart';
-import 'features/user_profile/apresentation/pages/user_unavailability_page.dart';
+import 'features/user_profile/presentation/pages/profile_page.dart';
+import 'features/user_profile/presentation/pages/user_unavailability_page.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {

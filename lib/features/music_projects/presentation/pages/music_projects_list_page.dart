@@ -7,6 +7,7 @@ import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/utils/url_utils.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
+import '../../../../core/ui/widgets/app_skeleton_list.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/impl/music_projects_repository_impl.dart';
 import '../../domain/entities/music_project_entity.dart';
@@ -120,7 +121,7 @@ class _MusicProjectsListPageState extends State<MusicProjectsListPage> {
     final theme = Theme.of(context);
 
     if (_isLoading) {
-      return const AppLoadingState();
+      return const AppSkeletonList();
     }
 
     if (_hasError && _projects.isEmpty) {

@@ -6,7 +6,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
+import '../../../../core/ui/widgets/app_cached_network_image.dart';
 import '../../../../core/ui/widgets/app_circular_action_button.dart';
+import '../../../../core/ui/widgets/app_search_field.dart';
 import '../../../../core/ui/widgets/app_text_area_theme.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../../../core/utils/url_utils.dart';
@@ -410,12 +412,12 @@ class _DraftItemTile extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: BorderRadius.circular(AppRadius.badge),
-                  child: Image.network(
-                    imageUrl,
+                  child: AppCachedNetworkImage(
+                    imageUrl: imageUrl,
                     width: 48,
                     height: 48,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => Container(
+                    errorWidget: Container(
                       width: 48,
                       height: 48,
                       color: cs.surfaceContainerHigh,
@@ -614,43 +616,10 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
-            child: TextField(
+            child: AppSearchField(
               controller: _searchCtrl,
+              hintText: 'Buscar por título ou artista...',
               onChanged: (v) => setState(() => _query = v),
-              decoration: InputDecoration(
-                hintText: 'Buscar por título ou artista...',
-                prefixIcon: const Icon(Icons.search_rounded),
-                suffixIcon: _query.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear_rounded),
-                        onPressed: () {
-                          _searchCtrl.clear();
-                          setState(() => _query = '');
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: cs.surfaceContainerLow,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide(color: cs.outlineVariant),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide(color: cs.outlineVariant),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide(
-                    color: cs.primary,
-                    width: 1.4,
-                  ),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
-              ),
             ),
           ),
           Expanded(
@@ -682,8 +651,8 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
                             ),
                             leading: ClipRRect(
                               borderRadius: BorderRadius.circular(AppRadius.card),
-                              child: Image.network(
-                                UrlUtils.isValidNetworkUrl(song.coverUrl)
+                              child: AppCachedNetworkImage(
+                                imageUrl: UrlUtils.isValidNetworkUrl(song.coverUrl)
                                     ? song.coverUrl!
                                     : YoutubeUtils.getThumbnail(
                                         song.youTubeUrl,
@@ -692,7 +661,7 @@ class _SongPickerSheetState extends State<_SongPickerSheet> {
                                 width: 42,
                                 height: 42,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => Container(
+                                errorWidget: Container(
                                   width: 42,
                                   height: 42,
                                   color: cs.surfaceContainerLow,
@@ -875,10 +844,10 @@ class _ItemConfigDialogState extends State<_ItemConfigDialog> {
                 fit: StackFit.expand,
                 children: [
                   hasThumb
-                      ? Image.network(
-                          thumbnailUrl,
+                      ? AppCachedNetworkImage(
+                          imageUrl: thumbnailUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => const _ThumbFallback(),
+                          errorWidget: const _ThumbFallback(),
                         )
                       : const _ThumbFallback(),
                   // gradient

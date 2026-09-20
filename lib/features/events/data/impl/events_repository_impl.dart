@@ -22,11 +22,22 @@ class EventsRepositoryImpl implements EventsRepository {
 
   @override
   Future<List<EventEntity>> getEvents() async {
-    final response = await _dio.get('/users/events');
-    final list = response.data as List;
-    return list
-        .map((e) => EventEntity.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
+    try {
+      final response = await _dio.get('/users/events');
+      final list = response.data as List;
+      return list
+          .map(
+            (e) => EventEntity.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
+          .toList();
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível carregar os eventos.',
+        ),
+      );
+    }
   }
 
   @override
@@ -59,30 +70,58 @@ class EventsRepositoryImpl implements EventsRepository {
 
   @override
   Future<EventDetailEntity> getEventDetail(String eventId) async {
-    final response = await _dio.get('/events/$eventId');
-    return EventDetailEntity.fromJson(
-      Map<String, dynamic>.from(response.data as Map),
-    );
+    try {
+      final response = await _dio.get('/events/$eventId');
+      return EventDetailEntity.fromJson(
+        Map<String, dynamic>.from(response.data as Map),
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível carregar os detalhes do evento.',
+        ),
+      );
+    }
   }
 
   @override
   Future<List<EventParticipant>> getEventParticipants(String eventId) async {
-    final response = await _dio.get('/events/$eventId/participants');
-    final list = response.data as List;
-    return list
-        .map(
-          (e) => EventParticipant.fromJson(Map<String, dynamic>.from(e as Map)),
-        )
-        .toList();
+    try {
+      final response = await _dio.get('/events/$eventId/participants');
+      final list = response.data as List;
+      return list
+          .map(
+            (e) =>
+                EventParticipant.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
+          .toList();
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível carregar os participantes do evento.',
+        ),
+      );
+    }
   }
 
   @override
   Future<List<EventSong>> getEventSongs(String eventId) async {
-    final response = await _dio.get('/events/$eventId/setlist');
-    final list = response.data as List;
-    return list
-        .map((e) => EventSong.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
+    try {
+      final response = await _dio.get('/events/$eventId/setlist');
+      final list = response.data as List;
+      return list
+          .map((e) => EventSong.fromJson(Map<String, dynamic>.from(e as Map)))
+          .toList();
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível carregar o repertório do evento.',
+        ),
+      );
+    }
   }
 
   @override
@@ -108,24 +147,44 @@ class EventsRepositoryImpl implements EventsRepository {
 
   @override
   Future<List<SkillEntity>> getProjectSkills(String projectId) async {
-    final response = await _dio.get('/music-project/$projectId/skills');
-    final list = response.data as List;
-    return list
-        .map((e) => SkillEntity.fromJson(Map<String, dynamic>.from(e as Map)))
-        .toList();
+    try {
+      final response = await _dio.get('/music-project/$projectId/skills');
+      final list = response.data as List;
+      return list
+          .map(
+            (e) => SkillEntity.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
+          .toList();
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível carregar as funções do projeto.',
+        ),
+      );
+    }
   }
 
   @override
   Future<List<ProjectMemberEntity>> getProjectMembers(String projectId) async {
-    final response = await _dio.get('/music-project/$projectId/members');
-    final membersList = response.data as List;
-    return membersList
-        .map(
-          (item) => ProjectMemberEntity.fromJson(
-            Map<String, dynamic>.from(item as Map),
-          ),
-        )
-        .toList();
+    try {
+      final response = await _dio.get('/music-project/$projectId/members');
+      final membersList = response.data as List;
+      return membersList
+          .map(
+            (item) => ProjectMemberEntity.fromJson(
+              Map<String, dynamic>.from(item as Map),
+            ),
+          )
+          .toList();
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível carregar os membros do projeto.',
+        ),
+      );
+    }
   }
 
   @override
@@ -133,12 +192,21 @@ class EventsRepositoryImpl implements EventsRepository {
     String projectId,
     String memberId,
   ) async {
-    final response = await _dio.get(
-      '/music-project/$projectId/members/$memberId',
-    );
-    return ProjectMemberEntity.fromJson(
-      Map<String, dynamic>.from(response.data as Map),
-    );
+    try {
+      final response = await _dio.get(
+        '/music-project/$projectId/members/$memberId',
+      );
+      return ProjectMemberEntity.fromJson(
+        Map<String, dynamic>.from(response.data as Map),
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível carregar os dados do membro.',
+        ),
+      );
+    }
   }
 
   @override

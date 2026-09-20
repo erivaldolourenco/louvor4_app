@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
@@ -10,6 +11,7 @@ import '../../../../core/ui/widgets/app_async_states.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/app_inline_error_message.dart';
+import '../../../../core/ui/widgets/app_skeleton_list.dart';
 import '../../../../core/ui/widgets/circular_icon_action_button.dart';
 import '../../../../core/ui/widgets/app_form_sheet.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
@@ -110,7 +112,7 @@ class _ProjectMembersTabView extends StatelessWidget {
             : state.members.where((member) => !member.isPending).toList();
 
         if (state.isLoading) {
-          return const AppLoadingState();
+          return const AppSkeletonList();
         }
 
         if (state.status == ProjectMembersStatus.failure &&
@@ -142,7 +144,7 @@ class _ProjectMembersTabView extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Equipe do projeto, permissões e funções musicais',
+                          'Equipe, permissões e funções no projeto',
                           style: Theme.of(
                             context,
                           ).textTheme.bodySmall?.copyWith(color: subtitleColor),
@@ -302,7 +304,7 @@ class _ProjectMemberCard extends StatelessWidget {
                                     children: memberSkills.isEmpty
                                         ? const [
                                             _SkillTag(
-                                              label: 'Sem funções musicais',
+                                              label: 'Sem funções no projeto',
                                               muted: true,
                                             ),
                                           ]
@@ -400,6 +402,7 @@ class _ProjectMemberCard extends StatelessWidget {
                                         ),
                                       );
                                       if (confirmed != true) return;
+                                      HapticFeedback.mediumImpact();
                                       final success = await cubit.removeMember(
                                         member,
                                       );
@@ -454,6 +457,7 @@ class _ProjectMemberCard extends StatelessWidget {
                                         ),
                                       );
                                       if (confirmed != true) return;
+                                      HapticFeedback.mediumImpact();
                                       final success = await cubit.leaveProject(
                                         member,
                                       );
@@ -676,7 +680,7 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
     return Scaffold(
       appBar: const StandardSectionAppBar(
         title: 'Editar Membro',
-        subtitle: 'Ajuste permissões e funções musicais do integrante',
+        subtitle: 'Ajuste permissões e funções do integrante no projeto',
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -726,7 +730,7 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Funções musicais',
+                      'Funções no projeto',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: Theme.of(context).textTheme.titleMedium?.color,
@@ -736,7 +740,7 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
                     if (state.skills.isEmpty)
                       const _InlineHint(
                         message:
-                            'Nenhuma função musical cadastrada para este projeto.',
+                            'Nenhuma função cadastrada para este projeto.',
                       )
                     else
                       Wrap(

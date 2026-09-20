@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
+import '../../../../core/ui/widgets/app_cached_network_image.dart';
 import '../../../../core/ui/widgets/app_card_surface.dart';
 import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../../../core/ui/widgets/reference_audio_player.dart';
@@ -271,12 +272,12 @@ class _SongItemCard extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(AppRadius.badge),
-                      child: Image.network(
-                        thumbnailUrl,
+                      child: AppCachedNetworkImage(
+                        imageUrl: thumbnailUrl,
                         width: 60,
                         height: 60,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, _) => Container(
+                        errorWidget: Container(
                           width: 60,
                           height: 60,
                           decoration: BoxDecoration(

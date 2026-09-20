@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -18,7 +19,7 @@ import '../widgets/project_members_tab.dart';
 import '../widgets/project_selector_bottom_sheet.dart';
 import '../../../project_skills/domain/entities/project_role.dart';
 import '../../../project_skills/presentation/pages/project_skills_page.dart';
-import '../../../user_profile/apresentation/cubit/user_cubit.dart';
+import '../../../user_profile/presentation/cubit/user_cubit.dart';
 
 class MusicProjectOverviewPage extends StatefulWidget {
   final String projectId;
@@ -165,6 +166,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
       builder: (ctx) => _DeleteProjectDialog(projectName: _project?.name ?? ''),
     );
     if (confirmed != true || !mounted) return;
+    HapticFeedback.mediumImpact();
 
     try {
       await _repository.deleteProject(widget.projectId);

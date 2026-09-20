@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
+import '../../../../core/ui/widgets/app_skeleton_list.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
 import '../../data/repositories/notifications_repository_impl.dart';
 import '../../domain/entities/notification_item_entity.dart';
@@ -98,6 +100,7 @@ class _AvisosViewState extends State<_AvisosView> {
       ),
     );
     if (confirmed != true || !mounted) return;
+    HapticFeedback.mediumImpact();
     context.read<NotificationsCubit>().declineInvite(notification);
   }
 
@@ -147,7 +150,7 @@ class _AvisosViewState extends State<_AvisosView> {
 
   Widget _buildBody(BuildContext context, NotificationsState state) {
     if (state.isInitialLoading) {
-      return const AppLoadingState();
+      return const AppSkeletonList(variant: AppSkeletonVariant.textCard);
     }
 
     if (state.status == NotificationsStatus.failure &&

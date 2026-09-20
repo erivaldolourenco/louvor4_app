@@ -10,6 +10,8 @@ import '../../../../../core/theme/app_motion.dart';
 import '../../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_buttons.dart';
+import '../../../../core/ui/widgets/app_cached_network_image.dart';
+import '../../../../core/ui/widgets/app_search_field.dart';
 import '../../../../core/ui/widgets/app_inline_error_message.dart';
 import '../../../../core/ui/widgets/category_filter_chips.dart';
 import '../../../../core/ui/widgets/fade_slide_in.dart';
@@ -168,16 +170,12 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                       ),
                       const SizedBox(height: 16),
                       // Search — same style as the Músicas screen, shared by both tabs
-                      _RepertoireSearchField(
+                      AppSearchField(
                         controller: _searchController,
-                        isMedleysTab: _tabController.index == 1,
-                        searchQuery: _searchQuery,
-                        onSearchChanged: (v) =>
-                            setState(() => _searchQuery = v),
-                        onClearSearch: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = '');
-                        },
+                        hintText: _tabController.index == 1
+                            ? 'Buscar medley...'
+                            : 'Buscar por título ou artista...',
+                        onChanged: (v) => setState(() => _searchQuery = v),
                       ),
                       if (_availableFilterCategories(state).isNotEmpty) ...[
                         const SizedBox(height: 12),
@@ -261,69 +259,6 @@ class _ManageEventSongsSheetState extends State<_ManageEventSongsSheet>
                 );
               },
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Search field (same style as the Músicas screen), shared across tabs
-// ---------------------------------------------------------------------------
-
-class _RepertoireSearchField extends StatelessWidget {
-  final TextEditingController controller;
-  final bool isMedleysTab;
-  final String searchQuery;
-  final ValueChanged<String> onSearchChanged;
-  final VoidCallback onClearSearch;
-
-  const _RepertoireSearchField({
-    required this.controller,
-    required this.isMedleysTab,
-    required this.searchQuery,
-    required this.onSearchChanged,
-    required this.onClearSearch,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return SizedBox(
-      height: 46,
-      child: TextField(
-        controller: controller,
-        onChanged: onSearchChanged,
-        decoration: InputDecoration(
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(vertical: 6),
-          hintText: isMedleysTab
-              ? 'Buscar medley...'
-              : 'Buscar por título ou artista...',
-          prefixIcon: const Icon(Icons.search_rounded),
-          suffixIcon: searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear_rounded),
-                  onPressed: onClearSearch,
-                )
-              : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.input),
-            borderSide: BorderSide(
-              color: cs.outlineVariant.withValues(alpha: 0.25),
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.input),
-            borderSide: BorderSide(
-              color: cs.outlineVariant.withValues(alpha: 0.25),
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppRadius.input),
-            borderSide: BorderSide(color: cs.primary, width: 1.5),
           ),
         ),
       ),
@@ -711,14 +646,14 @@ class _SelectableSongCard extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(AppRadius.card),
-                      child: Image.network(
-                        UrlUtils.isValidNetworkUrl(song.coverUrl)
+                      child: AppCachedNetworkImage(
+                        imageUrl: UrlUtils.isValidNetworkUrl(song.coverUrl)
                             ? song.coverUrl!
                             : YoutubeUtils.getThumbnail(song.youTubeUrl),
                         width: 72,
                         height: 72,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => Image.asset(
+                        errorWidget: Image.asset(
                           YoutubeUtils.defaultThumb,
                           width: 72,
                           height: 72,

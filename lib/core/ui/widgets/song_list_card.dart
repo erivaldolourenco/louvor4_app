@@ -5,6 +5,7 @@ import '../../theme/app_radius.dart';
 import '../../utils/url_utils.dart';
 import '../../utils/youtube_utils.dart';
 import 'app_card_surface.dart';
+import 'app_cached_network_image.dart';
 import 'app_circular_action_button.dart';
 import 'spring_tap.dart';
 
@@ -284,12 +285,12 @@ class _Thumbnail extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.thumbnail),
-      child: Image.network(
-        imageUrl,
+      child: AppCachedNetworkImage(
+        imageUrl: imageUrl,
         width: 64,
         height: 64,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Image.asset(
+        errorWidget: Image.asset(
           YoutubeUtils.defaultThumb,
           width: 64,
           height: 64,

@@ -255,7 +255,7 @@ class _UserProfileDialogState extends State<UserProfileDialog> {
                 if (normalizedSkills.isNotEmpty) ...[
                   const SizedBox(height: 18),
                   _ProfileSkillsBlock(
-                    title: 'Funções musicais',
+                    title: 'Funções no projeto',
                     skills: normalizedSkills,
                   ),
                 ],

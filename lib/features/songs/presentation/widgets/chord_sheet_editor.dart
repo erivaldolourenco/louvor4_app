@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
@@ -374,6 +375,7 @@ class LyricsSectionsEditor extends StatelessWidget {
         ),
       );
       if (confirmed != true) return;
+      HapticFeedback.mediumImpact();
     }
 
     section.dispose();

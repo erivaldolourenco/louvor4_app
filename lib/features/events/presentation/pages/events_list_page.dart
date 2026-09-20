@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
+import 'package:louvor4_app/core/ui/widgets/app_shimmer.dart';
 import 'package:louvor4_app/core/ui/widgets/fade_slide_in.dart';
 import 'package:louvor4_app/core/ui/widgets/tab_edge_swipe_navigator.dart';
 import 'package:louvor4_app/features/root/presentation/widgets/root_home_header.dart';
@@ -384,46 +385,6 @@ class _NoMoreEventsIndicator extends StatelessWidget {
   }
 }
 
-class _ShimmerPulse extends StatefulWidget {
-  final Widget child;
-
-  const _ShimmerPulse({required this.child});
-
-  @override
-  State<_ShimmerPulse> createState() => _ShimmerPulseState();
-}
-
-class _ShimmerPulseState extends State<_ShimmerPulse>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        final opacity = 0.4 + (_controller.value * 0.55);
-        return Opacity(opacity: opacity, child: widget.child);
-      },
-    );
-  }
-}
-
 class _EventsLoadingState extends StatelessWidget {
   const _EventsLoadingState();
 
@@ -437,7 +398,7 @@ class _EventsLoadingState extends StatelessWidget {
         : const Color(0xFFE5EDF6);
     final cardFill = isDark ? cs.surfaceContainerLow : cs.surfaceContainerLowest;
 
-    return _ShimmerPulse(
+    return AppShimmer(
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),

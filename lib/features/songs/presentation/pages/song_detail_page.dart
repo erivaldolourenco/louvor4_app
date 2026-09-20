@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
+import '../../../../core/ui/widgets/app_cached_network_image.dart';
 import '../../../../core/ui/widgets/fade_slide_in.dart';
 import '../../../../core/ui/widgets/reference_audio_player.dart';
 import '../../../../core/ui/widgets/standard_section_app_bar.dart';
@@ -175,8 +176,8 @@ class SongDetailPage extends StatelessWidget {
                   // Capa
                   ClipRRect(
                     borderRadius: BorderRadius.circular(AppRadius.cardLarge),
-                    child: Image.network(
-                      hasCover
+                    child: AppCachedNetworkImage(
+                      imageUrl: hasCover
                           ? coverUrl!
                           : YoutubeUtils.getThumbnail(
                               youTubeUrl,
@@ -185,7 +186,7 @@ class SongDetailPage extends StatelessWidget {
                       width: 92,
                       height: 92,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, _) => Image.asset(
+                      errorWidget: Image.asset(
                         YoutubeUtils.defaultThumb,
                         width: 92,
                         height: 92,

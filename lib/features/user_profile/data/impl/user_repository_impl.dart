@@ -51,19 +51,28 @@ class UserRepositoryImpl implements UserRepository {
     required String filePath,
     required String fileName,
   }) async {
-    final formData = FormData.fromMap({
-      'profileImage': await MultipartFile.fromFile(
-        filePath,
-        filename: fileName,
-      ),
-    });
+    try {
+      final formData = FormData.fromMap({
+        'profileImage': await MultipartFile.fromFile(
+          filePath,
+          filename: fileName,
+        ),
+      });
 
-    final response = await _dio.put(
-      '/users/update/profile-image',
-      data: formData,
-    );
+      final response = await _dio.put(
+        '/users/update/profile-image',
+        data: formData,
+      );
 
-    return response.data.toString();
+      return response.data.toString();
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível atualizar sua foto de perfil.',
+        ),
+      );
+    }
   }
 
   String _extractApiErrorMessage(

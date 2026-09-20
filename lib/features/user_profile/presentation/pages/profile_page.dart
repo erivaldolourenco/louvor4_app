@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:louvor4_app/core/auth/auth_service.dart';
 import 'package:louvor4_app/core/network/api_client.dart';
 import 'package:louvor4_app/core/theme/app_theme_controller.dart';
@@ -75,6 +76,11 @@ class ProfilePage extends StatelessWidget {
                         FadeSlideIn(
                           delay: const Duration(milliseconds: 160),
                           child: _buildActionsCard(context, user),
+                        ),
+                        const Divider(indent: 16, endIndent: 16),
+                        FadeSlideIn(
+                          delay: const Duration(milliseconds: 220),
+                          child: _buildAboutCard(context),
                         ),
                       ],
                     ),
@@ -286,6 +292,50 @@ class ProfilePage extends StatelessWidget {
             style: TextStyle(color: cs.error),
           ),
           onTap: () => _onLogout(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAboutCard(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+          child: Text(
+            'Sobre',
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: cs.primary,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+        FutureBuilder<PackageInfo>(
+          future: PackageInfo.fromPlatform(),
+          builder: (context, snapshot) {
+            final info = snapshot.data;
+            final versionLabel = info == null
+                ? '—'
+                : 'Versão ${info.version} (${info.buildNumber})';
+            return ListTile(
+              leading: Icon(
+                Icons.info_outline_rounded,
+                color: cs.onSurfaceVariant,
+              ),
+              title: const Text('Versão do app'),
+              trailing: Text(
+                versionLabel,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            );
+          },
         ),
       ],
     );

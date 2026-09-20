@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
 import 'package:louvor4_app/core/ui/widgets/app_async_states.dart';
 import 'package:louvor4_app/core/ui/widgets/primary_add_fab.dart';
 import 'package:louvor4_app/core/ui/widgets/standard_section_app_bar.dart';
-import 'package:louvor4_app/features/user_profile/apresentation/cubit/user_unavailability_cubit.dart';
-import 'package:louvor4_app/features/user_profile/apresentation/cubit/user_unavailability_state.dart';
-import 'package:louvor4_app/features/user_profile/apresentation/widgets/add_user_unavailability_sheet.dart';
-import 'package:louvor4_app/features/user_profile/apresentation/widgets/user_unavailability_card.dart';
+import 'package:louvor4_app/features/user_profile/presentation/cubit/user_unavailability_cubit.dart';
+import 'package:louvor4_app/features/user_profile/presentation/cubit/user_unavailability_state.dart';
+import 'package:louvor4_app/features/user_profile/presentation/widgets/add_user_unavailability_sheet.dart';
+import 'package:louvor4_app/features/user_profile/presentation/widgets/user_unavailability_card.dart';
 import 'package:louvor4_app/features/user_profile/data/impl/user_unavailability_repository_impl.dart';
 import 'package:louvor4_app/features/user_profile/data/user_unavailability_repository.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/user_unavailability_entity.dart';
@@ -142,6 +143,7 @@ class _UserUnavailabilityView extends StatelessWidget {
     );
 
     if (confirmed != true || !context.mounted) return;
+    HapticFeedback.mediumImpact();
 
     final cubit = context.read<UserUnavailabilityCubit>();
     final success = await cubit.delete(item);

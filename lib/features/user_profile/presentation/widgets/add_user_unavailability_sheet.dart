@@ -7,8 +7,8 @@ import 'package:louvor4_app/core/ui/widgets/app_buttons.dart';
 import 'package:louvor4_app/core/ui/widgets/app_inline_error_message.dart';
 import 'package:louvor4_app/core/ui/widgets/app_text_area_theme.dart';
 import 'package:louvor4_app/features/music_projects/domain/entities/music_project_entity.dart';
-import 'package:louvor4_app/features/user_profile/apresentation/cubit/user_unavailability_cubit.dart';
-import 'package:louvor4_app/features/user_profile/apresentation/cubit/user_unavailability_state.dart';
+import 'package:louvor4_app/features/user_profile/presentation/cubit/user_unavailability_cubit.dart';
+import 'package:louvor4_app/features/user_profile/presentation/cubit/user_unavailability_state.dart';
 import 'package:louvor4_app/features/user_profile/domain/entities/create_user_unavailability_input_entity.dart';
 
 Future<bool?> showAddUserUnavailabilitySheet(BuildContext context) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -276,6 +277,7 @@ class _SongCategoryCard extends StatelessWidget {
       },
     );
     if (confirmed != true) return;
+    HapticFeedback.mediumImpact();
 
     final deleted = await cubit.deleteCategory(category);
     if (!context.mounted) return;

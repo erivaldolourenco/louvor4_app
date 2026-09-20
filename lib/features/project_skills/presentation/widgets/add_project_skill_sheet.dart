@@ -53,7 +53,7 @@ class _AddProjectSkillSheetState extends State<AddProjectSkillSheet> {
       title: isEditing ? 'Editar função' : 'Nova função',
       subtitle: isEditing
           ? 'Altere o nome ou o ícone da função.'
-          : 'Cadastre uma nova função musical disponível para uso nas escalas.',
+          : 'Cadastre uma nova função disponível para uso nas escalas.',
       child: Form(
         key: _formKey,
         child: Column(

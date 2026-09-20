@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -8,6 +9,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
+import '../../../../core/ui/widgets/app_search_field.dart';
+import '../../../../core/ui/widgets/app_skeleton_list.dart';
 import '../../../../core/ui/widgets/category_filter_chips.dart';
 import '../../../../core/ui/widgets/primary_add_fab.dart';
 import '../../../../core/ui/widgets/song_list_card.dart';
@@ -309,6 +312,7 @@ class _SongsContentState extends State<_SongsContent>
       ),
     );
     if (confirmed != true) return false;
+    HapticFeedback.mediumImpact();
     return _deleteSong(song);
   }
 
@@ -375,6 +379,7 @@ class _SongsContentState extends State<_SongsContent>
       ),
     );
     if (confirmed != true || medley.id == null || !mounted) return false;
+    HapticFeedback.mediumImpact();
     setState(() => _deletingMedleyId = medley.id);
     final cubit = context.read<MedleyCubit>();
     final ok = await cubit.deleteMedley(medley.id!);
@@ -412,65 +417,12 @@ class _SongsContentState extends State<_SongsContent>
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: SizedBox(
-              height: 40,
-              child: TextField(
-                controller: _searchController,
-                onChanged: (value) => setState(() => _searchQuery = value),
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 6),
-                  hintText: onSongsTab
-                      ? 'Buscar por título ou artista...'
-                      : 'Buscar medley...',
-                  prefixIcon: const Icon(Icons.search_rounded, size: 20),
-                  prefixIconConstraints: const BoxConstraints(
-                    minWidth: 36,
-                    minHeight: 36,
-                  ),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded, size: 20),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 36,
-                            minHeight: 36,
-                          ),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _searchQuery = '');
-                          },
-                        )
-                      : null,
-                  suffixIconConstraints: const BoxConstraints(
-                    minWidth: 36,
-                    minHeight: 36,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.input),
-                    borderSide: BorderSide(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.outlineVariant.withValues(alpha: 0.25),
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.input),
-                    borderSide: BorderSide(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.outlineVariant.withValues(alpha: 0.25),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.input),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 1.5,
-                    ),
-                  ),
-                ),
-              ),
+            child: AppSearchField(
+              controller: _searchController,
+              hintText: onSongsTab
+                  ? 'Buscar por título ou artista...'
+                  : 'Buscar medley...',
+              onChanged: (value) => setState(() => _searchQuery = value),
             ),
           ),
           if (availableFilterCategories.isNotEmpty)
@@ -587,7 +539,7 @@ class _SongsContentState extends State<_SongsContent>
   // ------ Songs tab body ------
 
   Widget _buildSongsTab() {
-    if (_isLoading) return const AppLoadingState();
+    if (_isLoading) return const AppSkeletonList();
 
     if (_hasError && _songs.isEmpty) {
       return AppErrorState(
@@ -743,7 +695,7 @@ class _SongsContentState extends State<_SongsContent>
       builder: (context, state) {
         if (state.status == MedleyStatus.initial ||
             state.status == MedleyStatus.loading) {
-          return const AppLoadingState();
+          return const AppSkeletonList();
         }
         if (state.status == MedleyStatus.failure && state.medleys.isEmpty) {
           return AppErrorState(

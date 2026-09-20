@@ -1,11 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/app_feedback.dart';
-import 'package:louvor4_app/core/ui/widgets/app_card_surface.dart';
+import 'package:louvor4_app/core/ui/widgets/app_async_states.dart';
 import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 import 'package:louvor4_app/core/ui/widgets/header_project_event.dart';
 import 'package:louvor4_app/core/ui/widgets/fade_slide_in.dart';
@@ -409,6 +410,7 @@ class _EventDetailViewState extends State<_EventDetailView>
     );
 
     if (confirmed != true || !mounted) return false;
+    HapticFeedback.mediumImpact();
 
     final removed = await context.read<EventDetailCubit>().removeSong(
       eventSongId,
@@ -649,6 +651,7 @@ class _EventDetailViewState extends State<_EventDetailView>
     );
 
     if (confirmed != true || !mounted) return;
+    HapticFeedback.mediumImpact();
 
     final deleted = await context.read<EventDetailCubit>().deleteEvent();
     if (!mounted) return;
@@ -966,10 +969,10 @@ class _ParticipantsTab extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
         children: [
-          _RetryTabState(
+          AppErrorState(
             icon: Icons.group_off_rounded,
-            title: 'Não foi possível carregar a equipe',
-            subtitle: 'Verifique sua conexão e tente novamente.',
+            message:
+                'Não foi possível carregar a equipe. Verifique sua conexão e tente novamente.',
             onRetry: onRefresh,
           ),
         ],
@@ -980,11 +983,20 @@ class _ParticipantsTab extends StatelessWidget {
       return ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
-        children: const [
-          _EmptyTabState(
-            iconAsset: 'assets/icons/users-round.svg',
+        children: [
+          AppEmptyState(
+            icon: Icons.group_off_rounded,
+            iconWidget: SvgPicture.asset(
+              'assets/icons/users-round.svg',
+              width: 56,
+              height: 56,
+              colorFilter: ColorFilter.mode(
+                Theme.of(context).iconTheme.color ?? Colors.grey,
+                BlendMode.srcIn,
+              ),
+            ),
             title: 'Sem participantes',
-            subtitle: 'Nenhum integrante foi vinculado a este evento.',
+            description: 'Nenhum integrante foi vinculado a este evento.',
           ),
         ],
       );
@@ -1132,10 +1144,10 @@ class _SongsTab extends StatelessWidget {
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
           children: [
-            _RetryTabState(
+            AppErrorState(
               icon: Icons.music_off_rounded,
-              title: 'Não foi possível carregar o repertório',
-              subtitle: 'Verifique sua conexão e tente novamente.',
+              message:
+                  'Não foi possível carregar o repertório. Verifique sua conexão e tente novamente.',
               onRetry: onRefresh,
             ),
           ],
@@ -1149,11 +1161,21 @@ class _SongsTab extends StatelessWidget {
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(16, 6, 16, 36),
-          children: const [
-            _EmptyTabState(
-              iconAsset: 'assets/icons/music.svg',
+          children: [
+            AppEmptyState(
+              icon: Icons.music_off_rounded,
+              iconWidget: SvgPicture.asset(
+                'assets/icons/music.svg',
+                width: 56,
+                height: 56,
+                colorFilter: ColorFilter.mode(
+                  Theme.of(context).iconTheme.color ?? Colors.grey,
+                  BlendMode.srcIn,
+                ),
+              ),
               title: 'Sem músicas',
-              subtitle: 'Ainda não há repertório cadastrado para este evento.',
+              description:
+                  'Ainda não há repertório cadastrado para este evento.',
             ),
           ],
         ),
@@ -1361,105 +1383,3 @@ class _DetailErrorState extends StatelessWidget {
   }
 }
 
-class _RetryTabState extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final VoidCallback onRetry;
-
-  const _RetryTabState({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.onRetry,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: appCardDecoration(context, radius: AppRadius.cardHero),
-      child: Column(
-        children: [
-          Icon(icon, size: 30, color: cs.onSurfaceVariant),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh_rounded, size: 16),
-            label: const Text('Tentar novamente'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EmptyTabState extends StatelessWidget {
-  final String iconAsset;
-  final String title;
-  final String subtitle;
-
-  const _EmptyTabState({
-    required this.iconAsset,
-    required this.title,
-    required this.subtitle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: appCardDecoration(context, radius: AppRadius.cardHero),
-      child: Column(
-        children: [
-          SvgPicture.asset(
-            iconAsset,
-            width: 30,
-            height: 30,
-            colorFilter: ColorFilter.mode(
-              cs.onSurfaceVariant,
-              BlendMode.srcIn,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
