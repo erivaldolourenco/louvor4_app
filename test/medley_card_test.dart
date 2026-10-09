@@ -83,19 +83,26 @@ void main() {
       expect(find.text('4 músicas'), findsOneWidget);
     });
 
-    testWidgets('dispara onEdit ao tocar no botão de editar', (tester) async {
-      var editCalled = false;
+    // A edição saiu do card e fica na página de detalhe do medley (aberta ao
+    // tocar no card); no card sobra só a ação de excluir.
+    testWidgets('dispara onTap ao tocar no card e só mostra a ação de excluir', (
+      tester,
+    ) async {
+      var tapCalled = false;
 
       await tester.pumpWidget(
         _wrap(MedleyCard(
           medley: _medley(),
-          onEdit: () => editCalled = true,
+          onTap: () => tapCalled = true,
+          onEdit: () {},
           onDelete: () {},
         )),
       );
 
-      await tester.tap(find.byIcon(Icons.edit_outlined));
-      expect(editCalled, isTrue);
+      expect(find.byType(AppCircularActionButton), findsOneWidget);
+
+      await tester.tap(find.text(_medley().name));
+      expect(tapCalled, isTrue);
     });
 
     testWidgets('dispara onDelete ao tocar no botão de excluir', (tester) async {

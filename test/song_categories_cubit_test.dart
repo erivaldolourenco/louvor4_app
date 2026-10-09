@@ -8,13 +8,11 @@ class _FakeSongCategoriesRepository implements SongCategoriesRepository {
   _FakeSongCategoriesRepository({
     this.categories = const [],
     this.throwOnCreate,
-    this.throwOnUpdate,
     this.throwOnDelete,
   });
 
   List<SongCategoryEntity> categories;
   Exception? throwOnCreate;
-  Exception? throwOnUpdate;
   Exception? throwOnDelete;
   String? lastCreatedName;
   String? lastUpdatedName;
@@ -37,7 +35,6 @@ class _FakeSongCategoriesRepository implements SongCategoriesRepository {
     String categoryId,
     String name,
   ) async {
-    if (throwOnUpdate != null) throw throwOnUpdate!;
     lastUpdatedName = name;
     final updated = SongCategoryEntity(id: categoryId, name: name);
     categories = categories

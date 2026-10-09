@@ -172,9 +172,10 @@ class _SongsContentState extends State<_SongsContent>
       if (!mounted) return;
       if (cached.isNotEmpty) {
         cameFromCache = true;
+        // Sem aviso de offline aqui — só se a requisição abaixo falhar.
         setState(() {
           _songs = cached;
-          _isOffline = true;
+          _isOffline = false;
           _hasError = false;
           _errorMessage = null;
         });

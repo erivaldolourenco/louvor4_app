@@ -149,7 +149,7 @@ void main() {
   });
 
   group('MedleyFormSheet — modo edição', () {
-    MedleyEntity _editMedley() => MedleyEntity(
+    MedleyEntity editMedley() => MedleyEntity(
       id: 'm1',
       name: 'Abertura',
       description: 'Músicas de início',
@@ -166,19 +166,19 @@ void main() {
     );
 
     testWidgets('exibe título "Editar Medley"', (tester) async {
-      await _openSheet(tester, medley: _editMedley());
+      await _openSheet(tester, medley: editMedley());
 
       expect(find.text('Editar Medley'), findsOneWidget);
     });
 
     testWidgets('exibe botão "Salvar alterações"', (tester) async {
-      await _openSheet(tester, medley: _editMedley());
+      await _openSheet(tester, medley: editMedley());
 
       expect(find.text('Salvar alterações'), findsOneWidget);
     });
 
     testWidgets('pré-preenche o campo de nome', (tester) async {
-      await _openSheet(tester, medley: _editMedley());
+      await _openSheet(tester, medley: editMedley());
 
       final nameField = tester.widget<TextFormField>(
         find.byType(TextFormField).first,
@@ -187,7 +187,7 @@ void main() {
     });
 
     testWidgets('pré-preenche o campo de descrição', (tester) async {
-      await _openSheet(tester, medley: _editMedley());
+      await _openSheet(tester, medley: editMedley());
 
       final descField = tester.widget<TextFormField>(
         find.byType(TextFormField).at(1),
@@ -196,7 +196,7 @@ void main() {
     });
 
     testWidgets('exibe o item de música existente na lista', (tester) async {
-      await _openSheet(tester, medley: _editMedley());
+      await _openSheet(tester, medley: editMedley());
 
       expect(find.text('Oceans'), findsOneWidget);
     });

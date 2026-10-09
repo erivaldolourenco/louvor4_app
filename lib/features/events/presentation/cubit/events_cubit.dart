@@ -18,11 +18,14 @@ class EventsCubit extends Cubit<EventsState> {
     if (state.events.isEmpty) {
       final cached = await _cache.readUpcomingEvents();
       if (cached.isNotEmpty) {
+        // Mostra o cache na hora, mas sem o aviso de "sem conexão": ele só
+        // aparece se a requisição abaixo falhar de fato. Antes o aviso
+        // piscava em toda abertura do app, enquanto a rede ainda respondia.
         emit(
           state.copyWith(
             status: EventsStatus.success,
             events: cached,
-            isOffline: true,
+            isOffline: false,
           ),
         );
       } else {

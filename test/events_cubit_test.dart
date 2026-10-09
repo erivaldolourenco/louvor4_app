@@ -384,7 +384,9 @@ void main() {
         await Future<void>.delayed(Duration.zero);
         expect(cubit.state.status, EventsStatus.success);
         expect(cubit.state.events.map((e) => e.id), ['cached']);
-        expect(cubit.state.isOffline, isTrue);
+        // Enquanto a rede não respondeu, não é "offline" — o aviso só
+        // aparece se a requisição falhar.
+        expect(cubit.state.isOffline, isFalse);
 
         repo.completeWith(freshEvents);
         await loadFuture;

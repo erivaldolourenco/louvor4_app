@@ -1,12 +1,12 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:louvor4_app/features/events/data/event_program_repository.dart';
 import 'package:louvor4_app/features/events/domain/entities/program_item_entity.dart';
 import 'package:louvor4_app/features/events/domain/entities/program_item_input_entity.dart';
 import 'package:louvor4_app/features/events/presentation/cubit/event_program_cubit.dart';
-import 'package:louvor4_app/features/events/presentation/cubit/event_program_state.dart';
 import 'package:louvor4_app/features/events/presentation/widgets/event_program_tab.dart';
 
 // ---------------------------------------------------------------------------
@@ -42,18 +42,10 @@ class _FakeRepo implements EventProgramRepository {
   _FakeRepo({
     this.items = const [],
     this.throwOnLoad = false,
-    this.throwOnCreate = false,
-    this.throwOnUpdate = false,
-    this.throwOnDelete = false,
-    this.throwOnReorder = false,
   });
 
   final List<ProgramItemEntity> items;
   final bool throwOnLoad;
-  final bool throwOnCreate;
-  final bool throwOnUpdate;
-  final bool throwOnDelete;
-  final bool throwOnReorder;
 
   int loadCalls = 0;
   String? deletedId;
@@ -74,7 +66,6 @@ class _FakeRepo implements EventProgramRepository {
     CreateTextProgramItemInputEntity input,
   ) async {
     lastCreateInput = input;
-    if (throwOnCreate) throw Exception('erro ao criar');
     return _text('new', 99, title: input.title);
   }
 
@@ -85,20 +76,17 @@ class _FakeRepo implements EventProgramRepository {
     UpdateTextProgramItemInputEntity input,
   ) async {
     lastUpdateInput = input;
-    if (throwOnUpdate) throw Exception('erro ao atualizar');
     return _text(itemId, 0, title: input.title);
   }
 
   @override
   Future<void> deleteItem(String eventId, String itemId) async {
     deletedId = itemId;
-    if (throwOnDelete) throw Exception('erro ao deletar');
   }
 
   @override
   Future<void> reorder(String eventId, List<String> orderedIds) async {
     lastReorderIds = orderedIds;
-    if (throwOnReorder) throw Exception('erro ao reordenar');
   }
 
   @override
@@ -140,10 +128,15 @@ Widget _buildTabWithAddFab(EventProgramCubit cubit) {
   );
 }
 
-Future<EventProgramCubit> _loadedCubit(
-  _FakeRepo repo, {
-  bool throwOnLoad = false,
-}) async {
+/// Ícones do programa são SVGs de `assets/icons/` (não mais `Icons.*`).
+Finder _svgAsset(String assetName) => find.byWidgetPredicate(
+  (w) =>
+      w is SvgPicture &&
+      w.bytesLoader is SvgAssetLoader &&
+      (w.bytesLoader as SvgAssetLoader).assetName == assetName,
+);
+
+Future<EventProgramCubit> _loadedCubit(_FakeRepo repo) async {
   final cubit = EventProgramCubit(repo, eventId: 'e1');
   await cubit.loadProgram();
   return cubit;
@@ -211,13 +204,19 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('admin vê botão "Adicionar item de texto"', (tester) async {
+    // Adicionar item agora é pelo FAB da tela do evento, então nem o admin
+    // vê um botão de adicionar dentro do estado vazio.
+    testWidgets('admin não vê botão de adicionar no estado vazio', (
+      tester,
+    ) async {
       final cubit = await _loadedCubit(_FakeRepo());
 
       await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
       await tester.pump();
 
-      expect(find.text('Adicionar item de texto'), findsOneWidget);
+      expect(find.text('Sem programação'), findsOneWidget);
+      expect(find.text('Adicionar item de texto'), findsNothing);
+      expect(find.byType(FilledButton), findsNothing);
 
       await cubit.close();
     });
@@ -242,20 +241,24 @@ void main() {
       await tester.pumpWidget(_buildTab(cubit));
       await tester.pump();
 
-      expect(find.text('Oceans'), findsOneWidget);
-      expect(find.text('Hillsong'), findsOneWidget);
+      // Título e artista ficam no mesmo Text.rich ("Oceans  •  Hillsong").
+      expect(find.textContaining('Oceans', findRichText: true), findsOneWidget);
+      expect(
+        find.textContaining('Hillsong', findRichText: true),
+        findsOneWidget,
+      );
 
       await cubit.close();
     });
 
-    testWidgets('item MUSIC usa ícone music_note_rounded', (tester) async {
+    testWidgets('item MUSIC usa o ícone music.svg', (tester) async {
       final repo = _FakeRepo(items: [_music('m1', 0)]);
       final cubit = await _loadedCubit(repo);
 
       await tester.pumpWidget(_buildTab(cubit));
       await tester.pump();
 
-      expect(find.byIcon(Icons.music_note_rounded), findsOneWidget);
+      expect(_svgAsset('assets/icons/music.svg'), findsOneWidget);
 
       await cubit.close();
     });
@@ -272,14 +275,14 @@ void main() {
       await cubit.close();
     });
 
-    testWidgets('item TEXT usa ícone text_fields_rounded', (tester) async {
+    testWidgets('item TEXT usa o ícone type-outline.svg', (tester) async {
       final repo = _FakeRepo(items: [_text('t1', 0, title: 'Texto')]);
       final cubit = await _loadedCubit(repo);
 
       await tester.pumpWidget(_buildTab(cubit));
       await tester.pump();
 
-      expect(find.byIcon(Icons.text_fields_rounded), findsOneWidget);
+      expect(_svgAsset('assets/icons/type-outline.svg'), findsOneWidget);
 
       await cubit.close();
     });
@@ -337,8 +340,8 @@ void main() {
       await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
       await tester.pump();
 
-      expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
-      expect(find.byIcon(Icons.delete_outline_rounded), findsOneWidget);
+      expect(find.byTooltip('Editar item'), findsOneWidget);
+      expect(find.byTooltip('Remover item'), findsOneWidget);
 
       await cubit.close();
     });
@@ -350,8 +353,8 @@ void main() {
       await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
       await tester.pump();
 
-      expect(find.byIcon(Icons.edit_outlined), findsNothing);
-      expect(find.byIcon(Icons.delete_outline_rounded), findsNothing);
+      expect(find.byTooltip('Editar item'), findsNothing);
+      expect(find.byTooltip('Remover item'), findsNothing);
 
       await cubit.close();
     });
@@ -363,8 +366,8 @@ void main() {
       await tester.pumpWidget(_buildTab(cubit, isAdmin: false));
       await tester.pump();
 
-      expect(find.byIcon(Icons.edit_outlined), findsNothing);
-      expect(find.byIcon(Icons.delete_outline_rounded), findsNothing);
+      expect(find.byTooltip('Editar item'), findsNothing);
+      expect(find.byTooltip('Remover item'), findsNothing);
 
       await cubit.close();
     });
@@ -469,7 +472,7 @@ void main() {
         await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
         await tester.pump();
 
-        await tester.tap(find.byIcon(Icons.edit_outlined));
+        await tester.tap(find.byTooltip('Editar item'));
         await tester.pumpAndSettle();
 
         expect(find.text('Editar item'), findsOneWidget);
@@ -499,7 +502,7 @@ void main() {
         await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
         await tester.pump();
 
-        await tester.tap(find.byIcon(Icons.edit_outlined));
+        await tester.tap(find.byTooltip('Editar item'));
         await tester.pumpAndSettle();
 
         await tester.enterText(
@@ -524,7 +527,7 @@ void main() {
       await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
       await tester.pump();
 
-      await tester.tap(find.byIcon(Icons.delete_outline_rounded));
+      await tester.tap(find.byTooltip('Remover item'));
       await tester.pumpAndSettle();
 
       // Confirm dialog appeared
@@ -546,7 +549,7 @@ void main() {
       await tester.pumpWidget(_buildTab(cubit, isAdmin: true));
       await tester.pump();
 
-      await tester.tap(find.byIcon(Icons.delete_outline_rounded));
+      await tester.tap(find.byTooltip('Remover item'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Cancelar'));
