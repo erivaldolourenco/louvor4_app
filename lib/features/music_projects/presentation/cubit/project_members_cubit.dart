@@ -97,8 +97,7 @@ class ProjectMembersCubit extends Cubit<ProjectMembersState> {
     if (!canManageMembers) {
       emit(
         state.copyWith(
-          actionErrorMessage:
-              'Apenas administradores podem adicionar membros.',
+          actionErrorMessage: 'Apenas administradores podem adicionar membros.',
         ),
       );
       return false;
@@ -106,9 +105,7 @@ class ProjectMembersCubit extends Cubit<ProjectMembersState> {
 
     final normalizedUsername = username.trim();
     if (normalizedUsername.isEmpty) {
-      emit(
-        state.copyWith(actionErrorMessage: 'Informe o username do membro.'),
-      );
+      emit(state.copyWith(actionErrorMessage: 'Informe o username do membro.'));
       return false;
     }
 
@@ -256,7 +253,7 @@ class ProjectMembersCubit extends Cubit<ProjectMembersState> {
       canManageMembers && !member.isOwner && !isCurrentUser(member);
 
   bool canLeaveProject(ProjectMemberEntity member) =>
-      isCurrentUser(member) && !member.isOwner;
+      isCurrentUser(member) && !member.isOwner && !member.isPending;
 
   bool canChangeAdministrativeAccess(ProjectMemberEntity member) =>
       canManageMembers && !member.isOwner;
@@ -305,9 +302,9 @@ class ProjectMembersCubit extends Cubit<ProjectMembersState> {
   List<ProjectMemberEntity> _sortMembers(List<ProjectMemberEntity> members) {
     final sorted = [...members];
     sorted.sort((a, b) {
-      final roleCompare = _rolePriority(a.projectRole).compareTo(
-        _rolePriority(b.projectRole),
-      );
+      final roleCompare = _rolePriority(
+        a.projectRole,
+      ).compareTo(_rolePriority(b.projectRole));
       if (roleCompare != 0) return roleCompare;
       return a.fullName.toLowerCase().compareTo(b.fullName.toLowerCase());
     });

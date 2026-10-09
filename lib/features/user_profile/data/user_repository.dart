@@ -10,4 +10,7 @@ abstract class UserRepository {
     required String filePath,
     required String fileName,
   });
+
+  /// Exclui a conta do usuário logado (a API anonimiza os dados).
+  Future<void> deleteAccount();
 }

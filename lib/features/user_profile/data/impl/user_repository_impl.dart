@@ -75,9 +75,22 @@ class UserRepositoryImpl implements UserRepository {
     }
   }
 
+  @override
+  Future<void> deleteAccount() async {
+    try {
+      await _dio.delete('/users/me');
+    } on DioException catch (e) {
+      throw Exception(
+        _extractApiErrorMessage(
+          e,
+          fallback: 'Não foi possível excluir sua conta.',
+        ),
+      );
+    }
+  }
+
   String _extractApiErrorMessage(
     DioException error, {
     required String fallback,
-  }) =>
-      extractApiErrorMessage(error, fallback: fallback);
+  }) => extractApiErrorMessage(error, fallback: fallback);
 }

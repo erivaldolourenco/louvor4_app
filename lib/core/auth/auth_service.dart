@@ -61,4 +61,8 @@ class AuthService {
 
     await _tokenStorage.clearSession();
   }
+
+  /// Limpa só a sessão local, sem chamar a API (ex.: após excluir a conta,
+  /// quando os refresh tokens já foram apagados no servidor).
+  Future<void> clearLocalSession() => _tokenStorage.clearSession();
 }

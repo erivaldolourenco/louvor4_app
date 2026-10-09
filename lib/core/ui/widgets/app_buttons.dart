@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_extra_colors.dart';
 import '../../theme/app_radius.dart';
 import 'spring_tap.dart';
 
@@ -29,7 +30,7 @@ class AppPrimaryButton extends StatelessWidget {
     final enabled = onPressed != null;
 
     final bgColor = enabled
-        ? cs.primary
+        ? appPrimaryButtonColor(context)
         : cs.onSurface.withValues(alpha: 0.12);
     final fgColor = enabled
         ? cs.onPrimary
@@ -179,7 +180,11 @@ class _ButtonContent extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
-      children: [leadingWidget, const SizedBox(width: 8), Flexible(child: child)],
+      children: [
+        leadingWidget,
+        const SizedBox(width: 8),
+        Flexible(child: child),
+      ],
     );
   }
 }

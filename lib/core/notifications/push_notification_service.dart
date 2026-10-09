@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:math';
-import 'dart:ui' show Color;
 
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -11,6 +10,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../network/api_client.dart';
 import '../network/api_error_message.dart';
 import '../storage/token_storage.dart';
+import '../theme/app_colors.dart';
 import '../ui/app_feedback.dart';
 
 class PushNotificationService {
@@ -132,7 +132,7 @@ class PushNotificationService {
         importance: Importance.high,
         priority: Priority.high,
         icon: '@drawable/ic_stat_notification',
-        color: Color(0xFF4F64E8),
+        color: AppColors.primary,
       ),
     );
 
@@ -204,11 +204,10 @@ class PushNotificationService {
     return generated;
   }
 
-  String _extractApiErrorMessage(DioException e) =>
-      extractApiErrorMessage(
-        e,
-        fallback: 'Falha ao registrar dispositivo para notificações.',
-      );
+  String _extractApiErrorMessage(DioException e) => extractApiErrorMessage(
+    e,
+    fallback: 'Falha ao registrar dispositivo para notificações.',
+  );
 
   String get _platform {
     if (kIsWeb) return 'WEB';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../theme/app_extra_colors.dart';
 import '../../theme/app_radius.dart';
 
 class AppFormSheet extends StatelessWidget {
@@ -21,21 +22,21 @@ class AppFormSheet extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
+    final keyboardInset = MediaQuery.of(context).viewInsets.bottom;
 
+    // Encostado nas laterais e no rodapé (só os cantos de cima arredondados);
+    // o respiro do teclado entra no padding interno.
     return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 32,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-      ),
+      padding: const EdgeInsets.only(top: 32),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           DecoratedBox(
             decoration: BoxDecoration(
               color: cs.surface,
-              borderRadius: BorderRadius.circular(AppRadius.sheet),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppRadius.sheet),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: cs.shadow.withValues(alpha: isDark ? 0.28 : 0.12),
@@ -47,7 +48,7 @@ class AppFormSheet extends StatelessWidget {
             child: SafeArea(
               top: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(22, 68, 22, 22),
+                padding: EdgeInsets.fromLTRB(22, 68, 22, 22 + keyboardInset),
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,7 +90,9 @@ class AppFormSheet extends StatelessWidget {
                     borderRadius: BorderRadius.circular(AppRadius.sheet),
                     boxShadow: [
                       BoxShadow(
-                        color: cs.shadow.withValues(alpha: isDark ? 0.22 : 0.10),
+                        color: cs.shadow.withValues(
+                          alpha: isDark ? 0.22 : 0.10,
+                        ),
                         blurRadius: isDark ? 22 : 18,
                         offset: const Offset(0, 6),
                       ),
@@ -123,9 +126,7 @@ InputDecoration appFormFieldDecoration(
     hintText: hintText,
     hintStyle: TextStyle(color: cs.onSurfaceVariant),
     alignLabelWithHint: alignLabelWithHint,
-    prefixIcon: prefixIcon == null
-        ? null
-        : Icon(prefixIcon, color: cs.primary),
+    prefixIcon: prefixIcon == null ? null : Icon(prefixIcon, color: cs.primary),
     suffixIcon: suffixIcon,
     filled: true,
     fillColor: cs.surfaceContainerLow,
@@ -162,10 +163,12 @@ ButtonStyle appPrimaryPillButtonStyle(BuildContext context) {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadius.input),
     ),
-    backgroundColor: cs.primary,
+    backgroundColor: appPrimaryButtonColor(context),
     foregroundColor: cs.onPrimary,
     elevation: isDark ? 0 : 6,
-    shadowColor: isDark ? Colors.transparent : cs.primary.withValues(alpha: 0.30),
+    shadowColor: isDark
+        ? Colors.transparent
+        : cs.primary.withValues(alpha: 0.30),
   );
 }
 
@@ -204,10 +207,12 @@ ButtonStyle appPrimaryPillButtonStyleCompact(BuildContext context) {
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadius.input),
     ),
-    backgroundColor: cs.primary,
+    backgroundColor: appPrimaryButtonColor(context),
     foregroundColor: cs.onPrimary,
     elevation: isDark ? 0 : 6,
-    shadowColor: isDark ? Colors.transparent : cs.primary.withValues(alpha: 0.30),
+    shadowColor: isDark
+        ? Colors.transparent
+        : cs.primary.withValues(alpha: 0.30),
     padding: const EdgeInsets.symmetric(horizontal: 16),
   );
 }

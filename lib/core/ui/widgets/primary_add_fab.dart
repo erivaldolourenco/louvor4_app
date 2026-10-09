@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../theme/app_extra_colors.dart';
+
 class PrimaryAddFab extends StatelessWidget {
   final VoidCallback onPressed;
   final Object? heroTag;
@@ -22,10 +24,8 @@ class PrimaryAddFab extends StatelessWidget {
     return FloatingActionButton(
       onPressed: onPressed,
       heroTag: heroTag,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      backgroundColor: colorScheme.primary,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      backgroundColor: appPrimaryButtonColor(context),
       foregroundColor: colorScheme.onPrimary,
       elevation: 2,
       child: iconAsset != null

@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:louvor4_app/core/ui/widgets/app_cached_network_image.dart';
 import 'package:louvor4_app/core/ui/widgets/user_profile_dialog.dart';
 
+import '../../../../core/theme/app_extra_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/ui/app_feedback.dart';
 import '../../../../core/ui/widgets/app_async_states.dart';
@@ -739,8 +740,7 @@ class _EditProjectMemberPageState extends State<_EditProjectMemberPage> {
                     const SizedBox(height: 8),
                     if (state.skills.isEmpty)
                       const _InlineHint(
-                        message:
-                            'Nenhuma função cadastrada para este projeto.',
+                        message: 'Nenhuma função cadastrada para este projeto.',
                       )
                     else
                       Wrap(
@@ -1062,19 +1062,19 @@ class _PendingInviteBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final extra = Theme.of(context).extension<AppExtraColors>()!;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: cs.tertiaryContainer,
+        color: extra.pendingContainer,
         borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(
         'Pendente',
         style: Theme.of(
           context,
-        ).textTheme.labelMedium?.copyWith(color: cs.onTertiaryContainer),
+        ).textTheme.labelMedium?.copyWith(color: extra.onPendingContainer),
       ),
     );
   }

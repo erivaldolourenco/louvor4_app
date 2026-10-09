@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../theme/app_colors.dart';
 import '../../theme/app_radius.dart';
 import '../../utils/url_utils.dart';
 import '../../utils/youtube_utils.dart';
@@ -107,18 +108,19 @@ class SongListCard extends StatelessWidget {
                               _SongTag(
                                 label: 'Áudio',
                                 icon: Icons.headphones_rounded,
-                                backgroundColor: cs.primaryContainer
-                                    .withValues(alpha: 0.7),
+                                backgroundColor: cs.primaryContainer.withValues(
+                                  alpha: 0.7,
+                                ),
                                 foregroundColor: cs.primary,
                               ),
                             if (hasVsAudio)
                               _SongTag(
                                 label: 'VS',
                                 icon: Icons.graphic_eq_rounded,
-                                backgroundColor: const Color(
-                                  0xFF6366F1,
-                                ).withValues(alpha: 0.12),
-                                foregroundColor: const Color(0xFF6366F1),
+                                backgroundColor: AppColors.indigo500.withValues(
+                                  alpha: 0.12,
+                                ),
+                                foregroundColor: AppColors.indigo500,
                               ),
                             if (youTubeUrl != null && youTubeUrl!.isNotEmpty)
                               Builder(

@@ -225,6 +225,21 @@ class EventListCard extends StatelessWidget {
                                                                 event
                                                                     .participantsProfileImages[index],
                                                               ),
+                                                          // Sem foto (ou conta excluída): ícone padrão
+                                                          child:
+                                                              appCachedImageProvider(
+                                                                    event
+                                                                        .participantsProfileImages[index],
+                                                                  ) ==
+                                                                  null
+                                                              ? Icon(
+                                                                  Icons
+                                                                      .person_rounded,
+                                                                  size: 13,
+                                                                  color: cs
+                                                                      .onSurfaceVariant,
+                                                                )
+                                                              : null,
                                                         ),
                                                       ),
                                                     ),
@@ -283,9 +298,10 @@ class EventListCard extends StatelessWidget {
                                             ),
                                             decoration: BoxDecoration(
                                               color: cs.surfaceContainerHigh,
-                                              borderRadius: BorderRadius.circular(
-                                                AppRadius.pill,
-                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    AppRadius.pill,
+                                                  ),
                                             ),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,

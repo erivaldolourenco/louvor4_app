@@ -74,13 +74,22 @@ class ProfilePage extends StatelessWidget {
                         ),
                         const Divider(indent: 16, endIndent: 16),
                         FadeSlideIn(
-                          delay: const Duration(milliseconds: 160),
-                          child: _buildActionsCard(context, user),
+                          delay: const Duration(milliseconds: 140),
+                          child: _buildAccountCard(context, user),
                         ),
                         const Divider(indent: 16, endIndent: 16),
                         FadeSlideIn(
-                          delay: const Duration(milliseconds: 220),
+                          delay: const Duration(milliseconds: 190),
+                          child: _buildPreferencesCard(context),
+                        ),
+                        const Divider(indent: 16, endIndent: 16),
+                        FadeSlideIn(
+                          delay: const Duration(milliseconds: 240),
                           child: _buildAboutCard(context),
+                        ),
+                        FadeSlideIn(
+                          delay: const Duration(milliseconds: 290),
+                          child: _buildDeleteAccountLink(context, user),
                         ),
                       ],
                     ),
@@ -110,128 +119,125 @@ class ProfilePage extends StatelessWidget {
       children: [
         const SizedBox(height: 16),
         SpringTap(
-              onTap: isUploadingImage
-                  ? null
-                  : () => _onChangeProfileImage(context),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 112,
-                    height: 112,
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 200),
-                      opacity: isUploadingImage ? 1 : 0,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        color: cs.primary,
-                      ),
+          onTap: isUploadingImage ? null : () => _onChangeProfileImage(context),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                width: 112,
+                height: 112,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: isUploadingImage ? 1 : 0,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: cs.primary,
+                  ),
+                ),
+              ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 320),
+                switchInCurve: Curves.easeOutBack,
+                switchOutCurve: Curves.easeIn,
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(scale: animation, child: child),
+                ),
+                child: CircleAvatar(
+                  key: ValueKey(hasProfileImage ? profileImage : 'placeholder'),
+                  radius: 50,
+                  foregroundImage: hasProfileImage
+                      ? appCachedImageProvider(profileImage)
+                      : null,
+                  backgroundColor: cs.primaryContainer,
+                  child: !hasProfileImage
+                      ? Text(
+                          _buildUserInitial(user),
+                          style: theme.textTheme.displaySmall?.copyWith(
+                            color: cs.onPrimaryContainer,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        )
+                      : null,
+                ),
+              ),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: isUploadingImage ? 0.4 : 1,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: cs.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: cs.surface, width: 2),
+                    ),
+                    child: Icon(
+                      Icons.camera_alt_rounded,
+                      size: 16,
+                      color: cs.onPrimary,
                     ),
                   ),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 320),
-                    switchInCurve: Curves.easeOutBack,
-                    switchOutCurve: Curves.easeIn,
-                    transitionBuilder: (child, animation) => FadeTransition(
-                      opacity: animation,
-                      child: ScaleTransition(scale: animation, child: child),
-                    ),
-                    child: CircleAvatar(
-                      key: ValueKey(
-                        hasProfileImage ? profileImage : 'placeholder',
-                      ),
-                      radius: 50,
-                      foregroundImage: hasProfileImage
-                          ? appCachedImageProvider(profileImage)
-                          : null,
-                      backgroundColor: cs.primaryContainer,
-                      child: !hasProfileImage
-                          ? Text(
-                              _buildUserInitial(user),
-                              style: theme.textTheme.displaySmall?.copyWith(
-                                color: cs.onPrimaryContainer,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            )
-                          : null,
-                    ),
-                  ),
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 200),
-                      opacity: isUploadingImage ? 0.4 : 1,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: cs.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: cs.surface, width: 2),
-                        ),
-                        child: Icon(
-                          Icons.camera_alt_rounded,
-                          size: 16,
-                          color: cs.onPrimary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Toque na imagem para alterar',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              '${user.firstName} ${user.lastName}',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 6),
-            Text(
-              _buildProfileSubtitle(user),
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-          ],
-        );
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Toque na imagem para alterar',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: cs.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 20),
+        Text(
+          '${user.firstName} ${user.lastName}',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          _buildProfileSubtitle(user),
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: cs.onSurfaceVariant,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+      ],
+    );
   }
 
-  Widget _buildInfoCard(UserDetailEntity user, BuildContext context) {
+  Widget _buildSectionHeader(BuildContext context, String title) {
     final theme = Theme.of(context);
-    final cs = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Text(
+        title,
+        style: theme.textTheme.labelLarge?.copyWith(
+          color: theme.colorScheme.primary,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
 
+  // Nome e sobrenome já aparecem em destaque no topo.
+  Widget _buildInfoCard(UserDetailEntity user, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-          child: Text(
-            'Informações pessoais',
-            style: theme.textTheme.labelLarge?.copyWith(
-              color: cs.primary,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
-        _buildInfoTile(context, Icons.person_outline_rounded, 'Nome', user.firstName),
-        _buildInfoTile(context, Icons.badge_outlined, 'Sobrenome', user.lastName),
+        _buildSectionHeader(context, 'Informações pessoais'),
         _buildInfoTile(context, Icons.email_outlined, 'Email', user.email),
         _buildInfoTile(
           context,
@@ -243,24 +249,15 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildActionsCard(BuildContext context, UserDetailEntity user) {
+  Widget _buildAccountCard(BuildContext context, UserDetailEntity user) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
+    final planName = user.planName?.trim();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-          child: Text(
-            'Configurações',
-            style: theme.textTheme.labelLarge?.copyWith(
-              color: cs.primary,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
+        _buildSectionHeader(context, 'Conta'),
         ListTile(
           leading: Icon(Icons.edit_outlined, color: cs.onSurfaceVariant),
           title: const Text('Editar perfil'),
@@ -268,16 +265,50 @@ class ProfilePage extends StatelessWidget {
           onTap: () => _onEditProfile(context),
         ),
         ListTile(
-          leading: Icon(Icons.confirmation_number_outlined, color: cs.onSurfaceVariant),
-          title: const Text('Alterar Plano'),
-          trailing: Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+          leading: Icon(
+            Icons.confirmation_number_outlined,
+            color: cs.onSurfaceVariant,
+          ),
+          title: const Text('Alterar plano'),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (planName != null && planName.isNotEmpty)
+                Text(
+                  planName,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              Icon(Icons.chevron_right, color: cs.onSurfaceVariant),
+            ],
+          ),
           onTap: () => _onRedeemVoucher(context, user),
         ),
+        ListTile(
+          leading: Icon(Icons.logout_rounded, color: cs.error),
+          title: Text('Sair do aplicativo', style: TextStyle(color: cs.error)),
+          onTap: () => _onLogout(context),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPreferencesCard(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(context, 'Preferências'),
         AnimatedBuilder(
           animation: AppThemeController.instance,
           builder: (context, _) {
             return SwitchListTile(
-              secondary: Icon(Icons.dark_mode_outlined, color: cs.onSurfaceVariant),
+              secondary: Icon(
+                Icons.dark_mode_outlined,
+                color: cs.onSurfaceVariant,
+              ),
               title: const Text('Modo escuro'),
               value: AppThemeController.instance.isDarkMode,
               onChanged: (value) =>
@@ -285,15 +316,27 @@ class ProfilePage extends StatelessWidget {
             );
           },
         ),
-        ListTile(
-          leading: Icon(Icons.logout_rounded, color: cs.error),
-          title: Text(
-            'Sair do aplicativo',
-            style: TextStyle(color: cs.error),
-          ),
-          onTap: () => _onLogout(context),
-        ),
       ],
+    );
+  }
+
+  // Fica sozinho no rodapé, longe de "Sair", para evitar toque acidental.
+  Widget _buildDeleteAccountLink(BuildContext context, UserDetailEntity user) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 24),
+      child: Center(
+        child: TextButton(
+          onPressed: () => _onDeleteAccount(context, user),
+          style: TextButton.styleFrom(foregroundColor: cs.error),
+          child: Text(
+            'Excluir conta',
+            style: theme.textTheme.labelLarge?.copyWith(color: cs.error),
+          ),
+        ),
+      ),
     );
   }
 
@@ -304,17 +347,7 @@ class ProfilePage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-          child: Text(
-            'Sobre',
-            style: theme.textTheme.labelLarge?.copyWith(
-              color: cs.primary,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ),
+        _buildSectionHeader(context, 'Sobre'),
         FutureBuilder<PackageInfo>(
           future: PackageInfo.fromPlatform(),
           builder: (context, snapshot) {
@@ -363,6 +396,43 @@ class ProfilePage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _onDeleteAccount(
+    BuildContext context,
+    UserDetailEntity user,
+  ) async {
+    final username = user.username.trim();
+    if (username.isEmpty) {
+      AppFeedback.showError(
+        'Não foi possível carregar seus dados. Tente novamente.',
+      );
+      return;
+    }
+
+    final repository = context.read<UserRepository>();
+    final deleted = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => _DeleteAccountDialog(
+        username: username,
+        onConfirm: repository.deleteAccount,
+      ),
+    );
+
+    if (deleted != true || !context.mounted) return;
+
+    // Os refresh tokens e devices de push já foram apagados na API,
+    // então só limpa a sessão e os caches locais.
+    await AuthService.instance.clearLocalSession();
+    await EventsLocalCache().clear();
+    await SongsLocalCache().clear();
+    AppFeedback.showSuccess('Sua conta foi excluída.');
+    if (context.mounted) {
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(LoginPage.routeName, (route) => false);
+    }
   }
 
   Future<void> _onLogout(BuildContext context) async {
@@ -465,5 +535,115 @@ class ProfilePage extends StatelessWidget {
     final planName = user.planName?.trim();
     if (planName == null || planName.isEmpty) return username;
     return '$username · $planName';
+  }
+}
+
+class _DeleteAccountDialog extends StatefulWidget {
+  final String username;
+  final Future<void> Function() onConfirm;
+
+  const _DeleteAccountDialog({required this.username, required this.onConfirm});
+
+  @override
+  State<_DeleteAccountDialog> createState() => _DeleteAccountDialogState();
+}
+
+class _DeleteAccountDialogState extends State<_DeleteAccountDialog> {
+  final _controller = TextEditingController();
+  bool _isDeleting = false;
+  String? _errorMessage;
+
+  bool get _matches => _controller.text.trim() == widget.username;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _confirm() async {
+    setState(() {
+      _isDeleting = true;
+      _errorMessage = null;
+    });
+    try {
+      await widget.onConfirm();
+      if (mounted) Navigator.of(context).pop(true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isDeleting = false;
+        _errorMessage = e.toString().replaceFirst('Exception: ', '');
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+
+    return AlertDialog(
+      icon: Icon(Icons.warning_amber_rounded, color: cs.error),
+      title: const Text('Excluir conta'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Sua conta e seus dados pessoais serão excluídos permanentemente. '
+              'Essa ação não pode ser desfeita.',
+            ),
+            const SizedBox(height: 16),
+            Text.rich(
+              TextSpan(
+                text: 'Para confirmar, digite ',
+                children: [
+                  TextSpan(
+                    text: widget.username,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  const TextSpan(text: ' abaixo:'),
+                ],
+              ),
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _controller,
+              enabled: !_isDeleting,
+              autocorrect: false,
+              enableSuggestions: false,
+              decoration: InputDecoration(
+                hintText: widget.username,
+                errorText: _errorMessage,
+                errorMaxLines: 3,
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _isDeleting
+              ? null
+              : () => Navigator.of(context).pop(false),
+          child: const Text('Cancelar'),
+        ),
+        FilledButton(
+          onPressed: _matches && !_isDeleting ? _confirm : null,
+          style: FilledButton.styleFrom(backgroundColor: cs.error),
+          child: _isDeleting
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Excluir conta'),
+        ),
+      ],
+    );
   }
 }

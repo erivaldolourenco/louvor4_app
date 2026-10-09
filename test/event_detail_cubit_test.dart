@@ -174,6 +174,11 @@ class _FakeUserRepository implements UserRepository {
   Future<UserDetailEntity> updateUserProfile(dynamic input) async {
     throw UnimplementedError();
   }
+
+  @override
+  Future<void> deleteAccount() async {
+    throw UnimplementedError();
+  }
 }
 
 void main() {

@@ -83,6 +83,10 @@ class EventParticipant {
   final EventParticipantStatus status;
   final Set<EventPermission> permissions;
 
+  /// Usuário excluiu a conta: a participação continua na escala como
+  /// "Usuário removido" para o líder ver a vaga.
+  final bool accountDeleted;
+
   const EventParticipant({
     this.id = '',
     required this.memberId,
@@ -94,6 +98,7 @@ class EventParticipant {
     this.skillIconKey,
     this.status = EventParticipantStatus.accepted,
     required this.permissions,
+    this.accountDeleted = false,
   });
 
   String get fullName => '$firstName ${lastName ?? ''}'.trim();
@@ -158,6 +163,7 @@ class EventParticipant {
       ]),
       status: _parseStatus(json['status']),
       permissions: permissions,
+      accountDeleted: json['accountDeleted'] == true,
     );
   }
 

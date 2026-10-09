@@ -50,7 +50,7 @@ class EventDetailEntity {
       repertoireCount: _toInt(json['repertoireCount']),
       participantsProfileImages:
           (json['participantsProfileImages'] as List?)
-              ?.map((e) => e.toString())
+              ?.map((e) => e?.toString() ?? '')
               .toList() ??
           [],
       hasRepertoire: json['hasRepertoire'] as bool? ?? true,

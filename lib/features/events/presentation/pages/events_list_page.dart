@@ -13,10 +13,14 @@ import '../../domain/entities/event_entity.dart';
 import '../cubit/events_cubit.dart';
 import '../cubit/events_state.dart';
 import '../widgets/event_list_card.dart';
+import '../../../music_projects/data/impl/music_projects_repository_impl.dart';
+import '../../../project_board/data/impl/responsibilities_repository_impl.dart';
+import '../../../project_board/domain/entities/my_responsibility_entity.dart';
+import '../../../project_board/presentation/cubit/my_responsibilities_cubit.dart';
+import '../../../project_board/presentation/pages/project_board_page.dart';
+import '../../../project_board/presentation/widgets/my_responsibilities_card.dart';
 
-Map<DateTime, List<EventEntity>> _groupEventsByDate(
-  List<EventEntity> events,
-) {
+Map<DateTime, List<EventEntity>> _groupEventsByDate(List<EventEntity> events) {
   final grouped = <DateTime, List<EventEntity>>{};
   for (final event in events) {
     final dayKey = DateUtils.dateOnly(event.date);
@@ -49,7 +53,10 @@ List<Widget> _buildStaggeredSections(
   for (var sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
     final section = sections[sectionIndex];
     children.add(
-      FadeSlideIn(delay: nextDelay(), child: EventDateHeader(date: section.key)),
+      FadeSlideIn(
+        delay: nextDelay(),
+        child: EventDateHeader(date: section.key),
+      ),
     );
     children.add(const SizedBox(height: 10));
     children.addAll(
@@ -98,14 +105,18 @@ class EventsListPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _EventsListView(
-      onOpenDrawer: onOpenDrawer,
-      user: user,
-      isLoadingUser: isLoadingUser,
-      onSwipeToNextPage: onSwipeToNextPage,
-      onSwipeToPreviousPage: onSwipeToPreviousPage,
-      tabArrivalToken: tabArrivalToken,
-      tabArrivalLandOnLast: tabArrivalLandOnLast,
+    return BlocProvider(
+      create: (_) =>
+          MyResponsibilitiesCubit(ResponsibilitiesRepositoryImpl())..load(),
+      child: _EventsListView(
+        onOpenDrawer: onOpenDrawer,
+        user: user,
+        isLoadingUser: isLoadingUser,
+        onSwipeToNextPage: onSwipeToNextPage,
+        onSwipeToPreviousPage: onSwipeToPreviousPage,
+        tabArrivalToken: tabArrivalToken,
+        tabArrivalLandOnLast: tabArrivalLandOnLast,
+      ),
     );
   }
 }
@@ -190,7 +201,7 @@ class _EventsListViewState extends State<_EventsListView>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _UpcomingTab(),
+                  _UpcomingTab(currentUserId: widget.user?.id),
                   _PastTab(scrollController: _pastScrollController),
                 ],
               ),
@@ -235,8 +246,14 @@ class _HomeTabBar extends StatelessWidget {
         overlayColor: const WidgetStatePropertyAll(Colors.transparent),
         labelColor: isDark ? cs.onPrimaryContainer : cs.primary,
         unselectedLabelColor: cs.onSurfaceVariant,
-        labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14.5),
-        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 14.5),
+        labelStyle: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 14.5,
+        ),
+        unselectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.w500,
+          fontSize: 14.5,
+        ),
         tabs: const [
           Tab(text: 'Próximos'),
           Tab(text: 'Passados'),
@@ -246,11 +263,62 @@ class _HomeTabBar extends StatelessWidget {
   }
 }
 
+// Atualiza eventos e responsabilidades juntos no pull-to-refresh.
+Future<void> _refreshHome(BuildContext context) {
+  return Future.wait([
+    context.read<EventsCubit>().load(),
+    context.read<MyResponsibilitiesCubit>().load(),
+  ]);
+}
+
+Future<void> _openResponsibilityBoard(
+  BuildContext context,
+  MyResponsibilityEntity item,
+  String? currentUserId,
+) async {
+  // O card não sabe o papel do usuário no projeto; busca antes de abrir o mural
+  // para o admin continuar podendo editar de lá.
+  var canManage = false;
+  try {
+    final role = await MusicProjectsRepositoryImpl().getMemberRole(
+      item.projectId,
+    );
+    canManage = role == 'ADMIN' || role == 'OWNER';
+  } catch (_) {}
+  if (!context.mounted) return;
+  await openProjectBoardPage(
+    context,
+    projectId: item.projectId,
+    projectName: item.projectName,
+    canManage: canManage,
+    currentUserId: currentUserId,
+  );
+  if (context.mounted) {
+    context.read<MyResponsibilitiesCubit>().load();
+  }
+}
+
 class _UpcomingTab extends StatelessWidget {
-  const _UpcomingTab();
+  final String? currentUserId;
+
+  const _UpcomingTab({this.currentUserId});
 
   @override
   Widget build(BuildContext context) {
+    final responsibilities = context.watch<MyResponsibilitiesCubit>().state;
+    final responsibilitiesCard = responsibilities.isEmpty
+        ? null
+        : Padding(
+            padding: const EdgeInsets.only(bottom: 14),
+            child: FadeSlideIn(
+              child: MyResponsibilitiesCard(
+                responsibilities: responsibilities,
+                onTap: (item) =>
+                    _openResponsibilityBoard(context, item, currentUserId),
+              ),
+            ),
+          );
+
     return BlocBuilder<EventsCubit, EventsState>(
       buildWhen: (prev, curr) =>
           prev.status != curr.status ||
@@ -270,8 +338,8 @@ class _UpcomingTab extends StatelessWidget {
         }
         if (state.events.isEmpty) {
           return RefreshIndicator(
-            onRefresh: () => context.read<EventsCubit>().load(),
-            child: const _EventsEmptyState(),
+            onRefresh: () => _refreshHome(context),
+            child: _EventsEmptyState(header: responsibilitiesCard),
           );
         }
 
@@ -280,12 +348,13 @@ class _UpcomingTab extends StatelessWidget {
           ..sort((a, b) => a.key.compareTo(b.key));
 
         return RefreshIndicator(
-          onRefresh: () => context.read<EventsCubit>().load(),
+          onRefresh: () => _refreshHome(context),
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             children: [
               if (state.isOffline) const _OfflineBanner(),
+              ?responsibilitiesCard,
               ..._buildStaggeredSections(sections, highlightFirst: true),
             ],
           ),
@@ -376,9 +445,9 @@ class _NoMoreEventsIndicator extends StatelessWidget {
       child: Center(
         child: Text(
           'Não há mais eventos',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: cs.onSurfaceVariant,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
         ),
       ),
     );
@@ -393,10 +462,10 @@ class _EventsLoadingState extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
-    final lineColor = isDark
-        ? cs.surfaceContainer
-        : const Color(0xFFE5EDF6);
-    final cardFill = isDark ? cs.surfaceContainerLow : cs.surfaceContainerLowest;
+    final lineColor = isDark ? cs.surfaceContainer : const Color(0xFFE5EDF6);
+    final cardFill = isDark
+        ? cs.surfaceContainerLow
+        : cs.surfaceContainerLowest;
 
     return AppShimmer(
       child: ListView(
@@ -506,7 +575,9 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
                             height: 16,
                             decoration: BoxDecoration(
                               color: lineColor,
-                              borderRadius: BorderRadius.circular(AppRadius.pill),
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.pill,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -515,7 +586,9 @@ class _EventTimelineItemSkeleton extends StatelessWidget {
                             height: 13,
                             decoration: BoxDecoration(
                               color: lineColor,
-                              borderRadius: BorderRadius.circular(AppRadius.pill),
+                              borderRadius: BorderRadius.circular(
+                                AppRadius.pill,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -581,19 +654,13 @@ class _EventsErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.cloud_off_rounded,
-              size: 48,
-              color: cs.onSurfaceVariant,
-            ),
+            Icon(Icons.cloud_off_rounded, size: 48, color: cs.onSurfaceVariant),
             const SizedBox(height: 10),
             Text(
               message,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: isDark
-                    ? cs.onSurfaceVariant
-                    : cs.onSurfaceVariant,
+                color: isDark ? cs.onSurfaceVariant : cs.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 14),
@@ -647,7 +714,10 @@ class _OfflineBanner extends StatelessWidget {
 }
 
 class _EventsEmptyState extends StatelessWidget {
-  const _EventsEmptyState();
+  /// Conteúdo opcional acima do estado vazio (ex.: card de responsabilidades).
+  final Widget? header;
+
+  const _EventsEmptyState({this.header});
 
   @override
   Widget build(BuildContext context) {
@@ -657,6 +727,11 @@ class _EventsEmptyState extends StatelessWidget {
         return ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           children: [
+            if (header != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                child: header,
+              ),
             ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Center(
@@ -680,8 +755,9 @@ class _EventsEmptyState extends StatelessWidget {
                       Text(
                         'Quando houver novas escalas, elas aparecerão aqui.',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium
-                            ?.copyWith(color: cs.onSurfaceVariant),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -729,8 +805,9 @@ class _PastEventsEmptyState extends StatelessWidget {
                       Text(
                         'Seus eventos anteriores aparecerão aqui.',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium
-                            ?.copyWith(color: cs.onSurfaceVariant),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
@@ -923,9 +1000,7 @@ class EventTimelineColumn extends StatelessWidget {
               width: 2,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? cs.onSurfaceVariant
-                      : cs.outline,
+                  color: isDark ? cs.onSurfaceVariant : cs.outline,
                 ),
               ),
             ),

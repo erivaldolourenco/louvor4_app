@@ -12,6 +12,7 @@ import '../../../../core/utils/formatters.dart';
 import '../../data/music_projects_repository.dart';
 import '../../domain/entities/create_project_event_batch_input.dart';
 import '../cubit/create_project_event_batch_cubit.dart';
+import '../widgets/multi_date_picker_sheet.dart';
 
 Future<bool?> openCreateProjectEventBatchPage(
   BuildContext context, {
@@ -147,7 +148,7 @@ class _CreateProjectEventBatchViewState
                   dates: _selectedDates,
                   enabled: !state.isSubmitting,
                   errorText: _datesError,
-                  onAddDate: _pickDate,
+                  onAddDate: _pickDates,
                   onRemoveDate: (date) {
                     setState(() {
                       _selectedDates.remove(date);
@@ -228,27 +229,24 @@ class _CreateProjectEventBatchViewState
     );
   }
 
-  Future<void> _pickDate() async {
+  Future<void> _pickDates() async {
     final now = DateTime.now();
-    final selected = await showDatePicker(
-      context: context,
-      initialDate: now,
+    // Abre já com as datas atuais marcadas: dá pra adicionar e remover no mesmo passo.
+    final selected = await showMultiDatePickerSheet(
+      context,
+      initialDates: _selectedDates,
       firstDate: DateTime(now.year - 1),
       lastDate: DateTime(now.year + 5),
-      selectableDayPredicate: (day) =>
-          !_selectedDates.any((d) => _isSameDay(d, day)),
     );
 
     if (!mounted || selected == null) return;
     setState(() {
-      _selectedDates.add(selected);
-      _selectedDates.sort();
-      _datesError = null;
+      _selectedDates
+        ..clear()
+        ..addAll(selected);
+      if (_selectedDates.isNotEmpty) _datesError = null;
     });
   }
-
-  bool _isSameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
 
   Future<void> _pickTime() async {
     final selected = await showTimePicker(
@@ -344,8 +342,10 @@ class _DatesField extends StatelessWidget {
               ),
               TextButton.icon(
                 onPressed: enabled ? onAddDate : null,
-                icon: const Icon(Icons.add_rounded, size: 18),
-                label: const Text('Adicionar data'),
+                icon: const Icon(Icons.calendar_month_rounded, size: 18),
+                label: Text(
+                  dates.isEmpty ? 'Selecionar datas' : 'Alterar datas',
+                ),
               ),
             ],
           ),

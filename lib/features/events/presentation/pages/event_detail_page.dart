@@ -20,6 +20,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../../../core/theme/app_extra_colors.dart';
 import '../../../../core/theme/app_radius.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../data/event_program_repository.dart';
@@ -483,41 +484,34 @@ class _EventDetailViewState extends State<_EventDetailView>
               'assets/icons/clock-plus.svg',
               width: 24,
               height: 24,
-              colorFilter: ColorFilter.mode(
-                cs.onPrimary,
-                BlendMode.srcIn,
-              ),
+              colorFilter: ColorFilter.mode(cs.onPrimary, BlendMode.srcIn),
             ),
           );
         } else {
           // Outras abas: FAB simples com ícones dedicados por aba
           final action = switch (kind) {
             _EventTabKind.team
-                when state.isProjectAdmin || state.canManageParticipants => (
-              icon: SvgPicture.asset(
-                'assets/icons/user-round-plus.svg',
-                width: 24,
-                height: 24,
-                colorFilter: ColorFilter.mode(
-                  cs.onPrimary,
-                  BlendMode.srcIn,
+                when state.isProjectAdmin || state.canManageParticipants =>
+              (
+                icon: SvgPicture.asset(
+                  'assets/icons/user-round-plus.svg',
+                  width: 24,
+                  height: 24,
+                  colorFilter: ColorFilter.mode(cs.onPrimary, BlendMode.srcIn),
                 ),
+                onPressed: () => _onManageSchedule(state),
               ),
-              onPressed: () => _onManageSchedule(state),
-            ),
             _EventTabKind.songs
-                when state.isProjectAdmin || state.canAddSongs => (
-              icon: SvgPicture.asset(
-                'assets/icons/music.svg',
-                width: 24,
-                height: 24,
-                colorFilter: ColorFilter.mode(
-                  cs.onPrimary,
-                  BlendMode.srcIn,
+                when state.isProjectAdmin || state.canAddSongs =>
+              (
+                icon: SvgPicture.asset(
+                  'assets/icons/music.svg',
+                  width: 24,
+                  height: 24,
+                  colorFilter: ColorFilter.mode(cs.onPrimary, BlendMode.srcIn),
                 ),
+                onPressed: () => _onAddSongs(state),
               ),
-              onPressed: () => _onAddSongs(state),
-            ),
             _ => null,
           };
 
@@ -538,7 +532,7 @@ class _EventDetailViewState extends State<_EventDetailView>
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppRadius.fab),
                   ),
-                  backgroundColor: cs.primary,
+                  backgroundColor: appPrimaryButtonColor(context),
                   foregroundColor: cs.onPrimary,
                   elevation: 4,
                   child: action.icon,
@@ -680,10 +674,7 @@ enum _EventTabKind { team, songs, program }
     case _EventTabKind.songs:
       return (assetPath: 'assets/icons/music.svg', label: 'Músicas');
     case _EventTabKind.program:
-      return (
-        assetPath: 'assets/icons/clipboard-clock.svg',
-        label: 'Roteiro',
-      );
+      return (assetPath: 'assets/icons/clipboard-clock.svg', label: 'Roteiro');
   }
 }
 
@@ -1024,6 +1015,7 @@ class _ParticipantsTab extends StatelessWidget {
               canAddSong: participant.permissions.contains(
                 EventPermission.addSong,
               ),
+              accountDeleted: participant.accountDeleted,
               onTap: () => showUserProfileDialog(
                 context,
                 name: participant.fullName,
@@ -1068,9 +1060,7 @@ class _SongsTab extends StatelessWidget {
   Future<void> _openEditSong(BuildContext context, dynamic song) async {
     if (song.songId == null) return;
     final updated = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => EditSongPage(songId: song.songId!),
-      ),
+      MaterialPageRoute(builder: (_) => EditSongPage(songId: song.songId!)),
     );
     if (updated == true) {
       onRefresh();
@@ -1382,4 +1372,3 @@ class _DetailErrorState extends StatelessWidget {
     );
   }
 }
-

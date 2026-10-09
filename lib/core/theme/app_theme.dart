@@ -9,25 +9,25 @@ abstract final class AppTheme {
       seedColor: AppColors.primary,
       brightness: Brightness.light,
       // Brand Principal
-      primary: const Color(0xFF4F64E8),
+      primary: AppColors.primary,
       onPrimary: const Color(0xFFFFFFFF),
-      primaryContainer: const Color(0xFFEFF6FF),
-      onPrimaryContainer: const Color(0xFF4F64E8),
+      primaryContainer: AppColors.indigo50,
+      onPrimaryContainer: AppColors.indigo700,
       // Secundária — tom derivado da rampa azul, desaturado para não
       // competir com o primary vibrante.
       secondary: const Color(0xFF6974B9),
       onSecondary: const Color(0xFFFFFFFF),
-      secondaryContainer: const Color(0xFFD8E3F8),
-      onSecondaryContainer: const Color(0xFF1E3A8A),
-      tertiary: AppColors.tertiary,
+      secondaryContainer: AppColors.indigo100,
+      onSecondaryContainer: AppColors.indigo900,
+      tertiary: AppColors.tertiaryWarmLight,
       onTertiary: AppColors.onTertiary,
       tertiaryContainer: AppColors.tertiaryContainerLight,
       onTertiaryContainer: AppColors.onTertiaryContainerLight,
       // Superfícies
-      surface: const Color(0xFFF9F9FE),
-      onSurface: const Color(0xFF1A1B21),
-      onSurfaceVariant: const Color(0xFF45464F),
-      outline: const Color(0xFFC6C5D0),
+      surface: AppColors.surfaceContainerLowLight,
+      onSurface: AppColors.textPrimaryLight,
+      onSurfaceVariant: AppColors.textMutedLight,
+      outline: AppColors.borderSubtleLight,
       // Erro
       error: const Color(0xFFBA1A1A),
       onError: const Color(0xFFFFFFFF),
@@ -75,9 +75,14 @@ abstract final class AppTheme {
         ),
       ),
 
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primaryButton,
+        foregroundColor: cs.onPrimary,
+      ),
+
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: cs.primary,
+          backgroundColor: AppColors.primaryButton,
           foregroundColor: cs.onPrimary,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
@@ -107,11 +112,15 @@ abstract final class AppTheme {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.6)),
+          borderSide: BorderSide(
+            color: cs.outlineVariant.withValues(alpha: 0.6),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.6)),
+          borderSide: BorderSide(
+            color: cs.outlineVariant.withValues(alpha: 0.6),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
@@ -189,7 +198,18 @@ abstract final class AppTheme {
         ),
       ),
 
-      extensions: [AppExtraColors(iconBadgeSurface: cs.primaryContainer)],
+      extensions: [
+        AppExtraColors(
+          iconBadgeSurface: cs.primaryContainer,
+          primaryButton: AppColors.primaryButton,
+          confirmedContainer: AppColors.successSubtleLight,
+          onConfirmedContainer: AppColors.onSuccessContainerLight,
+          pendingContainer: AppColors.pendingContainerLight,
+          onPendingContainer: AppColors.onPendingContainerLight,
+          arrangementContainer: AppColors.arrangementContainerLight,
+          onArrangementContainer: AppColors.arrangementLight,
+        ),
+      ],
     );
   }
 
@@ -200,21 +220,21 @@ abstract final class AppTheme {
       // Brand Principal
       primary: AppColors.brandPrimary,
       onPrimary: const Color(0xFFFFFFFF),
-      primaryContainer: const Color(0xFF1B2472),
-      onPrimaryContainer: const Color(0xFFDEE0FF),
+      primaryContainer: AppColors.indigo900,
+      onPrimaryContainer: AppColors.indigo100,
       // Secundárias (Azul-acinzentado frio)
       secondary: const Color(0xFFC3C6DD),
       onSecondary: const Color(0xFF2B2E43),
       secondaryContainer: const Color(0xFF424659),
       onSecondaryContainer: const Color(0xFFE2E4F6),
-      tertiary: AppColors.tertiary,
-      onTertiary: AppColors.onTertiary,
+      tertiary: AppColors.tertiaryWarmDark,
+      onTertiary: AppColors.onTertiaryWarmDark,
       tertiaryContainer: AppColors.tertiaryContainerDark,
       onTertiaryContainer: AppColors.onTertiaryContainerDark,
       // Superfícies
       surface: AppColors.surfaceDark,
-      onSurface: const Color(0xFFE3E3E8),
-      onSurfaceVariant: const Color(0xFFC6C5D0),
+      onSurface: AppColors.textPrimaryDark,
+      onSurfaceVariant: AppColors.textMutedDark,
       outline: const Color(0xFF8F909A),
       // Erro
       error: const Color(0xFFFFB4AB),
@@ -263,9 +283,14 @@ abstract final class AppTheme {
         ),
       ),
 
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: AppColors.primaryButton,
+        foregroundColor: cs.onPrimary,
+      ),
+
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: cs.primary,
+          backgroundColor: AppColors.primaryButton,
           foregroundColor: cs.onPrimary,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
@@ -295,11 +320,15 @@ abstract final class AppTheme {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.4)),
+          borderSide: BorderSide(
+            color: cs.outlineVariant.withValues(alpha: 0.4),
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
-          borderSide: BorderSide(color: cs.outlineVariant.withValues(alpha: 0.4)),
+          borderSide: BorderSide(
+            color: cs.outlineVariant.withValues(alpha: 0.4),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.input),
@@ -378,7 +407,16 @@ abstract final class AppTheme {
       ),
 
       extensions: [
-        AppExtraColors(iconBadgeSurface: cs.surfaceContainerHighest),
+        AppExtraColors(
+          iconBadgeSurface: cs.surfaceContainerHighest,
+          primaryButton: AppColors.primaryButton,
+          confirmedContainer: AppColors.successSubtleDark,
+          onConfirmedContainer: AppColors.onSuccessContainerDark,
+          pendingContainer: AppColors.pendingContainerDark,
+          onPendingContainer: AppColors.onPendingContainerDark,
+          arrangementContainer: AppColors.arrangementContainerDark,
+          onArrangementContainer: AppColors.arrangementDark,
+        ),
       ],
     );
   }

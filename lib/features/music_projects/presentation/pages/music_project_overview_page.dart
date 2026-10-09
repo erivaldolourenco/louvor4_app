@@ -17,6 +17,8 @@ import '../utils/music_project_ui_utils.dart';
 import '../widgets/project_events_tab.dart';
 import '../widgets/project_members_tab.dart';
 import '../widgets/project_selector_bottom_sheet.dart';
+import '../../../project_board/presentation/pages/project_board_page.dart';
+import '../../../project_dashboard/presentation/pages/project_dashboard_page.dart';
 import '../../../project_skills/domain/entities/project_role.dart';
 import '../../../project_skills/presentation/pages/project_skills_page.dart';
 import '../../../user_profile/presentation/cubit/user_cubit.dart';
@@ -156,7 +158,21 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
   }
 
   void _onOpenDashboard() {
-    AppFeedback.showSuccess('Dashboard do projeto será implementado em breve.');
+    openProjectDashboardPage(
+      context,
+      projectId: widget.projectId,
+      projectName: _project?.name,
+    );
+  }
+
+  void _onOpenBoard() {
+    openProjectBoardPage(
+      context,
+      projectId: widget.projectId,
+      projectName: _project?.name,
+      canManage: _isAdmin,
+      currentUserId: context.read<UserCubit>().state.user?.id,
+    );
   }
 
   Future<void> _onDeleteProject() async {
@@ -257,10 +273,7 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
               'assets/icons/calendar-plus.svg',
               width: 24,
               height: 24,
-              colorFilter: ColorFilter.mode(
-                cs.onPrimary,
-                BlendMode.srcIn,
-              ),
+              colorFilter: ColorFilter.mode(cs.onPrimary, BlendMode.srcIn),
             ),
           );
         } else if (index == 1) {
@@ -332,7 +345,9 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
 
     final project = _project!;
     final hasCoverImage = UrlUtils.isValidNetworkUrl(project.profileImage);
-    final expandedIconColor = hasCoverImage ? Colors.white : cs.onPrimaryContainer;
+    final expandedIconColor = hasCoverImage
+        ? Colors.white
+        : cs.onPrimaryContainer;
     final headerIconColor = _headerCollapsed ? cs.onSurface : expandedIconColor;
 
     return NestedScrollView(
@@ -343,37 +358,44 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
             title: project.name,
             subtitle: MusicProjectUiUtils.typeLabel(project.type),
             isCollapsed: _headerCollapsed,
+            // Tocar no nome do projeto abre o seletor para trocar de projeto.
+            onTitleTap: widget.embedded ? _onSwitchProject : null,
             actions: [
-              if (widget.embedded)
-                IconButton(
-                  tooltip: 'Trocar projeto',
-                  onPressed: _onSwitchProject,
-                  icon: SvgPicture.asset(
-                    'assets/icons/arrow-right-left.svg',
-                    width: 24,
-                    height: 24,
-                    colorFilter: ColorFilter.mode(
-                      headerIconColor,
-                      BlendMode.srcIn,
+              // Menu visível para todos: membros veem só o Mural.
+              PopupMenuButton<String>(
+                color: cs.surface,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.card),
+                ),
+                icon: Icon(Icons.more_vert_rounded, color: headerIconColor),
+                onSelected: (value) {
+                  if (value == 'edit') _onEditProject();
+                  if (value == 'dashboard') _onOpenDashboard();
+                  if (value == 'board') _onOpenBoard();
+                  if (value == 'delete') _onDeleteProject();
+                },
+                itemBuilder: (_) => [
+                  PopupMenuItem<String>(
+                    value: 'board',
+                    padding: EdgeInsets.zero,
+                    child: ListTile(
+                      leading: SvgPicture.asset(
+                        'assets/icons/square-kanban.svg',
+                        width: 20,
+                        height: 20,
+                        colorFilter: ColorFilter.mode(
+                          cs.onSurface,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                      title: const Text('Mural'),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
+                      dense: true,
                     ),
                   ),
-                ),
-              if (_isAdmin)
-                PopupMenuButton<String>(
-                  color: cs.surface,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.card),
-                  ),
-                  icon: Icon(
-                    Icons.more_vert_rounded,
-                    color: headerIconColor,
-                  ),
-                  onSelected: (value) {
-                    if (value == 'edit') _onEditProject();
-                    if (value == 'dashboard') _onOpenDashboard();
-                    if (value == 'delete') _onDeleteProject();
-                  },
-                  itemBuilder: (_) => [
+                  if (_isAdmin) ...[
                     PopupMenuItem<String>(
                       value: 'dashboard',
                       padding: EdgeInsets.zero,
@@ -414,32 +436,33 @@ class _MusicProjectOverviewPageState extends State<MusicProjectOverviewPage>
                         dense: true,
                       ),
                     ),
-                    if (_memberRole == 'OWNER')
-                      PopupMenuItem<String>(
-                        value: 'delete',
-                        padding: EdgeInsets.zero,
-                        child: ListTile(
-                          leading: SvgPicture.asset(
-                            'assets/icons/trash-2.svg',
-                            width: 20,
-                            height: 20,
-                            colorFilter: ColorFilter.mode(
-                              cs.error,
-                              BlendMode.srcIn,
-                            ),
-                          ),
-                          title: Text(
-                            'Excluir Projeto',
-                            style: TextStyle(color: cs.error),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                          ),
-                          dense: true,
-                        ),
-                      ),
                   ],
-                ),
+                  if (_memberRole == 'OWNER')
+                    PopupMenuItem<String>(
+                      value: 'delete',
+                      padding: EdgeInsets.zero,
+                      child: ListTile(
+                        leading: SvgPicture.asset(
+                          'assets/icons/trash-2.svg',
+                          width: 20,
+                          height: 20,
+                          colorFilter: ColorFilter.mode(
+                            cs.error,
+                            BlendMode.srcIn,
+                          ),
+                        ),
+                        title: Text(
+                          'Excluir Projeto',
+                          style: TextStyle(color: cs.error),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
+                        dense: true,
+                      ),
+                    ),
+                ],
+              ),
             ],
             backgroundImageUrl: project.profileImage,
           ),

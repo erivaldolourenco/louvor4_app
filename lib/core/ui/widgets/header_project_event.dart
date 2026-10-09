@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'app_cached_network_image.dart';
 import '../../theme/app_radius.dart';
@@ -15,6 +16,10 @@ class HeaderProjectEvent extends StatelessWidget {
   /// texto precisa de uma cor escura para continuar legível.
   final bool isCollapsed;
 
+  /// Quando informado, o título fica centralizado com um chevron para baixo
+  /// e vira clicável (ex.: abrir o seletor de projeto).
+  final VoidCallback? onTitleTap;
+
   const HeaderProjectEvent({
     super.key,
     required this.title,
@@ -22,6 +27,7 @@ class HeaderProjectEvent extends StatelessWidget {
     this.actions,
     this.backgroundImageUrl,
     this.isCollapsed = false,
+    this.onTitleTap,
   });
 
   @override
@@ -29,6 +35,51 @@ class HeaderProjectEvent extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final foregroundColor = isCollapsed ? cs.onSurface : cs.onPrimary;
+    final isTappable = onTitleTap != null;
+    final titleText = Text(
+      title,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: theme.textTheme.titleMedium?.copyWith(
+        color: foregroundColor,
+        fontWeight: FontWeight.w700,
+        fontSize: 20,
+      ),
+    );
+    final titleColumn = Column(
+      crossAxisAlignment: isTappable
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isTappable)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(child: titleText),
+              const SizedBox(width: 4),
+              SvgPicture.asset(
+                'assets/icons/chevron-down.svg',
+                width: 20,
+                height: 20,
+                colorFilter: ColorFilter.mode(foregroundColor, BlendMode.srcIn),
+              ),
+            ],
+          )
+        else
+          titleText,
+        if (subtitle != null)
+          Text(
+            subtitle!,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: foregroundColor.withValues(alpha: 0.85),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+      ],
+    );
     return SliverAppBar(
       expandedHeight: 64,
       pinned: true,
@@ -37,34 +88,18 @@ class HeaderProjectEvent extends StatelessWidget {
       foregroundColor: foregroundColor,
       elevation: 0,
       scrolledUnderElevation: 0,
-      centerTitle: false,
+      centerTitle: isTappable,
       titleSpacing: 20,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: foregroundColor,
-              fontWeight: FontWeight.w700,
-              fontSize: 20,
-            ),
-          ),
-          if (subtitle != null)
-            Text(
-              subtitle!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: foregroundColor.withValues(alpha: 0.85),
-                fontWeight: FontWeight.w500,
+      title: isTappable
+          ? InkWell(
+              onTap: onTitleTap,
+              borderRadius: BorderRadius.circular(AppRadius.card),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: titleColumn,
               ),
-            ),
-        ],
-      ),
+            )
+          : titleColumn,
       actions: actions,
       flexibleSpace: ClipRRect(
         borderRadius: BorderRadius.only(

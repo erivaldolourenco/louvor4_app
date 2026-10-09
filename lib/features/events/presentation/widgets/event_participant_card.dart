@@ -15,6 +15,7 @@ class EventParticipantCard extends StatelessWidget {
   final EventParticipantStatus status;
   final String? profileImage;
   final bool canAddSong;
+  final bool accountDeleted;
   final VoidCallback? onTap;
 
   const EventParticipantCard({
@@ -25,6 +26,7 @@ class EventParticipantCard extends StatelessWidget {
     required this.status,
     this.profileImage,
     this.canAddSong = false,
+    this.accountDeleted = false,
     this.onTap,
   });
 
@@ -34,13 +36,17 @@ class EventParticipantCard extends StatelessWidget {
     final cs = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
     final extraColors = theme.extension<AppExtraColors>()!;
-    final badge = _statusBadge(cs);
+    final badge = _statusBadge(
+      cs,
+      Theme.of(context).extension<AppExtraColors>()!,
+    );
+    final avatarImage = appCachedImageProvider(profileImage);
     final cardBorderColor = cs.outlineVariant.withValues(
       alpha: isDark ? 0.35 : 0.55,
     );
 
-    final cardBody = SpringTap(
-      onTap: onTap,
+    Widget cardBody = SpringTap(
+      onTap: accountDeleted ? null : onTap,
       pressedScale: 0.97,
       borderRadius: BorderRadius.circular(AppRadius.cardHero),
       child: Padding(
@@ -48,12 +54,15 @@ class EventParticipantCard extends StatelessWidget {
         child: Row(
           children: [
             CircleAvatar(
-              backgroundColor: cs.primaryContainer,
-              backgroundImage: profileImage != null
-                  ? appCachedImageProvider(profileImage)
-                  : null,
-              child: profileImage == null
-                  ? Icon(Icons.person, color: cs.primary)
+              backgroundColor: accountDeleted
+                  ? cs.surfaceContainerHigh
+                  : cs.primaryContainer,
+              backgroundImage: avatarImage,
+              child: avatarImage == null
+                  ? Icon(
+                      accountDeleted ? Icons.person_off_outlined : Icons.person,
+                      color: accountDeleted ? cs.onSurfaceVariant : cs.primary,
+                    )
                   : null,
             ),
             if (skillIconKey != null) ...[
@@ -116,6 +125,9 @@ class EventParticipantCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: badge.backgroundColor,
                 borderRadius: BorderRadius.circular(AppRadius.pill),
+                border: accountDeleted
+                    ? Border.all(color: cs.outlineVariant)
+                    : null,
               ),
               child: Text(
                 badge.label,
@@ -130,6 +142,10 @@ class EventParticipantCard extends StatelessWidget {
       ),
     );
 
+    if (accountDeleted) {
+      cardBody = Opacity(opacity: 0.6, child: cardBody);
+    }
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: DecoratedBox(
@@ -139,19 +155,26 @@ class EventParticipantCard extends StatelessWidget {
     );
   }
 
-  _ParticipantStatusBadge _statusBadge(ColorScheme cs) {
+  _ParticipantStatusBadge _statusBadge(ColorScheme cs, AppExtraColors extra) {
+    if (accountDeleted) {
+      return _ParticipantStatusBadge(
+        label: 'Conta excluída',
+        backgroundColor: cs.surfaceContainerHigh,
+        foregroundColor: cs.onSurfaceVariant,
+      );
+    }
     switch (status) {
       case EventParticipantStatus.accepted:
         return _ParticipantStatusBadge(
           label: 'Aceito',
-          backgroundColor: cs.primaryContainer,
-          foregroundColor: cs.onPrimaryContainer,
+          backgroundColor: extra.confirmedContainer,
+          foregroundColor: extra.onConfirmedContainer,
         );
       case EventParticipantStatus.pending:
         return _ParticipantStatusBadge(
           label: 'Pendente',
-          backgroundColor: cs.tertiaryContainer,
-          foregroundColor: cs.onTertiaryContainer,
+          backgroundColor: extra.pendingContainer,
+          foregroundColor: extra.onPendingContainer,
         );
       case EventParticipantStatus.declined:
         return _ParticipantStatusBadge(
